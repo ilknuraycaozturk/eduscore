@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduScor | The Global Education Intelligence Platform</title>
+    <title>EduScor | Global Education Explorer</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -27,85 +27,192 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        /* İngilizce başlıkların Türkçe tarayıcılarda büyük 'İ' olmasını engelleyen global CSS kuralı */
         .en-text {
             font-language-override: "ENG";
-            -webkit-font-variant-ligatures: no-common-ligatures;
             font-variant-ligatures: no-common-ligatures;
         }
     </style>
 </head>
-<body class="bg-brandBg text-brandDark min-h-screen flex flex-col justify-between">
+<body class="bg-brandBg text-brandDark min-h-screen flex flex-col">
 
-    <!-- Üst Menü (Minimalist & Transparan) -->
-    <header class="w-full max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-        <div class="text-[10px] text-brandGray tracking-widest font-semibold uppercase">v0.1 Pre-MVP</div>
+    <!-- Üst Menü / Navbar -->
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center shrink-0">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+            <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
+            <span class="h-4 w-[1px] bg-slate-300 hidden sm:block"></span>
+            <span class="text-[9px] text-brandGray tracking-widest uppercase hidden sm:block en-text">The Global Education Intelligence Platform</span>
+        </div>
         
-        <!-- Sağ Üst Hızlı Linkler -->
-        <div class="flex items-center gap-6 text-sm font-semibold">
-            <a href="#" class="text-brandGray hover:text-brandDark transition-colors">Hakkımızda</a>
-            <a href="#" class="text-brandGray hover:text-brandDark transition-colors">Ağ</a>
-            <a href="#" class="px-4 py-1.5 border border-brandRed text-brandRed hover:bg-brandRed hover:text-white rounded-full transition-all text-xs">Giriş Yap</a>
+        <!-- Sağ Üst Profil / Giriş -->
+        <div class="flex items-center gap-4 text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors text-xs sm:text-sm">🏠 Ana Sayfa</a>
+            <button class="px-4 py-1.5 bg-brandDark text-white hover:bg-slate-850 rounded-full transition-all text-xs">Giriş Yap</button>
         </div>
     </header>
 
-    <!-- Ana Arama Ekranı (Merkezlenmiş AI Arayüzü) -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 -mt-16">
-        <div class="w-full max-w-2xl text-center">
+    <!-- Ana Panel: Sol Liste & Sağ Harita -->
+    <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- SOL SÜTUN: Arama, Filtreler ve Sonuç Kartları (%60) -->
+        <main class="w-full md:w-[60%] flex flex-col h-full overflow-y-auto p-4 md:p-6">
             
-            <!-- EduScor Başlık Grubu -->
-            <div class="mb-8 select-none">
-                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-brandRed mb-2">EduScor</h1>
-                <!-- lang="en" ve class="en-text" eklenerek büyük harf dönüşüm hatası engellendi -->
-                <p lang="en" class="en-text text-xs md:text-sm text-brandGray tracking-[0.2em] font-medium uppercase">
-                    The Global Education Intelligence Platform
-                </p>
-            </div>
-
-            <!-- Davet Cümlesi -->
-            <h2 class="text-xl md:text-2xl font-bold text-brandDark mb-6">Size nasıl yardımcı olabiliriz?</h2>
-
-            <!-- Arama ve Girdi Kutusu (Büyük Minimalist Metin Alanı) -->
-            <div class="bg-white rounded-3xl shadow-xl shadow-slate-100 border border-slate-200/80 p-4 mb-6 transition-all focus-within:shadow-brandRed/5 focus-within:border-brandRed/40">
-                <textarea 
-                    rows="2"
-                    placeholder="Bir okul, üniversite veya eğitim fırsatı arayın..." 
-                    class="w-full bg-transparent resize-none outline-none text-base md:text-lg text-brandDark placeholder-brandGray/50 font-normal px-2 py-1 leading-relaxed"
-                ></textarea>
-            </div>
-
-            <!-- Çift Buton Aksiyonu -->
-            <div class="flex items-center justify-center gap-4 mb-12">
-                <!-- Klasik Arama Butonu -->
-                <button class="flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-brandDark border border-slate-200 shadow-sm rounded-full font-semibold text-sm transition-all">
-                    <span>🔍</span> Ara
+            <!-- Arama & Konum Güncelleme Barı -->
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col sm:flex-row gap-2">
+                <div class="flex-grow flex items-center gap-2 px-2">
+                    <span class="text-slate-400">🔍</span>
+                    <input type="text" value="Bağlıca, Ankara" class="w-full bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Konum veya okul arayın...">
+                </div>
+                <div class="h-full w-[1px] bg-slate-200 hidden sm:block"></div>
+                <div class="flex items-center gap-2 px-2">
+                    <span class="text-slate-400">🎒</span>
+                    <select class="bg-transparent outline-none text-xs font-semibold text-brandGray">
+                        <option>Tüm Seviyeler</option>
+                        <option>Kreş & Anaokulu</option>
+                        <option>İlkokul</option>
+                        <option>Ortaokul & Lise</option>
+                        <option>Kurs & Aktivite</option>
+                    </select>
+                </div>
+                <button class="bg-brandRed hover:bg-red-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shrink-0">
+                    Güncelle
                 </button>
+            </div>
+
+            <!-- Hızlı Filtre Butonları -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">💰 Fiyat Aralığı</button>
+                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">⭐ EduScor Puanı (8.0+)</button>
+                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">📍 Mesafe (5 km)</button>
+                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">⏱️ Yarım/Tam Gün</button>
+            </div>
+
+            <!-- Sonuç Başlığı -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider">Arama Sonuçları (3 Örnek Kurum)</h2>
+                <span class="text-xs text-brandGray font-medium">Sıralama: <b>En Yüksek Puan</b></span>
+            </div>
+
+            <!-- KURUM KARTLARI LİSTESİ -->
+            <div class="space-y-4">
                 
-                <!-- AI Sihirbazı Butonu (EduScor Kırmızısı Vurgulu) -->
-                <button class="flex items-center gap-2 px-6 py-3 bg-brandRed hover:bg-red-700 text-white shadow-md shadow-red-100 rounded-full font-semibold text-sm transition-all transform hover:-translate-y-0.5">
-                    <span>🤖</span> AI ile Başla
-                </button>
+                <!-- KART 1: Örnek Kolej (Bağlıca) -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
+                    <!-- Kurum Görseli / Logo Alanı -->
+                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
+                        <span class="text-2xl">🏫</span>
+                    </div>
+                    <!-- Kurum Detayları -->
+                    <div class="flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-red-50 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">Kolej</span>
+                                <span class="text-xs text-brandGray">📍 Bağlıca, Ankara</span>
+                            </div>
+                            <h3 class="font-bold text-base text-brandDark hover:text-brandRed transition-colors cursor-pointer">Bağlıca Bilim & Teknoloji Koleji</h3>
+                            <p class="text-xs text-brandGray line-clamp-1 mt-1">İngilizce ağırlıklı STEM müfredatı ve modern robotik laboratuvarları.</p>
+                        </div>
+                        <!-- Özellik Etiketleri -->
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🤖 STEM</span>
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🇬🇧 Çift Dil</span>
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🚍 Servis</span>
+                        </div>
+                    </div>
+                    <!-- Puan & Detay -->
+                    <div class="flex sm:flex-col justify-between items-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                        <div class="text-right">
+                            <span class="text-[10px] text-brandGray font-semibold block">EduScor</span>
+                            <span class="text-lg font-extrabold text-brandRed">8.9<span class="text-xs font-normal text-brandGray">/10</span></span>
+                        </div>
+                        <button class="px-3 py-1.5 bg-brandDark hover:bg-brandRed text-white rounded-lg text-xs font-bold transition-all">İncele</button>
+                    </div>
+                </div>
+
+                <!-- KART 2: Örnek Anaokulu (Bağlıca) -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
+                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
+                        <span class="text-2xl">🧸</span>
+                    </div>
+                    <div class="flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-amber-50 text-amber-600 text-[10px] font-bold px-2 py-0.5 rounded">Anaokulu</span>
+                                <span class="text-xs text-brandGray">📍 Bağlıca, Ankara</span>
+                            </div>
+                            <h3 class="font-bold text-base text-brandDark hover:text-brandRed transition-colors cursor-pointer">Bağlıca Montessori Çocuk Yuvası</h3>
+                            <p class="text-xs text-brandGray line-clamp-1 mt-1">Doğa odaklı eğitim modeli ve bağımsız öğrenme metodolojisi.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🌲 Montessori</span>
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🍎 Organik Beslenme</span>
+                        </div>
+                    </div>
+                    <div class="flex sm:flex-col justify-between items-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                        <div class="text-right">
+                            <span class="text-[10px] text-brandGray font-semibold block">EduScor</span>
+                            <span class="text-lg font-extrabold text-brandRed">9.2<span class="text-xs font-normal text-brandGray">/10</span></span>
+                        </div>
+                        <button class="px-3 py-1.5 bg-brandDark hover:bg-brandRed text-white rounded-lg text-xs font-bold transition-all">İncele</button>
+                    </div>
+                </div>
+
+                <!-- KART 3: Örnek Dil Kursu (Bağlıca) -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
+                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
+                        <span class="text-2xl">🇬🇧</span>
+                    </div>
+                    <div class="flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">Dil Okulu</span>
+                                <span class="text-xs text-brandGray">📍 Bağlıca, Ankara</span>
+                            </div>
+                            <h3 class="font-bold text-base text-brandDark hover:text-brandRed transition-colors cursor-pointer">Bağlıca İngilizce Dil Akademisi</h3>
+                            <p class="text-xs text-brandGray line-clamp-1 mt-1">Yerli ve yabancı eğitmenler eşliğinde çocuk ve yetişkin grupları.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🗣️ Konuşma Odaklı</span>
+                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🎓 Sınav Hazırlık</span>
+                        </div>
+                    </div>
+                    <div class="flex sm:flex-col justify-between items-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                        <div class="text-right">
+                            <span class="text-[10px] text-brandGray font-semibold block">EduScor</span>
+                            <span class="text-lg font-extrabold text-brandRed">8.5<span class="text-xs font-normal text-brandGray">/10</span></span>
+                        </div>
+                        <button class="px-3 py-1.5 bg-brandDark hover:bg-brandRed text-white rounded-lg text-xs font-bold transition-all">İncele</button>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Popüler Aramalar (Popular Searches) -->
-            <div class="border-t border-slate-200/60 pt-6">
-                <p class="text-xs font-semibold text-brandGray uppercase tracking-wider mb-4">Popüler Aramalar</p>
-                <div class="flex flex-wrap justify-center gap-2">
-                    <a href="#" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• IB Okulları</a>
-                    <a href="#" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Üniversiteler</a>
-                    <a href="#" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Dil Okulları</a>
-                    <a href="#" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Burslar</a>
-                    <a href="#" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Yaz Kampları</a>
+        </main>
+
+        <!-- SAĞ SÜTUN: Harita Görsel Alanı (%40) -->
+        <aside class="hidden md:block w-[40%] h-full bg-slate-100 relative border-l border-slate-200">
+            <!-- Harita Yer Tutucu Arka Planı (Daha sonra harita API'si eklenecek) -->
+            <div class="absolute inset-0 bg-slate-200/60 flex flex-col items-center justify-center p-8 text-center select-none">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md mb-4">
+                    <span class="text-3xl text-brandRed">📍</span>
+                </div>
+                <h3 class="font-bold text-brandDark text-sm mb-1">Eğitim Coğrafyası</h3>
+                <p class="text-xs text-brandGray max-w-xs leading-relaxed">Bağlıca bölgesindeki örnek veriler harita üzerinde işaretlenmiştir. Yakında canlı harita entegrasyonu aktif edilecektir.</p>
+                
+                <!-- Örnek Harita Pinleri (Dekoratif) -->
+                <div class="absolute top-[25%] left-[30%] bg-white shadow-md rounded-full px-2 py-1 text-[11px] font-bold border border-slate-200 flex items-center gap-1">
+                    <span>🏫</span> 8.9
+                </div>
+                <div class="absolute top-[50%] left-[60%] bg-white shadow-md rounded-full px-2 py-1 text-[11px] font-bold border border-slate-200 flex items-center gap-1">
+                    <span>🧸</span> 9.2
+                </div>
+                <div class="absolute top-[70%] left-[40%] bg-white shadow-md rounded-full px-2 py-1 text-[11px] font-bold border border-slate-200 flex items-center gap-1">
+                    <span>🇬🇧</span> 8.5
                 </div>
             </div>
+        </aside>
 
-        </div>
-    </main>
-
-    <!-- Küçük Alt Bilgi (Footer) -->
-    <footer class="w-full py-4 text-center text-[11px] text-brandGray font-medium">
-        <p>&copy; 2026 EduScor. Tüm hakları saklıdır. Global eğitim ekosistemini Education Graph ile birbirine bağlıyoruz[cite: 1].</p>
-    </footer>
+    </div>
 
 </body>
 </html>
