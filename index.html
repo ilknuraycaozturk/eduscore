@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <!-- Karakter hatalarını önleyen kritik satır -->
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,6 +27,12 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+        /* İngilizce başlıkların Türkçe tarayıcılarda büyük 'İ' olmasını engelleyen global CSS kuralı */
+        .en-text {
+            font-language-override: "ENG";
+            -webkit-font-variant-ligatures: no-common-ligatures;
+            font-variant-ligatures: no-common-ligatures;
+        }
     </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen flex flex-col justify-between">
@@ -51,7 +56,10 @@
             <!-- EduScor Başlık Grubu -->
             <div class="mb-8 select-none">
                 <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-brandRed mb-2">EduScor</h1>
-                <p class="text-xs md:text-sm text-brandGray tracking-[0.2em] font-medium uppercase">The Global Education Intelligence Platform</p>
+                <!-- lang="en" ve class="en-text" eklenerek büyük harf dönüşüm hatası engellendi -->
+                <p lang="en" class="en-text text-xs md:text-sm text-brandGray tracking-[0.2em] font-medium uppercase">
+                    The Global Education Intelligence Platform
+                </p>
             </div>
 
             <!-- Davet Cümlesi -->
