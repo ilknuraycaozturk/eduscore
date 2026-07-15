@@ -1,1 +1,67 @@
+name: MEB Okul Verisi Çekme (Aksiyon 1.1)
 
+on:
+  workflow_dispatch:
+    inputs:
+      il_kodu:
+        description: "İl plaka kodu (Ankara=6)"
+        required: true
+        default: "6"
+      ilce_kodu:
+        description: "İlçe kodu (Etimesgut=27)"
+        required: true
+        default: "27"
+      location_name:
+        description: "Supabase locations.name (örn. Bağlıca)"
+        required: true
+        default: "Bağlıca"
+      filter_mahalle:
+        description: "Adres filtresi (opsiyonel, boş bırakılırsa tüm ilçe alınır)"
+        required: false
+        default: "Bağlıca"
+      dry_run:
+        description: "true ise Supabase'e yazmaz, sadece önizler"
+        required: true
+        default: "true"
+
+jobs:
+  scrape-and-load:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: |
+          pip install -r scripts/requirements.txt
+          playwright install --with-deps chromium
+
+      - name: MEB verisini çek
+        run: |
+          python scripts/scrape_meb_schools.py \
+            --il-kodu "${{ inputs.il_kodu }}" \
+            --ilce-kodu "${{ inputs.ilce_kodu }}" \
+            --output data/meb_raw.json
+
+      - name: Supabase'e yükle
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ARGS="--input data/meb_raw.json --location-name \"${{ inputs.location_name }}\""
+          if [ -n "${{ inputs.filter_mahalle }}" ]; then
+            ARGS="$ARGS --filter-mahalle \"${{ inputs.filter_mahalle }}\""
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          eval python scripts/load_to_supabase.py $ARGS
+
+      - name: Ham veriyi artifact olarak kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: meb-raw-data
+          path: data/meb_raw.json
