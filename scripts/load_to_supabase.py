@@ -157,11 +157,27 @@ def main():
             geocode_query = f"{clean_name}, Etimesgut, Ankara, Türkiye"
             lat, lng = geocode(geocode_query)
             if not lat:
-                # Daha sade bir sorguyla tekrar dene (bazen okul türü ekleri karışıklık yaratıyor)
                 time.sleep(1)
                 fallback_query = f"{clean_name}, Ankara, Türkiye"
                 lat, lng = geocode(fallback_query)
+            is_approx_location = False
+            if not lat:
+                # Bina OSM'de haritalanmamış olabilir (küçük/yeni okullarda sık görülür).
+                # Son çare: mahalle merkezini kullan, yaklaşık konum olarak işaretle.
+                time.sleep(1)
+                mahalle_query = f"{args.location_name}, Etimesgut, Ankara, Türkiye"
+                lat, lng = geocode(mahalle_query)
+                is_approx_location = bool(lat)
             time.sleep(1)  # Nominatim kullanım politikası: en fazla 1 istek/saniye
+        else:
+            is_approx_location = False
+
+        description = DRAFT_NOTICE
+        if is_approx_location:
+            description += (
+                " Not: Bu kurumun tam adresi bulunamadığı için harita konumu "
+                f"'{args.location_name}' mahalle merkezine yaklaşık olarak yerleştirilmiştir."
+            )
 
         prepared.append({
             "name": r["raw_name"].strip(),
@@ -171,7 +187,7 @@ def main():
             "lng": lng,
             "is_public": True,  # bu uç nokta resmi MEB okulları için; özel kurumlar ayrı script (ookgm) ile işlenir
             "is_verified": False,
-            "description": DRAFT_NOTICE,
+            "description": description,
         })
 
     print(f"{len(prepared)} kayıt tipi tanınarak hazırlandı, {skipped} kayıt tipi tanınamadığı için atlandı.")
