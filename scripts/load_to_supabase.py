@@ -38,6 +38,29 @@ DRAFT_NOTICE = (
 )
 
 
+def normalize_name(name: str) -> str:
+    """MEB isimlerindeki 'İL - İLÇE - ' önekini ve 'Özel' gibi kelimeleri
+    temizleyerek karşılaştırılabilir bir isim üretir.
+    Örn: 'ANKARA - ETİMESGUT - Bağlıca İlkokulu' -> 'bağlıca ilkokulu'
+    """
+    n = name.strip().lower()
+    # "X - Y - Gerçek İsim" kalıbındaki il/ilçe önekini at
+    n = re.sub(r"^[^-]+-\s*[^-]+-\s*", "", n)
+    n = n.replace("özel", "").strip()
+    n = re.sub(r"\s+", " ", n)
+    return n
+
+
+def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
+    """Aynı okulun veritabanında zaten (farklı yazımla) var olup olmadığını kontrol eder."""
+    target = normalize_name(new_name)
+    for row in existing:
+        existing_norm = normalize_name(row["name"])
+        if target == existing_norm or target in existing_norm or existing_norm in target:
+            return row
+    return None
+
+
 def guess_type(name: str) -> str | None:
     lower = name.lower()
     for slug, keywords in TYPE_KEYWORDS:
@@ -59,6 +82,15 @@ def get_lookup(base_url: str, headers: dict, table: str) -> dict[str, str]:
     if table == "institution_types":
         return {r["slug"]: r["id"] for r in rows}
     return {r["name"]: r["id"] for r in rows}
+
+
+def get_existing_institutions(base_url: str, headers: dict, location_id: str) -> list[dict]:
+    resp = requests.get(
+        f"{base_url}/rest/v1/institutions?select=id,name,address,lat,lng&location_id=eq.{location_id}",
+        headers=headers,
+    )
+    resp.raise_for_status()
+    return resp.json()
 
 
 def main():
@@ -125,8 +157,38 @@ def main():
         print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
         sys.exit(1)
 
-    inserted = 0
+    existing = get_existing_institutions(supabase_url, headers, location_id)
+    print(f"Bu konumda {len(existing)} mevcut kurum bulundu, çakışma kontrolü yapılacak.")
+
+    inserted, enriched, skipped_dupe = 0, 0, 0
     for item in prepared:
+        match = find_existing_match(item["name"], existing)
+
+        if match:
+            # Aynı okul zaten var — sadece eksik alanları (adres/koordinat) doldur, yeni satır açma
+            needs_update = {}
+            if not match.get("address") and item["address"]:
+                needs_update["address"] = item["address"]
+            if not match.get("lat") and item["lat"]:
+                needs_update["lat"] = item["lat"]
+            if not match.get("lng") and item["lng"]:
+                needs_update["lng"] = item["lng"]
+
+            if needs_update:
+                resp = requests.patch(
+                    f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
+                    headers=headers, json=needs_update,
+                )
+                if resp.status_code in (200, 204):
+                    enriched += 1
+                    print(f"ZENGİNLEŞTİRİLDİ: '{item['name']}' -> mevcut kayıt '{match['name']}' güncellendi ({list(needs_update.keys())})")
+                else:
+                    print(f"UYARI: '{item['name']}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
+            else:
+                skipped_dupe += 1
+                print(f"ATLANDI (zaten var, eklenecek yeni bilgi yok): '{item['name']}' ~ '{match['name']}'")
+            continue
+
         type_id = type_lookup.get(item["institution_type_slug"])
         if not type_id:
             continue
@@ -148,7 +210,7 @@ def main():
         else:
             print(f"UYARI: '{item['name']}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
 
-    print(f"Tamamlandı: {inserted}/{len(prepared)} kurum Supabase'e eklendi.")
+    print(f"Tamamlandı: {inserted} yeni kurum eklendi, {enriched} mevcut kurum zenginleştirildi, {skipped_dupe} zaten var olduğu için atlandı.")
 
 
 if __name__ == "__main__":
