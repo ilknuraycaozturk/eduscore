@@ -63,17 +63,16 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
                 continue  # başlık satırı ya da boş satır
 
             name = cells[0].inner_text().strip()
+            # "Bilgi" sütunu adres/telefon içerebilir; boşsa satırın tamamından da bakılır
             info = cells[1].inner_text().strip() if len(cells) > 1 else ""
+            if not info:
+                info = row.inner_text().strip()
 
-            # Harita sütununda genelde lat/lng barındıran bir link/onclick olur
-            lat, lng = None, None
-            if len(cells) > 2:
-                map_link = cells[2].query_selector("a")
-                if map_link:
-                    href = map_link.get_attribute("href") or ""
-                    onclick = map_link.get_attribute("onclick") or ""
-                    coords_source = href + onclick
-                    lat, lng = _extract_coords(coords_source)
+            # Koordinatlar genelde 3. sütundaki (Harita) bir <a> etiketinin
+            # href/onclick içinde ya da data-* attribute'larında bulunur.
+            # Emin olmak için tüm satırın HTML'ini tarıyoruz.
+            row_html = row.inner_html()
+            lat, lng = _extract_coords(row_html)
 
             if not name:
                 continue
