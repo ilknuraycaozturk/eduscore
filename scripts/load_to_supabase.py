@@ -54,9 +54,12 @@ def geocode(query: str) -> tuple[float | None, float | None]:
         resp.raise_for_status()
         results = resp.json()
         if results:
-            return float(results[0]["lat"]), float(results[0]["lon"])
+            lat, lon = float(results[0]["lat"]), float(results[0]["lon"])
+            print(f"GEOCODE OK: '{query}' -> {lat}, {lon}")
+            return lat, lon
+        print(f"GEOCODE SONUÇ YOK: '{query}'")
     except Exception as e:
-        print(f"UYARI: geocoding başarısız '{query}' -> {e}")
+        print(f"GEOCODE HATA: '{query}' -> {e}")
     return None, None
 
 
@@ -150,8 +153,14 @@ def main():
         address = r.get("raw_info")
 
         if not lat or not lng:
-            geocode_query = f"{r['raw_name']}, {args.location_name}, Etimesgut, Ankara, Türkiye"
+            clean_name = normalize_name(r["raw_name"]).title()
+            geocode_query = f"{clean_name}, Etimesgut, Ankara, Türkiye"
             lat, lng = geocode(geocode_query)
+            if not lat:
+                # Daha sade bir sorguyla tekrar dene (bazen okul türü ekleri karışıklık yaratıyor)
+                time.sleep(1)
+                fallback_query = f"{clean_name}, Ankara, Türkiye"
+                lat, lng = geocode(fallback_query)
             time.sleep(1)  # Nominatim kullanım politikası: en fazla 1 istek/saniye
 
         prepared.append({
