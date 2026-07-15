@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -36,6 +37,27 @@ DRAFT_NOTICE = (
     "Bu sayfadaki bilgiler MEB'in kamuya açık kaynaklarından otomatik olarak "
     "derlenmiştir. Doğruluğunu kontrol ediniz."
 )
+
+
+def geocode(query: str) -> tuple[float | None, float | None]:
+    """OpenStreetMap Nominatim ile ücretsiz, açık kaynak geocoding.
+    Kullanım politikası gereği: 1 istek/saniye sınırı ve tanımlayıcı User-Agent zorunlu.
+    https://operations.osmfoundation.org/policies/nominatim/
+    """
+    try:
+        resp = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={"q": query, "format": "json", "limit": 1},
+            headers={"User-Agent": "EduScor-Pilot/1.0 (egitim-arama-platformu)"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        results = resp.json()
+        if results:
+            return float(results[0]["lat"]), float(results[0]["lon"])
+    except Exception as e:
+        print(f"UYARI: geocoding başarısız '{query}' -> {e}")
+    return None, None
 
 
 def normalize_name(name: str) -> str:
@@ -123,12 +145,21 @@ def main():
         if not type_slug:
             skipped += 1
             continue
+
+        lat, lng = r.get("lat"), r.get("lng")
+        address = r.get("raw_info")
+
+        if not lat or not lng:
+            geocode_query = f"{r['raw_name']}, {args.location_name}, Etimesgut, Ankara, Türkiye"
+            lat, lng = geocode(geocode_query)
+            time.sleep(1)  # Nominatim kullanım politikası: en fazla 1 istek/saniye
+
         prepared.append({
             "name": r["raw_name"].strip(),
             "institution_type_slug": type_slug,
-            "address": r.get("raw_info"),
-            "lat": r.get("lat"),
-            "lng": r.get("lng"),
+            "address": address,
+            "lat": lat,
+            "lng": lng,
             "is_public": True,  # bu uç nokta resmi MEB okulları için; özel kurumlar ayrı script (ookgm) ile işlenir
             "is_verified": False,
             "description": DRAFT_NOTICE,
