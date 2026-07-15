@@ -63,10 +63,12 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
                 continue  # başlık satırı ya da boş satır
 
             name = cells[0].inner_text().strip()
-            # "Bilgi" sütunu adres/telefon içerebilir; boşsa satırın tamamından da bakılır
+            # "Bilgi" sütunu adres/telefon içerebilir; boşsa ya da isimle
+            # aynıysa (gerçek adres değil, tekrar demektir) None bırakılır —
+            # gerçek adres/koordinat için load_to_supabase.py Nominatim ile geocoding yapar.
             info = cells[1].inner_text().strip() if len(cells) > 1 else ""
-            if not info:
-                info = row.inner_text().strip()
+            if not info or info == name:
+                info = None
 
             # Koordinatlar genelde 3. sütundaki (Harita) bir <a> etiketinin
             # href/onclick içinde ya da data-* attribute'larında bulunur.
