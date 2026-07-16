@@ -5,214 +5,265 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduScor | Global Education Explorer</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brandRed: '#D32F2F',
-                        brandDark: '#0F172A',
-                        brandGray: '#64748B',
-                        brandBg: '#F8FAFC'
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
                     }
                 }
             }
         }
     </script>
-    <!-- Google Fonts (Plus Jakarta Sans) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .en-text {
-            font-language-override: "ENG";
-            font-variant-ligatures: no-common-ligatures;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .en-text { font-language-override: "ENG"; font-variant-ligatures: no-common-ligatures; }
+        #map { height: 100%; width: 100%; }
     </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen flex flex-col">
 
     <!-- Üst Menü / Navbar -->
     <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center shrink-0">
-        <!-- Logo -->
         <div class="flex items-center gap-3">
             <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
             <span class="h-4 w-[1px] bg-slate-300 hidden sm:block"></span>
             <span class="text-[9px] text-brandGray tracking-widest uppercase hidden sm:block en-text">The Global Education Intelligence Platform</span>
         </div>
-        
-        <!-- Sağ Üst Profil / Giriş -->
         <div class="flex items-center gap-4 text-sm font-semibold">
             <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors text-xs sm:text-sm">🏠 Ana Sayfa</a>
-            <button class="px-4 py-1.5 bg-brandDark text-white hover:bg-slate-850 rounded-full transition-all text-xs">Giriş Yap</button>
+            <button class="px-4 py-1.5 bg-brandDark text-white hover:bg-brandRed rounded-full transition-all text-xs">Giriş Yap</button>
         </div>
     </header>
 
-    <!-- Ana Panel: Sol Liste & Sağ Harita -->
+    <!-- AI Yakında Bandı (sadece ?ai=1 ile gelindiğinde görünür) -->
+    <div id="aiBanner" class="hidden w-full bg-brandRed/10 border-b border-brandRed/20 px-6 py-2 text-center text-xs font-medium text-brandRedDark">
+        ✨ AI destekli kişiselleştirilmiş öneriler yakında geliyor — şimdilik arama sonuçlarınızı aşağıda listeliyoruz.
+    </div>
+
     <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
-        
-        <!-- SOL SÜTUN: Arama, Filtreler ve Sonuç Kartları (%60) -->
+
+        <!-- SOL SÜTUN -->
         <main class="w-full md:w-[60%] flex flex-col h-full overflow-y-auto p-4 md:p-6">
-            
-            <!-- Arama & Konum Güncelleme Barı -->
+
+            <!-- Arama Barı -->
             <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col sm:flex-row gap-2">
                 <div class="flex-grow flex items-center gap-2 px-2">
                     <span class="text-slate-400">🔍</span>
-                    <input type="text" value="Bağlıca, Ankara" class="w-full bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Konum veya okul arayın...">
+                    <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Konum veya okul arayın...">
                 </div>
-                <div class="h-full w-[1px] bg-slate-200 hidden sm:block"></div>
-                <div class="flex items-center gap-2 px-2">
-                    <span class="text-slate-400">🎒</span>
-                    <select class="bg-transparent outline-none text-xs font-semibold text-brandGray">
-                        <option>Tüm Seviyeler</option>
-                        <option>Kreş & Anaokulu</option>
-                        <option>İlkokul</option>
-                        <option>Ortaokul & Lise</option>
-                        <option>Kurs & Aktivite</option>
-                    </select>
-                </div>
-                <button class="bg-brandRed hover:bg-red-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shrink-0">
+                <button id="updateBtn" class="bg-brandRed hover:bg-brandRedDark text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shrink-0">
                     Güncelle
                 </button>
             </div>
 
-            <!-- Hızlı Filtre Butonları -->
-            <div class="flex flex-wrap gap-2 mb-6">
-                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">💰 Fiyat Aralığı</button>
-                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">⭐ EduScor Puanı (8.0+)</button>
-                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">📍 Mesafe (5 km)</button>
-                <button class="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold text-brandGray transition-all">⏱️ Yarım/Tam Gün</button>
-            </div>
+            <!-- Kategori Hızlı Filtreleri (gerçek kategorilerimiz) -->
+            <div id="categoryChips" class="flex flex-wrap gap-2 mb-6"></div>
 
             <!-- Sonuç Başlığı -->
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider">Arama Sonuçları (3 Örnek Kurum)</h2>
-                <span class="text-xs text-brandGray font-medium">Sıralama: <b>En Yüksek Puan</b></span>
+                <h2 id="resultsTitle" class="text-sm font-bold text-brandGray uppercase tracking-wider">Yükleniyor...</h2>
             </div>
 
             <!-- KURUM KARTLARI LİSTESİ -->
-            <div class="space-y-4">
-                
-                <!-- KART 1: Örnek Kolej (Bağlıca) -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
-                    <!-- Kurum Görseli / Logo Alanı -->
-                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
-                        <span class="text-2xl">🏫</span>
-                    </div>
-                    <!-- Kurum Detayları -->
-                    <div class="flex-grow flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-red-50 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">Kolej</span>
-                                <span class="text-xs text-brandGray">📍 Bağlıca, Ankara</span>
-                            </div>
-                            <h3 class="font-bold text-base text-brandDark hover:text-brandRed transition-colors cursor-pointer">Bağlıca Bilim & Teknoloji Koleji</h3>
-                            <p class="text-xs text-brandGray line-clamp-1 mt-1">İngilizce ağırlıklı STEM müfredatı ve modern robotik laboratuvarları.</p>
-                        </div>
-                        <!-- Özellik Etiketleri -->
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🤖 STEM</span>
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🇬🇧 Çift Dil</span>
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🚍 Servis</span>
-                        </div>
-                    </div>
-                    <!-- Puan & Detay -->
-                    <div class="flex sm:flex-col justify-between items-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                        <div class="text-right">
-                            <span class="text-[10px] text-brandGray font-semibold block">EduScor</span>
-                            <span class="text-lg font-extrabold text-brandRed">8.9<span class="text-xs font-normal text-brandGray">/10</span></span>
-                        </div>
-                        <button class="px-3 py-1.5 bg-brandDark hover:bg-brandRed text-white rounded-lg text-xs font-bold transition-all">İncele</button>
-                    </div>
-                </div>
+            <div id="resultsList" class="space-y-4"></div>
 
-                <!-- KART 2: Örnek Anaokulu (Bağlıca) -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
-                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
-                        <span class="text-2xl">🧸</span>
-                    </div>
-                    <div class="flex-grow flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-amber-50 text-amber-600 text-[10px] font-bold px-2 py-0.5 rounded">Anaokulu</span>
-                                <span class="text-xs text-brandGray">📍 Bağlıca, Ankara</span>
-                            </div>
-                            <h3 class="font-bold text-base text-brandDark hover:text-brandRed transition-colors cursor-pointer">Bağlıca Montessori Çocuk Yuvası</h3>
-                            <p class="text-xs text-brandGray line-clamp-1 mt-1">Doğa odaklı eğitim modeli ve bağımsız öğrenme metodolojisi.</p>
-                        </div>
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🌲 Montessori</span>
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🍎 Organik Beslenme</span>
-                        </div>
-                    </div>
-                    <div class="flex sm:flex-col justify-between items-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                        <div class="text-right">
-                            <span class="text-[10px] text-brandGray font-semibold block">EduScor</span>
-                            <span class="text-lg font-extrabold text-brandRed">9.2<span class="text-xs font-normal text-brandGray">/10</span></span>
-                        </div>
-                        <button class="px-3 py-1.5 bg-brandDark hover:bg-brandRed text-white rounded-lg text-xs font-bold transition-all">İncele</button>
-                    </div>
-                </div>
-
-                <!-- KART 3: Örnek Dil Kursu (Bağlıca) -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
-                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
-                        <span class="text-2xl">🇬🇧</span>
-                    </div>
-                    <div class="flex-grow flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">Dil Okulu</span>
-                                <span class="text-xs text-brandGray">📍 Bağlıca, Ankara</span>
-                            </div>
-                            <h3 class="font-bold text-base text-brandDark hover:text-brandRed transition-colors cursor-pointer">Bağlıca İngilizce Dil Akademisi</h3>
-                            <p class="text-xs text-brandGray line-clamp-1 mt-1">Yerli ve yabancı eğitmenler eşliğinde çocuk ve yetişkin grupları.</p>
-                        </div>
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🗣️ Konuşma Odaklı</span>
-                            <span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded-full font-medium">🎓 Sınav Hazırlık</span>
-                        </div>
-                    </div>
-                    <div class="flex sm:flex-col justify-between items-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                        <div class="text-right">
-                            <span class="text-[10px] text-brandGray font-semibold block">EduScor</span>
-                            <span class="text-lg font-extrabold text-brandRed">8.5<span class="text-xs font-normal text-brandGray">/10</span></span>
-                        </div>
-                        <button class="px-3 py-1.5 bg-brandDark hover:bg-brandRed text-white rounded-lg text-xs font-bold transition-all">İncele</button>
-                    </div>
-                </div>
-
+            <!-- Boş Sonuç Durumu -->
+            <div id="emptyState" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+                <p class="text-brandDark font-semibold mb-1">Bu kritere uygun kurum henüz veritabanımızda yok</p>
+                <p class="text-xs text-brandGray leading-relaxed">EduScor şu an Bağlıca (Ankara) pilot bölgesinde ve veritabanımız her hafta büyüyor. Başka bir kategori deneyebilir ya da daha sonra tekrar bakabilirsiniz.</p>
             </div>
 
         </main>
 
-        <!-- SAĞ SÜTUN: Harita Görsel Alanı (%40) -->
-        <aside class="hidden md:block w-[40%] h-full bg-slate-100 relative border-l border-slate-200">
-            <!-- Harita Yer Tutucu Arka Planı (Daha sonra harita API'si eklenecek) -->
-            <div class="absolute inset-0 bg-slate-200/60 flex flex-col items-center justify-center p-8 text-center select-none">
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md mb-4">
-                    <span class="text-3xl text-brandRed">📍</span>
-                </div>
-                <h3 class="font-bold text-brandDark text-sm mb-1">Eğitim Coğrafyası</h3>
-                <p class="text-xs text-brandGray max-w-xs leading-relaxed">Bağlıca bölgesindeki örnek veriler harita üzerinde işaretlenmiştir. Yakında canlı harita entegrasyonu aktif edilecektir.</p>
-                
-                <!-- Örnek Harita Pinleri (Dekoratif) -->
-                <div class="absolute top-[25%] left-[30%] bg-white shadow-md rounded-full px-2 py-1 text-[11px] font-bold border border-slate-200 flex items-center gap-1">
-                    <span>🏫</span> 8.9
-                </div>
-                <div class="absolute top-[50%] left-[60%] bg-white shadow-md rounded-full px-2 py-1 text-[11px] font-bold border border-slate-200 flex items-center gap-1">
-                    <span>🧸</span> 9.2
-                </div>
-                <div class="absolute top-[70%] left-[40%] bg-white shadow-md rounded-full px-2 py-1 text-[11px] font-bold border border-slate-200 flex items-center gap-1">
-                    <span>🇬🇧</span> 8.5
-                </div>
-            </div>
+        <!-- SAĞ SÜTUN: Gerçek Harita (Leaflet + OpenStreetMap) -->
+        <aside class="hidden md:block w-[40%] h-full relative border-l border-slate-200">
+            <div id="map"></div>
         </aside>
 
     </div>
 
+    <script>
+        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const CATEGORIES = [
+            ["okul-oncesi-k12", "Okul Öncesi & K-12"],
+            ["yuksekogretim", "Yükseköğretim"],
+            ["dil-egitimi", "Dil Eğitimi"],
+            ["online-uzaktan", "Online & Uzaktan"],
+            ["yetiskin-yasam-boyu", "Yetişkin & Yaşam Boyu"],
+            ["ileri-yas", "İleri Yaş"],
+            ["mesleki-teknik", "Mesleki & Teknik"],
+            ["burs-finansman", "Burs & Finansman"],
+            ["yaz-kisa-sureli", "Yaz & Kısa Süreli"],
+            ["sertifika-programlari", "Sertifika Programları"],
+            ["ozel-egitim-kapsayici", "Özel Eğitim & Kapsayıcı"],
+        ];
+
+        const params = new URLSearchParams(window.location.search);
+        const qParam = params.get('q') || '';
+        const categoryParam = params.get('category') || '';
+        const aiParam = params.get('ai');
+
+        document.getElementById('searchInput').value = qParam;
+        if (aiParam) document.getElementById('aiBanner').classList.remove('hidden');
+
+        // Kategori çipleri
+        const chipsEl = document.getElementById('categoryChips');
+        CATEGORIES.forEach(([slug, label]) => {
+            const isActive = slug === categoryParam;
+            const chip = document.createElement('a');
+            chip.href = `explorer.html?category=${slug}`;
+            chip.textContent = label;
+            chip.className = `px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                isActive
+                    ? 'bg-brandRed text-white border-brandRed'
+                    : 'bg-white border-slate-200 text-brandGray hover:border-brandRed hover:text-brandRed'
+            }`;
+            chipsEl.appendChild(chip);
+        });
+
+        document.getElementById('updateBtn').addEventListener('click', () => {
+            const q = document.getElementById('searchInput').value.trim();
+            const p = new URLSearchParams();
+            if (q) p.set('q', q);
+            if (categoryParam) p.set('category', categoryParam);
+            window.location.href = 'explorer.html' + (p.toString() ? '?' + p.toString() : '');
+        });
+        document.getElementById('searchInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('updateBtn').click();
+        });
+
+        let map, markersLayer;
+        function initMap() {
+            map = L.map('map').setView([39.90, 32.65], 13); // Bağlıca civarı
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> katkıda bulunanları',
+                maxZoom: 19
+            }).addTo(map);
+            markersLayer = L.layerGroup().addTo(map);
+        }
+
+        function renderCard(inst) {
+            const typeLabel = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
+            const locationLabel = inst.locations ? `${inst.locations.name}, Ankara` : 'Ankara';
+            const publicBadge = inst.is_public
+                ? '<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">Kamu</span>'
+                : '<span class="bg-purple-50 text-purple-600 text-[10px] font-bold px-2 py-0.5 rounded">Özel</span>';
+
+            const verifiedBadge = inst.is_verified
+                ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak Veri</span>';
+
+            const websiteLink = inst.website
+                ? `<a href="${inst.website}" target="_blank" rel="noopener" class="text-[11px] text-brandRed hover:underline font-medium">Web sitesi →</a>`
+                : '';
+
+            return `
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
+                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
+                        <span class="text-2xl">🏫</span>
+                    </div>
+                    <div class="flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <span class="bg-red-50 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">${typeLabel}</span>
+                                ${publicBadge}
+                                ${verifiedBadge}
+                                <span class="text-xs text-brandGray">📍 ${locationLabel}</span>
+                            </div>
+                            <h3 class="font-bold text-base text-brandDark">${inst.name}</h3>
+                            ${inst.address ? `<p class="text-xs text-brandGray mt-1">${inst.address}</p>` : ''}
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-[11px] text-brandGray italic">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</span>
+                            ${websiteLink}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadResults() {
+            let query = sb.from('institutions').select(`
+                id, name, is_public, is_verified, address, website, lat, lng,
+                institution_types ( name_tr ),
+                categories ( slug, name_tr ),
+                locations ( name )
+            `);
+
+            if (categoryParam) {
+                query = query.eq('categories.slug', categoryParam);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
+                console.error(error);
+                return;
+            }
+
+            let results = data || [];
+
+            // Kategori join filtresi PostgREST'te bazen gevşek çalışabildiği için client-side'da da doğruluyoruz
+            if (categoryParam) {
+                results = results.filter(r => r.categories && r.categories.slug === categoryParam);
+            }
+
+            if (qParam) {
+                const needle = qParam.toLocaleLowerCase('tr');
+                results = results.filter(r => {
+                    const haystack = [
+                        r.name,
+                        r.address,
+                        r.institution_types && r.institution_types.name_tr,
+                        r.categories && r.categories.name_tr,
+                        r.locations && r.locations.name,
+                    ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
+                    return haystack.includes(needle);
+                });
+            }
+
+            document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
+
+            const listEl = document.getElementById('resultsList');
+            const emptyEl = document.getElementById('emptyState');
+
+            if (results.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+            } else {
+                emptyEl.classList.add('hidden');
+                listEl.innerHTML = results.map(renderCard).join('');
+            }
+
+            // Harita pinleri
+            markersLayer.clearLayers();
+            const withCoords = results.filter(r => r.lat && r.lng);
+            withCoords.forEach(r => {
+                L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`);
+            });
+            if (withCoords.length > 0) {
+                const bounds = L.latLngBounds(withCoords.map(r => [r.lat, r.lng]));
+                map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            }
+        }
+
+        initMap();
+        loadResults();
+    </script>
 </body>
 </html>
