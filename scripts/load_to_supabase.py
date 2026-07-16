@@ -63,12 +63,22 @@ def geocode(query: str) -> tuple[float | None, float | None]:
     return None, None
 
 
+def turkish_lower(s: str) -> str:
+    """Python'ın standart .lower()'ı Türkçe 'İ' harfini 'i' + görünmez nokta
+    işaretine çevirir (i̇), düz 'i' harfine değil — bu da 'İlkokulu' ile
+    'ilkokulu' gibi görünüşte aynı olan metinlerin string olarak FARKLI
+    sayılmasına yol açar. Önce İ/I harflerini Türkçe kurallarına göre
+    manuel çevirip sonra lowercase yaparak bunu önlüyoruz.
+    """
+    return s.replace("İ", "i").replace("I", "ı").lower()
+
+
 def normalize_name(name: str) -> str:
     """MEB isimlerindeki 'İL - İLÇE - ' önekini ve 'Özel' gibi kelimeleri
     temizleyerek karşılaştırılabilir bir isim üretir.
     Örn: 'ANKARA - ETİMESGUT - Bağlıca İlkokulu' -> 'bağlıca ilkokulu'
     """
-    n = name.strip().lower()
+    n = turkish_lower(name.strip())
     # "X - Y - Gerçek İsim" kalıbındaki il/ilçe önekini at
     n = re.sub(r"^[^-]+-\s*[^-]+-\s*", "", n)
     n = n.replace("özel", "").strip()
