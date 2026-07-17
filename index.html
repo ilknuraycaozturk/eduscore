@@ -230,6 +230,7 @@
             flex-direction: column;
             align-items: flex-start;
             position: relative;
+            min-width: 0; /* İçeriğin taşmasını önlemek için */
         }
 
         .step-box:not(:last-child)::after {
@@ -267,6 +268,27 @@
             padding: 4px 0;
         }
 
+        /* Select alanında uzun metinlerin kırpılması için şık bir dokunuş */
+        .step-box select {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            padding-right: 15px;
+        }
+
+        .step-box select optgroup {
+            font-style: normal;
+            font-weight: 700;
+            color: var(--primary-red);
+            background-color: var(--pure-white);
+        }
+
+        .step-box select option {
+            font-weight: 500;
+            color: var(--dark-brown);
+            background-color: var(--pure-white);
+        }
+
         .step-box input::placeholder {
             color: var(--gray-text);
             font-weight: 500;
@@ -275,9 +297,6 @@
         .custom-select {
             position: relative;
             width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .location-btn {
@@ -493,19 +512,56 @@
         <!-- Arama Arayüzü -->
         <div class="search-container">
             <form action="#" method="GET" class="search-steps">
-                <!-- Adım 1: Eğitim Kademesi -->
+                
+                <!-- Adım 1: EduScor Kurumsal Eğitim Segmentleri -->
                 <div class="step-box">
                     <span class="step-label">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-                        Eğitim Tipi
+                        Kurum / Segment Tipi
                     </span>
                     <div class="custom-select">
-                        <select name="education_level" required>
-                            <option value="" disabled selected>Kademe Seçin</option>
-                            <option value="preschool">Okul Öncesi / Anaokulu</option>
-                            <option value="primary">İlkokul</option>
-                            <option value="middle">Ortaokul</option>
-                            <option value="high">Lise</option>
+                        <select name="institution_segment" id="institutionSegmentSelect" required>
+                            <option value="" disabled selected>Segment Seçin</option>
+                            
+                            <!-- K-12 & Temel Eğitim -->
+                            <optgroup label="Temel Eğitim Kademeleri">
+                                <option value="seg-preschool">01. Okul Öncesi / Anaokulu</option>
+                                <option value="seg-primary">02. İlkokul</option>
+                                <option value="seg-middle">03. Ortaokul</option>
+                                <option value="seg-high">04. Lise</option>
+                            </optgroup>
+
+                            <!-- Yükseköğretim & Alternatif Modeller -->
+                            <optgroup label="Yükseköğretim & Dijital">
+                                <option value="seg-university">05. Üniversiteler / Yükseköğretim Kurumları</option>
+                                <option value="seg-distance">06. Açık ve Uzaktan Eğitim Kurumları</option>
+                                <option value="seg-edtech">07. EdTech Platformları & Dijital İçerik Sağlayıcılar</option>
+                            </optgroup>
+
+                            <!-- Sınav, Dil ve Gelişim Odaklı -->
+                            <optgroup label="Özel Kurslar & Gelişim">
+                                <option value="seg-courses">08. Kurslar & Özel Ders Merkezleri</option>
+                                <option value="seg-language">09. Dil Okulları & Yurtdışı Eğitim</option>
+                                <option value="seg-driving">10. Sürücü, Ulaştırma & Havacılık Akademileri</option>
+                                <option value="seg-sports-arts">11. Spor, Sanat & Beceri Akademileri</option>
+                            </optgroup>
+
+                            <!-- Dönemsel & Özel İhtiyaçlar -->
+                            <optgroup label="Özel Alanlar & Kamplar">
+                                <option value="seg-special">12. Özel Gereksinim Eğitim Kurumları</option>
+                                <option value="seg-camps">13. Eğitim, Bilim & Gelişim Kampları</option>
+                                <option value="seg-summer">14. Yaz / Kış Okulları</option>
+                            </optgroup>
+
+                            <!-- Profesyonel, Kurumsal & Sektörel -->
+                            <optgroup label="Kurumsal, Profesyonel & Toplumsal">
+                                <option value="seg-corporate">15. Kurumsal Akademiler & Profesyonel Gelişim</option>
+                                <option value="seg-lifelong">16. Sürekli Eğitim & Yaşam Boyu Öğrenme</option>
+                                <option value="seg-vocational">17. Mesleki & Teknik Eğitim Merkezleri</option>
+                                <option value="seg-stk">18. STK, Vakıf & Topluluk Eğitimleri</option>
+                                <option value="seg-defense">19. Savunma, Güvenlik & Askeri Akademiler</option>
+                                <option value="seg-religious">20. Dini & İlahiyat Eğitim Kurumları</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>
@@ -563,7 +619,7 @@
             <div class="formula-card">
                 <div class="icon-wrapper">2</div>
                 <h4>Sosyal & Sosyo-Kültürel</h4>
-                <p>Sanat, spor ve kulüp faaliyetlerinin çeşitliliği ile öğrencilerin sosyal ekosisteme katılım endeksleri puanlanır.</p>
+                <p>Sanat, spor and kulüp faaliyetlerinin çeşitliliği ile öğrencilerin sosyal ekosisteme katılım endeksleri puanlanır.</p>
             </div>
             <div class="formula-card">
                 <div class="icon-wrapper">3</div>
