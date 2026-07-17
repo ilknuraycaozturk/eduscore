@@ -2,291 +2,896 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <!-- Mobil ekranlarda sayfanın doğru ölçeklenmesini sağlayan kritik viewport kodu -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduScor | Global Education Intelligence Platform</title>
+    <title>EduScor | The Global Education Intelligence Platform</title>
     
-    <!-- Google Fonts ve FontAwesome (Simge kütüphanesi) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts & FontAwesome Simgeleri -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Temel CSS Sıfırlama ve Font Ayarı */
+        /* Genel Tasarım ve Değişkenler */
+        :root {
+            --primary-red: #e11d48;
+            --primary-red-hover: #be123c;
+            --dark-blue: #0f172a;
+            --gray-text: #64748b;
+            --light-gray: #f8fafc;
+            --border-color: #e2e8f0;
+            --beige-bg: #fffbf7;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            background-color: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
+            background-color: var(--light-gray);
+            color: var(--dark-blue);
+            overflow-x: hidden;
         }
 
-        /* Navigasyon Alanı (Header) */
+        /* ------------------ HEADER / MENÜ ------------------ */
         header {
             background-color: #ffffff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1300px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
+            padding: 1.25rem 2rem;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2563eb;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-red);
             text-decoration: none;
         }
 
         .logo span {
-            color: #0f172a;
+            color: var(--dark-blue);
+        }
+
+        .logo-subtitle {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--gray-text);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            border-left: 1px solid var(--border-color);
+            padding-left: 1rem;
         }
 
         .nav-menu {
             display: flex;
             list-style: none;
+            align-items: center;
             gap: 2rem;
         }
 
         .nav-menu a {
             text-decoration: none;
-            color: #475569;
-            font-weight: 500;
+            color: var(--dark-blue);
+            font-weight: 600;
+            font-size: 0.9rem;
             transition: color 0.2s;
         }
 
-        .nav-menu a:hover {
-            color: #2563eb;
+        .nav-menu a:hover, .nav-menu a.active {
+            color: var(--primary-red);
         }
 
-        .btn-primary {
-            background-color: #2563eb;
-            color: #ffffff;
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.375rem;
+        .nav-menu a i {
+            color: var(--primary-red);
+            margin-right: 0.3rem;
+        }
+
+        .btn-login {
+            border: 1px solid var(--primary-red);
+            color: var(--primary-red);
+            padding: 0.6rem 1.5rem;
+            border-radius: 999px;
             text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.2s;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
 
-        .btn-primary:hover {
-            background-color: #1d4ed8;
-        }
-
-        /* Kahraman (Hero) Alanı */
-        .hero-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-
-        .hero-section h1 {
-            font-size: 2.75rem;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-
-        .hero-section p {
-            font-size: 1.125rem;
-            color: #64748b;
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
-        }
-
-        /* Arama ve Yapay Zeka Alanı */
-        .search-container {
-            max-width: 600px;
-            margin: 0 auto 3rem auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .search-box {
-            display: flex;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .search-box input {
-            flex: 1;
-            border: none;
-            padding: 1rem;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .search-box button {
-            background-color: #2563eb;
+        .btn-login:hover {
+            background-color: var(--primary-red);
             color: #ffffff;
-            border: none;
-            padding: 0 1.5rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.2s;
         }
 
-        .search-box button:hover {
-            background-color: #1d4ed8;
-        }
-
-        .ai-badge {
-            align-self: center;
-            background-color: #eff6ff;
-            color: #2563eb;
-            padding: 0.4rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Kategoriler (Hizmetler) */
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            max-width: 1200px;
+        /* ------------------ HERO SECTION ------------------ */
+        .hero {
+            max-width: 1300px;
             margin: 0 auto;
+            padding: 3rem 2rem 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .hero-content {
+            flex: 1.2;
+        }
+
+        .hero-title {
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title span {
+            color: var(--primary-red);
+        }
+
+        .hero-desc {
+            font-size: 1rem;
+            color: var(--gray-text);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 550px;
+        }
+
+        /* Güven rozetleri */
+        .badges-row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .badge-icon {
+            color: var(--primary-red);
+            font-size: 1.25rem;
+            background: #fff5f5;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .badge-text h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .badge-text p {
+            font-size: 0.75rem;
+            color: var(--gray-text);
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* ------------------ 3-ADIMLI ARAMA PANELİ ------------------ */
+        .search-panel-container {
+            max-width: 1300px;
+            margin: 0 auto 3rem auto;
             padding: 0 2rem;
         }
 
-        .category-card {
-            background: #ffffff;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e2e8f0;
-            text-align: left;
-            transition: transform 0.2s, box-shadow 0.2s;
+        .search-panel {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr auto;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .search-step {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .step-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--dark-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .step-title i {
+            color: var(--primary-red);
+        }
+
+        .custom-select {
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 0.85rem 1rem;
+            font-size: 0.9rem;
+            color: var(--gray-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             cursor: pointer;
         }
 
-        .category-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        /* Etiketler / Tagler */
+        .tag-list {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
         }
 
-        .category-card i {
-            font-size: 2rem;
-            color: #2563eb;
-            margin-bottom: 1rem;
+        .tag-item {
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--dark-blue);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
 
-        .category-card h3 {
-            font-size: 1.25rem;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
+        .tag-item:hover {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
         }
 
-        .category-card p {
-            color: #64748b;
-            font-size: 0.875rem;
+        .tag-label {
+            font-size: 0.75rem;
+            color: var(--gray-text);
+            margin-bottom: 0.25rem;
         }
 
-        /* MOBİL UYUMLULUK AYARLARI (RESPONSIVE) */
-        @media (max-width: 768px) {
-            .nav-container {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
+        /* Arama Butonları */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .btn-search {
+            background-color: var(--primary-red);
+            color: #ffffff;
+            border: none;
+            border-radius: 99px;
+            padding: 0.9rem 2.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-search:hover {
+            background-color: var(--primary-red-hover);
+        }
+
+        .btn-ai {
+            background: #ffffff;
+            color: var(--primary-red);
+            border: 1px solid var(--border-color);
+            border-radius: 99px;
+            padding: 0.8rem 2rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-ai:hover {
+            background-color: #fff5f5;
+            border-color: var(--primary-red);
+        }
+
+        .btn-ai i {
+            color: var(--primary-red);
+        }
+
+        /* Yardım Al Alt Satırı */
+        .search-bottom-link {
+            border-top: 1px dashed var(--border-color);
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            text-align: center;
+        }
+
+        .search-bottom-link a {
+            text-decoration: none;
+            color: var(--dark-blue);
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .search-bottom-link a span {
+            color: var(--primary-red);
+        }
+
+        /* ------------------ HIZLICA KEŞFEDİN VE POPÜLER ------------------ */
+        .discover-section {
+            max-width: 1300px;
+            margin: 0 auto 3rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .all-link {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* 8'li Izgara */
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .quick-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark-blue);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .quick-card:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .quick-card i {
+            font-size: 1.8rem;
+            color: var(--primary-red);
+        }
+
+        .quick-card h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .quick-card p {
+            font-size: 0.7rem;
+            color: var(--gray-text);
+        }
+
+        /* Popüler Aramalar */
+        .popular-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .popular-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: var(--dark-blue);
+            transition: all 0.2s;
+        }
+
+        .popular-card:hover {
+            border-color: var(--primary-red);
+        }
+
+        .popular-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .popular-icon {
+            font-size: 1.4rem;
+            padding: 0.6rem;
+            border-radius: 0.75rem;
+            background: var(--light-gray);
+        }
+
+        /* İkonların Özel Renkleri */
+        .icon-orange { color: #f97316; background: #fff7ed; }
+        .icon-green { color: #22c55e; background: #f0fdf4; }
+        .icon-blue { color: #3b82f6; background: #eff6ff; }
+        .icon-purple { color: #a855f7; background: #faf5ff; }
+
+        .popular-text h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .popular-text p {
+            font-size: 0.75rem;
+            color: var(--gray-text);
+        }
+
+        .popular-arrow {
+            color: var(--gray-text);
+            font-size: 0.85rem;
+        }
+
+        /* ------------------ ALT STATS BANDI ------------------ */
+        .stats-section-container {
+            max-width: 1300px;
+            margin: 0 auto 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .stats-band {
+            background-color: var(--beige-bg);
+            border: 1px solid #fed7aa;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1.5fr repeat(4, 1fr);
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .stats-info {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .stats-info i {
+            font-size: 1.8rem;
+            color: var(--primary-red);
+        }
+
+        .stats-info h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .stats-info p {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+            line-height: 1.4;
+        }
+
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            font-size: 1.8rem;
+            color: var(--primary-red);
+        }
+
+        .stat-number {
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-text);
+        }
+
+
+        /* ==================== MOBİL UYUMLULUK (MEDIA QUERIES) ==================== */
+        
+        @media (max-width: 1100px) {
+            .search-grid {
+                grid-template-columns: 1fr 1fr; /* Mobilde arama sütunlarını 2'ye düşür */
             }
+            .action-buttons {
+                grid-column: span 2;
+                flex-direction: row;
+            }
+            .btn-search, .btn-ai {
+                flex: 1;
+            }
+            .discover-section {
+                grid-template-columns: 1fr; /* Sütunları alt alta getir */
+            }
+            .stats-band {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stats-info {
+                grid-column: span 2;
+            }
+        }
 
-            .nav-menu {
-                gap: 1rem;
-                flex-wrap: wrap;
+        @media (max-width: 768px) {
+            .nav-menu, .btn-login {
+                display: none; /* Mobilde üst linkleri gizle, hamburger menüye al */
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .hero {
+                flex-direction: column-reverse; /* Mobilde görsel üstte, metin altta */
+                text-align: center;
+                padding-top: 1rem;
+            }
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            .hero-desc {
+                margin: 0 auto 1.5rem auto;
+            }
+            .badges-row {
                 justify-content: center;
             }
-
-            .hero-section {
-                padding: 2rem 1rem;
+            .search-grid {
+                grid-template-columns: 1fr; /* Mobilde tüm adımları tek sütun yap */
             }
-
-            .hero-section h1 {
-                font-size: 2rem;
+            .action-buttons {
+                grid-column: span 1;
+                flex-direction: column;
             }
-
-            .search-container {
-                padding: 0 1rem;
+            .quick-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2x4 yapısı */
             }
-
-            .categories-grid {
-                grid-template-columns: 1fr; /* Mobilde kartları tek sütun yap */
-                padding: 0 1rem;
+            .stats-band {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .stats-info {
+                grid-column: span 1;
+                text-align: center;
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Üst Menü -->
+    <!-- HEADER -->
     <header>
         <div class="nav-container">
-            <a href="index.html" class="logo">Edu<span>Scor</span></a>
+            <div class="logo-group">
+                <a href="#" class="logo">Edu<span>Scor</span></a>
+                <div class="logo-subtitle">The Global Education<br>Intelligence Platform</div>
+            </div>
             <ul class="nav-menu">
-                <li><a href="index.html">Ana Sayfa</a></li>
-                <li><a href="explorer.html">Keşfet</a></li>
-                <li><a href="#hakkimizda">Hakkımızda</a></li>
+                <li><a href="#" class="active">Keşfet</a></li>
+                <li><a href="#">Hakkımızda</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#"><i class="fa-regular fa-heart"></i>Favorilerim</a></li>
             </ul>
-            <a href="explorer.html" class="btn-primary">Aramaya Başla</a>
+            <a href="#" class="btn-login">Giriş Yap</a>
+            <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
         </div>
     </header>
 
-    <!-- Kahraman Alanı -->
-    <main>
-        <section class="hero-section">
-            <h1>The Global Education<br>Intelligence Platform</h1>
-            <p>Eğitim kurumlarını yapay zeka desteğiyle analiz edin, karşılaştırın ve size en uygun seçenekleri keşfedin.</p>
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Eğitimin her aşamasında<br><span>doğru seçimi</span> yapın.</h1>
+            <p class="hero-desc">Okulları, üniversiteleri, kursları, bursları, yaz okullarını ve diğer tüm eğitim fırsatlarını tek platformda keşfedin, karşılaştırın ve size en uygun kararı verin.</p>
             
-            <div class="search-container">
-                <div class="search-box">
-                    <input type="text" placeholder="Okul adı, konum veya kategori arayın...">
-                    <button><i class="fa-solid fa-magnifying-glass"></i> Ara</button>
+            <div class="badges-row">
+                <div class="badge-item">
+                    <div class="badge-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="badge-text">
+                        <h4>Güvenilir bilgiler</h4>
+                        <p>Doğrulanmış içerikler</p>
+                    </div>
                 </div>
-                <div class="ai-badge">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Keşfet Çok Yakında!
+                <div class="badge-item">
+                    <div class="badge-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                    <div class="badge-text">
+                        <h4>Tarafsız karşılaştırma</h4>
+                        <p>Objektif değerlendirme</p>
+                    </div>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-icon"><i class="fa-solid fa-heart"></i></div>
+                    <div class="badge-text">
+                        <h4>Size özel öneriler</h4>
+                        <p>İhtiyaçlarınıza uygun</p>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
+        
+        <div class="hero-image">
+            <!-- GÖRSEL BURAYA GELECEK: students.png ismini projedeki kendi görselinle değiştirebilirsin -->
+            <img src="students.png" alt="EduScor Students">
+        </div>
+    </section>
 
-        <!-- Kategoriler -->
-        <section class="categories-grid">
-            <div class="category-card" onclick="window.location.href='explorer.html'">
-                <i class="fa-solid fa-child"></i>
-                <h3>Okul Öncesi</h3>
-                <p>En yakın kreş ve anaokulu seçeneklerini harita üzerinde inceleyin.</p>
+    <!-- 3-ADIMLI ARAMA PANELİ -->
+    <section class="search-panel-container">
+        <div class="search-panel">
+            <div class="search-grid">
+                
+                <!-- Adım 1 -->
+                <div class="search-step">
+                    <div class="step-title"><i class="fa-solid fa-location-dot"></i> 1. Konum</div>
+                    <div class="custom-select">
+                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.5rem;"></i> Konumumu Kullan</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="tag-label">Son aramalarım</div>
+                    <div class="tag-list">
+                        <a href="#" class="tag-item">Bağlıca, Ankara</a>
+                        <a href="#" class="tag-item">Çayyolu, Ankara</a>
+                    </div>
+                </div>
+
+                <!-- Adım 2 -->
+                <div class="search-step">
+                    <div class="step-title"><i class="fa-solid fa-magnifying-glass"></i> 2. Ne arıyorsunuz?</div>
+                    <div class="custom-select">
+                        <span>Ne arıyorsunuz?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="tag-list" style="margin-top: 1.8rem;">
+                        <a href="#" class="tag-item"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> Okullar</a>
+                        <a href="#" class="tag-item"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> Kurslar</a>
+                        <a href="#" class="tag-item"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> Üniversiteler</a>
+                    </div>
+                </div>
+
+                <!-- Adım 3 -->
+                <div class="search-step">
+                    <div class="step-title"><i class="fa-solid fa-user"></i> 3. Yaş <span style="font-weight:400; color:var(--gray-text);">(İsteğe bağlı)</span></div>
+                    <div class="custom-select">
+                        <span>Yaş aralığı seçin veya doğum yılı girin</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="tag-list" style="margin-top: 1.8rem;">
+                        <a href="#" class="tag-item">0-2</a>
+                        <a href="#" class="tag-item">3-5</a>
+                        <a href="#" class="tag-item">6-10</a>
+                        <a href="#" class="tag-item">11-14</a>
+                        <a href="#" class="tag-item">15-18</a>
+                    </div>
+                </div>
+
+                <!-- Arama Butonları -->
+                <div class="action-buttons">
+                    <button class="btn-search"><i class="fa-solid fa-magnifying-glass"></i> Ara</button>
+                    <button class="btn-ai"><i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Öner</button>
+                </div>
+
             </div>
-            <div class="category-card" onclick="window.location.href='explorer.html'">
-                <i class="fa-solid fa-graduation-cap"></i>
-                <h3>Yükseköğretim</h3>
-                <p>Üniversiteleri, bölümleri ve kampüs olanaklarını karşılaştırın.</p>
+
+            <!-- Yardım Alt Satırı -->
+            <div class="search-bottom-link">
+                <a href="#"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> Nereden başlayacağınızı bilmiyor musunuz? <span>AI size yardımcı olsun.</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i></a>
             </div>
-            <div class="category-card" onclick="window.location.href='explorer.html'">
-                <i class="fa-solid fa-language"></i>
-                <h3>Dil Eğitimi</h3>
-                <p>Yurt içi ve yurt dışı en popüler dil okullarını listeleyin.</p>
+        </div>
+    </section>
+
+    <!-- HIZLICA KEŞFEDİN VE POPÜLER ARAMALAR -->
+    <section class="discover-section">
+        
+        <!-- Sol Bölüm: Hızlıca Keşfedin -->
+        <div>
+            <div class="section-title">Hızlıca Keşfedin</div>
+            <div class="quick-grid">
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-school"></i>
+                    <h4>Okullar</h4>
+                    <p>Kreş - Lise</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <h4>Üniversiteler</h4>
+                    <p>Lisans - Lisansüstü</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-book-open"></i>
+                    <h4>Kurslar</h4>
+                    <p>Tüm Kurslar</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-umbrella-beach"></i>
+                    <h4>Yaz Okulları</h4>
+                    <p>Programlar</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-language"></i>
+                    <h4>Dil Eğitimi</h4>
+                    <p>Dil Okulları</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-hands-holding-child"></i>
+                    <h4>Özel Eğitim</h4>
+                    <p>Özel Gereksinimler</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <h4>Yetişkin Eğitimi</h4>
+                    <p>Kariyer & Gelişim</p>
+                </a>
+                <a href="#" class="quick-card">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h4>Burslar</h4>
+                    <p>Burs Fırsatları</p>
+                </a>
             </div>
-        </section>
-    </main>
+        </div>
+
+        <!-- Sağ Bölüm: Popüler Aramalar -->
+        <div>
+            <div class="section-title">
+                Popüler Aramalar 
+                <a href="#" class="all-link">Tümünü Gör <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+            <div class="popular-list">
+                <a href="#" class="popular-card">
+                    <div class="popular-info">
+                        <div class="popular-icon icon-orange"><i class="fa-solid fa-child"></i></div>
+                        <div class="popular-text">
+                            <h4>4 yaş için anaokulu arıyorum</h4>
+                            <p>Bağlıca, Ankara</p>
+                        </div>
+                    </div>
+                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+                <a href="#" class="popular-card">
+                    <div class="popular-info">
+                        <div class="popular-icon icon-green"><i class="fa-solid fa-book-open"></i></div>
+                        <div class="popular-text">
+                            <h4>Lise için burs imkanları</h4>
+                            <p>Türkiye</p>
+                        </div>
+                    </div>
+                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+                <a href="#" class="popular-card">
+                    <div class="popular-info">
+                        <div class="popular-icon icon-blue"><i class="fa-solid fa-sun"></i></div>
+                        <div class="popular-text">
+                            <h4>Yaz okulu seçenekleri</h4>
+                            <p>İstanbul</p>
+                        </div>
+                    </div>
+                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+                <a href="#" class="popular-card">
+                    <div class="popular-info">
+                        <div class="popular-icon icon-purple"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <div class="popular-text">
+                            <h4>Özel gereksinimli çocuğum için eğitim</h4>
+                            <p>Online</p>
+                        </div>
+                    </div>
+                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ALT STATS BANDI -->
+    <section class="stats-section-container">
+        <div class="stats-band">
+            <div class="stats-info">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div>
+                    <h3>Güvenilir. Tarafsız. Şeffaf.</h3>
+                    <p>EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için çalışır.</p>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-school"></i></div>
+                <div>
+                    <div class="stat-number">5.800+</div>
+                    <div class="stat-label">Eğitim Kurumu</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <div class="stat-number">120K+</div>
+                    <div class="stat-label">Kullanıcı</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+                <div>
+                    <div class="stat-number">250K+</div>
+                    <div class="stat-label">Yorum & Değerlendirme</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-earth-americas"></i></div>
+                <div>
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Ülke</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </body>
 </html>
