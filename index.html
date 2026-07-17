@@ -167,10 +167,12 @@
             align-items: center;
             justify-content: space-between;
             gap: 2.5rem;
+            overflow: hidden;
         }
 
         .hero-content {
             flex: 1.2;
+            min-width: 0; /* Taşıp sığmayan metinlerin flex içinde sıkışmasını engeller */
         }
 
         .hero-badges {
@@ -252,11 +254,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            min-width: 0;
         }
 
         .hero-image img {
-            max-width: 100%;
+            width: 100%;
             height: auto;
+            max-height: 450px;
             border-radius: 1.5rem;
             object-fit: cover;
         }
@@ -704,7 +708,7 @@
             }
 
             .btn-login {
-                display: none; /* Mobilde menü içerisine veya hamburger yanına alınabilir, şimdilik gizli */
+                display: none;
             }
 
             .menu-toggle {
@@ -713,7 +717,7 @@
 
             /* Hero Bölümü */
             .hero {
-                flex-direction: column-reverse;
+                flex-direction: column-reverse; /* Mobilde görselin aşağıda kalmasını sağlar */
                 text-align: center;
                 padding: 1.5rem 1rem;
                 gap: 1.5rem;
@@ -723,6 +727,7 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                width: 100%;
             }
 
             .hero-badges {
@@ -742,11 +747,24 @@
             .pdf-card {
                 text-align: left;
                 align-items: flex-start;
+                width: 100%;
             }
 
+            /* Görselin Mobilde Taşmasını ve Bozunmasını Önleyen Kritik Düzeltmeler */
             .hero-image {
                 width: 100%;
-                max-width: 320px;
+                max-width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
+            .hero-image img {
+                width: 100%;
+                max-width: 320px; /* Telefonlarda görselin aşırı büyümesini engeller */
+                max-height: 220px; /* Dikey yüksekliği kısıtlayarak ekranı doldurmasını engeller */
+                aspect-ratio: 4 / 3; /* Sabit en-boy oranı vererek sağa sola yamulmayı önler */
+                border-radius: 1rem;
+                object-fit: cover;
             }
 
             /* Arama Paneli */
@@ -761,7 +779,7 @@
                 padding-top: 0.5rem;
             }
 
-            /* Hızlı Keşfet Grid 4'ten 2'ye Düşüyor */
+            /* Hızlı Keşfet Grid */
             .quick-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.5rem;
@@ -1294,7 +1312,6 @@
 
         menuToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
-            // İkonu kapat/aç olarak değiştirme
             const icon = menuToggle.querySelector('i');
             if (navMenu.classList.contains('active')) {
                 icon.className = 'fa-solid fa-xmark';
