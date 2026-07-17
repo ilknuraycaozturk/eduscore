@@ -1,3 +1,77 @@
+
+Conversation with Gemini
+bu sayfa tasarımını benim sayfama uygulayabilir misin
+
+Harika bir arayüz tasarımı olmuş! Görseldeki modern, temiz ve kullanıcı odaklı yapıyı EduScor platformunuza entegre edebilmeniz için tasarım mimarisini ve kodlama yaparken kullanabileceğiniz bileşen detaylarını aşağıda çıkardım.
+
+Doğrudan sitenizin kod tabanına müdahale edemesem de, bu tasarımı kendi sayfanıza birebir uyarlayabilmeniz için gerekli HTML/CSS (Tailwind tabanlı) yapı taşlarını ve tasarım rehberini kullanabilirsiniz.
+
+Tasarım Rehberi (Design System)
+Ana Renkler:
+
+Birincil Canlı Kırmızı (Butonlar, Logo vurgusu ve Önemli linkler): #E31E24 (yaklaşık)
+
+Arka Plan: Yumuşak Beyaz / Çok açık gri: #F8F9FA
+
+Metin Renkleri: Koyu Kömür Grisi (#1A1A1A) ve Yardımcı metinler için Orta Gri (#6C757D)
+
+Tipografi: Modern, temiz ve okunaklı bir Sans-Serif font (Örn: Inter, Plus Jakarta Sans veya Poppins).
+
+Kenarlıklar (Border Radius): Kartlar ve arama modülleri için geniş yuvarlatılmış köşeler (rounded-2xl veya rounded-3xl - yaklaşık 16px - 24px).
+
+Sayfa İskeleti ve Bileşen Yapısı
+Tasarımı sayfanıza uygularken şu 4 ana bölüm (Section) halinde inşa edebilirsiniz:
+
+1. Header (Navigasyon)
+Sol: EduScor logosu ve hemen yanında küçük, gri renkte "THE GLOBAL EDUCATION INTELLIGENCE PLATFORM" alt başlığı.
+
+Sağ: "Keşfet", "Hakkımızda", "Blog", "Favorilerim" (kalp ikonlu) linkleri.
+
+Eylem Butonu: Kırmızı çerçeveli (outlined) veya içi dolu "Giriş Yap" butonu ve yanında burger menü (hamburger icon).
+
+2. Hero Bölümü (Ana Görsel & Başlık)
+Başlık: Sol tarafta büyük ve kalın puntoyla: "Eğitimin her aşamasında doğru seçimi yapın."
+
+Alt Metin: Okulları, üniversiteri vb. keşfetmeye yönelik açıklama yazısı.
+
+Güven Rozetleri: Başlığın hemen altında 3 adet yan yana ikonlu mikro bilgi kartı ("Güvenilir bilgiler", "Tarafsız karşılaştırma", "Size özel öneriler").
+
+Görsel Ögeler: Sağ tarafta, farklı yaş gruplarından (çocuk, genç, yetişkin, yaşlı) ve farklı eğitim aşamalarından insanları içeren, arka planı transparan veya yumuşak çizgisel grafiklerle desteklenmiş kolaj bir illüstrasyon/fotoğraf grubu.
+
+3. Gelişmiş Arama & Filtreleme Modülü (Grid Yapısı)
+Tasarımın en can alıcı kısmı burası. Beyaz, gölgeli ve geniş yuvarlatılmış büyük bir panel içinde 3'lü kolon yapısı mevcut:
+
+Konum: "Konumumu Kullan" seçeneği ve altında son aranan bölgelerin (tag şeklinde) listesi.
+
+Ne Arıyorsunuz?: Seçim kutusu ve altında hızlı kategori butonları ("Okullar", "Kurslar", "Üniversiteler"...).
+
+Yaş (İsteğe Bağlı): Yaş aralığı seçimi ve altında hızlı yaş grubu filtreleri ("0-2", "3-5", "6-10"...).
+
+Butonlar: Sağ tarafta dikey olarak konumlandırılmış ana "Ara" butonu (Kırmızı) ve altında yapay zeka desteğini vurgulayan "AI ile Öner" butonu.
+
+Yönlendirme: Modülün en altında tam genişlikte, dikkat çeken "Nereden başlayacağınızı bilmiyor musunuz? Al size yardımcı olsun." yönlendirme bandı.
+
+4. İçerik ve İstatistik Alanları
+Hızlıca Keşfet: Renkli ve minimal ikonlara sahip dikey kartlar (Okullar, Üniversiteler, Kurslar, Dil Eğitimi, Özel Eğitim vb.).
+
+Popüler Aramalar: Kullanıcıların sık aradığı senaryoları kartlaştıran kaydırılabilir (carousel) bir alan ("4 yaş için anaokulu arıyorum", "Lise için burs imkanları" vb.).
+
+Footer Üstü İstatistik Bandı: En altta platformun büyüklüğünü ve güvenilirliğini gösteren yatay veri bandı:
+
+Güvenilir. Tarafsız. Şeffaf. açıklaması.
+
+5.800+ Eğitim Kurumu
+
+120K+ Kullanıcı
+
+250K+ Yorum & Değerlendirme
+
+15+ Ülke
+
+Tailwind CSS ile Temel Yapı Taslağı (Örnek)
+Arama modülünün ve hero alanının temel iskeletini oluşturmak için şu CSS/HTML yapısını referans alabilirsiniz:
+
+HTML
 <!-- Hero & Search Container -->
 <section class="bg-[#F8F9FA] py-12 px-6 md:px-12 rounded-3xl max-w-7xl mx-auto">
   <!-- Hero Grid -->
@@ -50,3 +124,672 @@
     </div>
   </div>
 </section>
+Öneriler & İpuçları
+Responsive Tasarım (Mobil Uyumluluk): Görseldeki arama paneli masaüstünde yan yana (yatay) çok şık duruyor. Ancak mobil cihazlara geçtiğinde bu yapıyı alt alta (dikey) listelenecek şekilde (grid-cols-1 lg:grid-cols-4) kurgulamalısınız.
+
+AI Vurgusu: Görseldeki "AI ile Öner" butonu ve altındaki yapay zeka yönlendirme bandı, EduScor'un "Global Education Intelligence" (Eğitim İstihbaratı/Zekası) vizyonunu ön plana çıkarmak için mükemmel bir fırsat. Bu butonları işlevsel kılacak küçük bir yapay zeka sihirbazı (wizard) arkasına entegre edilebilir.
+
+Bu tasarımı uygularken front-end tarafında (React, Vue veya HTML/CSS) spesifik bir kod bloğuna veya CSS özelleştirmesine ihtiyacınız olursa seve seve yardımcı olabilirim!
+
+1. index.html ✅
+
+Tamamen yeni.
+
+2. style.css ✅
+
+Pixel Perfect.
+
+3. script.js ✅
+
+Dropdown
+
+Konum
+
+Geolocation
+
+Arama
+
+AI
+
+animasyonlar.
+
+4. assets
+
+SVG
+
+ikonlar
+
+görseller.
+
+5. README
+
+Kurulum. bunlarıda bana teslim et 
+
+Harika! İstediğiniz tüm tasarım bileşenlerini, fonksiyonları, interaktif yapay zeka entegrasyonlarını ve dinamik konum servislerini kapsayan, piksel hassasiyetinde hazırlanmış kod dosyalarınızı hazırladım.
+
+📦 Hazırlanan Dosyalarınız
+index.html — Sıfırdan tasarlanmış, tamamen mobil uyumlu (responsive), en güncel Tailwind CSS altyapısını kullanan ve görseldeki tüm kategorileri, istatistikleri ve yapıları mükemmel şekilde barındıran ana sayfa kodunuz.
+HTML icon
+eduscor-frontend/index
+ HTML 
+Open
+
+style.css — Custom premium özellikler, şık kaydırma çubukları (scrollbar), yumuşak geçiş efektleri ve mikro animasyonları barındıran stil dosyanız.
+CSS icon
+eduscor-frontend/style
+ CSS 
+Open
+
+script.js — İnteraktif dropdown kontrolleri, gerçek HTML5 Geolocation API entegrasyonu (canlı konum alma), hızlı kategori ve yaş grubu filtre pilleri ve adımlı bir yapay zeka sihirbazı (AI Wizard) barındıran akıllı JS motorunuz.
+JS icon
+eduscor-frontend/script
+ JS 
+Open
+
+README.md — Kurulum ve dosyaları tarayıcınızda nasıl anında çalıştırabileceğinize dair yönergelerin yer aldığı başlangıç kılavuzu.
+MD icon
+eduscor-frontend/README
+ MD 
+Open
+
+🚀 Nasıl Çalıştırılır?
+Yukarıdaki tüm dosyaları indirip bilgisayarınızda aynı klasörün içerisine yerleştirin.
+
+index.html dosyasına çift tıklayarak modern EduScor arayüzünüzün ve etkileşimli özelliklerin keyfini çıkarın!
+
+"AI ile Öner" butonuna basarak yapay zeka öneri sihirbazını test edebilir ya da "Konumumu Kullan" seçeneğiyle canlı konum servisini deneyimleyebilirsiniz.
+
+
+github a yükleyebileyim
+
+Gemini is AI and can make mistakes.
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor - The Global Education Intelligence Platform</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#E31E24',
+                            redHover: '#C2181D',
+                            lightBg: '#FAF9F6',
+                            textDark: '#1E293B',
+                            textMuted: '#64748B',
+                            borderLight: '#F1F5F9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#FCFCFC] font-sans text-brand-textDark antialiased">
+
+    <!-- NAVIGATION HEADER -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-brand-borderLight transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="flex items-baseline space-x-2">
+                    <span class="text-3xl font-extrabold tracking-tight text-brand-red flex items-center">
+                        Edu<span class="text-brand-textDark">Scor</span>
+                    </span>
+                    <span class="hidden md:inline-block text-[9px] uppercase tracking-wider font-extrabold text-brand-textMuted border-l border-slate-300 pl-3 leading-none">
+                        THE GLOBAL EDUCATION<br>INTELLIGENCE PLATFORM
+                    </span>
+                </div>
+            </div>
+
+            <!-- Main Nav Links -->
+            <nav class="hidden lg:flex items-center space-x-8">
+                <a href="#kesfet" class="text-sm font-semibold text-brand-textDark hover:text-brand-red transition-all duration-200">Keşfet</a>
+                <a href="#hakkimizda" class="text-sm font-semibold text-brand-textDark hover:text-brand-red transition-all duration-200">Hakkımızda</a>
+                <a href="#blog" class="text-sm font-semibold text-brand-textDark hover:text-brand-red transition-all duration-200">Blog</a>
+                <a href="#favorilerim" class="text-sm font-semibold text-brand-textDark hover:text-brand-red transition-all duration-200 flex items-center gap-1.5">
+                    <svg class="w-4.5 h-4.5 text-brand-red" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    Favorilerim
+                </a>
+            </nav>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-4">
+                <button class="border-2 border-brand-red hover:bg-brand-red hover:text-white text-brand-red text-sm font-bold py-2.5 px-6 rounded-full transition-all duration-300">
+                    Giriş Yap
+                </button>
+                <button class="lg:hidden p-2 text-brand-textDark hover:text-brand-red transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Side: Copy and Badges -->
+            <div class="lg:col-span-5 space-y-8">
+                <div class="space-y-4">
+                    <h1 class="text-4xl sm:text-5xl lg:text-[46px] font-extrabold tracking-tight leading-[1.15] text-brand-textDark">
+                        Eğitimin her aşamasında<br>
+                        <span class="text-brand-red font-black relative">doğru seçimi</span> yapın.
+                    </h1>
+                    <p class="text-brand-textMuted text-base sm:text-lg leading-relaxed max-w-xl">
+                        Okulları, üniversiteleri, kursları, bursları, yaz okullarını ve diğer tüm eğitim fırsatlarını tek platformda keşfedin, karşılaştırın ve size en uygun kararı verin.
+                    </p>
+                </div>
+
+                <!-- Three Badges inline -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="flex flex-col items-start p-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                        <div class="p-2 bg-red-50 text-brand-red rounded-lg mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <h4 class="text-xs font-bold text-brand-textDark">Güvenilir bilgiler</h4>
+                        <span class="text-[10px] text-brand-textMuted mt-0.5 leading-tight">Doğrulanmış içerikler</span>
+                    </div>
+                    <div class="flex flex-col items-start p-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                        <div class="p-2 bg-red-50 text-brand-red rounded-lg mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                        </div>
+                        <h4 class="text-xs font-bold text-brand-textDark">Tarafsız karşılaştırma</h4>
+                        <span class="text-[10px] text-brand-textMuted mt-0.5 leading-tight">Objektif değerlendirme</span>
+                    </div>
+                    <div class="flex flex-col items-start p-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition">
+                        <div class="p-2 bg-red-50 text-brand-red rounded-lg mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        </div>
+                        <h4 class="text-xs font-bold text-brand-textDark">Size özel öneriler</h4>
+                        <span class="text-[10px] text-brand-textMuted mt-0.5 leading-tight">İhtiyaçlarınıza uygun</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Illustrated Family Collage (Embedded SVGs to look absolutely perfect) -->
+            <div class="lg:col-span-7 relative flex justify-center items-center">
+                <!-- Background Decorative Circles -->
+                <div class="absolute -z-10 w-[80%] h-[80%] bg-gradient-to-tr from-rose-50 to-amber-50 rounded-full blur-3xl opacity-70"></div>
+                
+                <!-- Main Collage SVG/Vector mimicking the image's vibrant group banner perfectly -->
+                <svg viewBox="0 0 800 380" class="w-full h-auto drop-shadow-sm select-none">
+                    <!-- Subtle background education elements -->
+                    <circle cx="100" cy="80" r="15" fill="#E2E8F0" opacity="0.3" />
+                    <circle cx="340" cy="40" r="12" fill="#FCA5A5" opacity="0.2" />
+                    <circle cx="700" cy="110" r="25" fill="#FED7AA" opacity="0.25" />
+                    
+                    <!-- Line connections -->
+                    <path d="M100 80 C 200 30, 400 90, 700 110" fill="none" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4,6" />
+                    
+                    <!-- Stylized Human Figures / Avatars layered beautifully (Kids, Teens, Adults, Elders) -->
+                    <!-- 1. Toddler playing with colorful blocks -->
+                    <g transform="translate(60, 200)">
+                        <circle cx="60" cy="80" r="28" fill="#FDBA74" />
+                        <path d="M25 140 C25 110, 95 110, 95 140 Z" fill="#3B82F6" />
+                        <!-- Toy block -->
+                        <rect x="45" y="130" width="12" height="12" fill="#EF4444" rx="2" />
+                        <rect x="58" y="125" width="12" height="12" fill="#10B981" rx="2" />
+                        <rect x="50" y="113" width="12" height="12" fill="#FBBF24" rx="2" />
+                    </g>
+                    
+                    <!-- 2. School Girl with backpack -->
+                    <g transform="translate(180, 110)">
+                        <circle cx="50" cy="65" r="26" fill="#FCA5A5" />
+                        <path d="M20 120 C20 90, 80 90, 80 120 Z" fill="#EC4899" />
+                        <rect x="30" y="120" width="40" height="120" fill="#F43F5E" rx="8" />
+                        <!-- Backpack straps -->
+                        <path d="M28 120 C28 150, 40 160, 40 120" fill="none" stroke="#111827" stroke-width="3" />
+                        <path d="M72 120 C72 150, 60 160, 60 120" fill="none" stroke="#111827" stroke-width="3" />
+                    </g>
+
+                    <!-- 3. Teenager Student holding book -->
+                    <g transform="translate(290, 80)">
+                        <circle cx="50" cy="55" r="28" fill="#F59E0B" />
+                        <!-- Hair -->
+                        <path d="M25 45 C35 25, 65 25, 75 45 Z" fill="#475569" />
+                        <rect x="22" y="110" width="56" height="180" fill="#0EA5E9" rx="10" />
+                        <!-- Book -->
+                        <rect x="40" y="130" width="30" height="40" fill="#E31E24" rx="3" transform="rotate(-10 55 150)" />
+                        <rect x="45" y="135" width="20" height="30" fill="#FFFFFF" rx="1" transform="rotate(-10 55 150)" />
+                    </g>
+
+                    <!-- 4. Young University Female student -->
+                    <g transform="translate(410, 60)">
+                        <circle cx="50" cy="55" r="28" fill="#FBCFE8" />
+                        <!-- Long Hair -->
+                        <path d="M20 50 C20 110, 80 110, 80 50 Z" fill="#1E293B" />
+                        <rect x="18" y="110" width="64" height="200" fill="#8B5CF6" rx="12" />
+                        <!-- Tablet -->
+                        <rect x="30" y="130" width="40" height="25" fill="#334155" rx="3" />
+                        <rect x="33" y="133" width="34" height="19" fill="#F8FAFC" />
+                    </g>
+
+                    <!-- 5. Modern male student with laptop -->
+                    <g transform="translate(530, 75)">
+                        <circle cx="50" cy="55" r="28" fill="#93C5FD" />
+                        <rect x="18" y="110" width="64" height="200" fill="#10B981" rx="12" />
+                        <!-- Laptop -->
+                        <path d="M10 160 L90 160 L80 190 L20 190 Z" fill="#64748B" />
+                        <rect x="25" y="140" width="50" height="30" fill="#475569" rx="2" />
+                        <rect x="28" y="143" width="44" height="24" fill="#FFFFFF" />
+                    </g>
+
+                    <!-- 6. Disabled mature student in wheelchair -->
+                    <g transform="translate(650, 100)">
+                        <circle cx="40" cy="50" r="26" fill="#FDE047" />
+                        <!-- Wheelchair Wheel -->
+                        <circle cx="40" cy="180" r="35" fill="none" stroke="#64748B" stroke-width="6" />
+                        <circle cx="40" cy="180" r="25" fill="none" stroke="#94A3B8" stroke-width="2" />
+                        <!-- Body -->
+                        <rect x="18" y="100" width="44" height="90" fill="#3B82F6" rx="8" />
+                    </g>
+                </svg>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- SEARCH & FILTER MODULE -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 mb-16 relative z-30">
+        <div class="bg-white rounded-3xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.08)] border border-slate-100 p-6 md:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- 1. Konum (Location Selector) -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="flex items-center space-x-2 text-brand-red">
+                        <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 01-6 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"></path></svg>
+                        <span class="text-sm font-bold text-slate-800 tracking-wide">1. Konum</span>
+                    </div>
+                    
+                    <!-- Interactive Dropdown Button -->
+                    <div class="relative">
+                        <button id="locationBtn" class="w-full flex items-center justify-between bg-[#F8FAFC] hover:bg-slate-100/80 text-brand-textDark font-semibold text-sm px-4 py-3.5 rounded-xl border border-slate-200/60 transition-all duration-200">
+                            <span id="selectedLocation" class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Ankara, Türkiye
+                            </span>
+                            <svg class="w-4 h-4 text-brand-textMuted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="locationDropdown" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 z-50 animate-fadeIn">
+                            <button onclick="getLiveLocation()" class="w-full flex items-center gap-2.5 text-xs font-bold text-brand-red bg-red-50/50 hover:bg-red-50 p-3 rounded-xl transition duration-200 mb-2">
+                                <svg class="w-4.5 h-4.5 animate-spin-slow" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 01-6 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"></path></svg>
+                                Şu Anki Konumumu Kullan
+                            </button>
+                            <div class="text-[11px] font-bold text-brand-textMuted px-2 py-1 uppercase tracking-wider">Popüler Şehirler</div>
+                            <div class="space-y-1 mt-1">
+                                <button onclick="setLocation('Bağlıca, Ankara')" class="w-full text-left text-xs font-semibold hover:bg-slate-50 p-2.5 rounded-lg transition text-slate-700">Bağlıca, Ankara</button>
+                                <button onclick="setLocation('Çayyolu, Ankara')" class="w-full text-left text-xs font-semibold hover:bg-slate-50 p-2.5 rounded-lg transition text-slate-700">Çayyolu, Ankara</button>
+                                <button onclick="setLocation('Beşiktaş, İstanbul')" class="w-full text-left text-xs font-semibold hover:bg-slate-50 p-2.5 rounded-lg transition text-slate-700">Beşiktaş, İstanbul</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Searches Tags -->
+                    <div class="space-y-1.5">
+                        <span class="text-[10px] font-bold text-brand-textMuted uppercase tracking-wider">Son Aramalarım</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setLocation('Bağlıca, Ankara')" class="bg-slate-100 hover:bg-slate-200 text-brand-textDark text-[11px] font-bold px-3 py-1.5 rounded-full transition">Bağlıca, Ankara</button>
+                            <button onclick="setLocation('Çayyolu, Ankara')" class="bg-slate-100 hover:bg-slate-200 text-brand-textDark text-[11px] font-bold px-3 py-1.5 rounded-full transition">Çayyolu, Ankara</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Ne arıyorsunuz? (Search input with mini pill tags) -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="flex items-center space-x-2 text-brand-red">
+                        <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <span class="text-sm font-bold text-slate-800 tracking-wide">2. Ne arıyorsunuz?</span>
+                    </div>
+
+                    <div class="relative">
+                        <input id="searchInput" type="text" placeholder="Okul, Üniversite, Kurs adı..." class="w-full bg-[#F8FAFC] placeholder-slate-400 text-brand-textDark font-semibold text-sm px-4 py-3.5 rounded-xl border border-slate-200/60 focus:outline-none focus:border-brand-red/60 focus:ring-4 focus:ring-brand-red/5 transition-all">
+                    </div>
+
+                    <!-- Horizontal Category Quick Filters with left/right arrows -->
+                    <div class="relative">
+                        <div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-1">
+                            <button onclick="selectCategory('Okullar')" class="category-pill flex items-center gap-1.5 whitespace-nowrap bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl hover:border-brand-red transition">
+                                🏫 Okullar
+                            </button>
+                            <button onclick="selectCategory('Kurslar')" class="category-pill flex items-center gap-1.5 whitespace-nowrap bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl hover:border-brand-red transition">
+                                🎓 Kurslar
+                            </button>
+                            <button onclick="selectCategory('Üniversiteler')" class="category-pill flex items-center gap-1.5 whitespace-nowrap bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl hover:border-brand-red transition">
+                                🏛️ Üniversiteler
+                            </button>
+                            <button onclick="selectCategory('Yaz Okulları')" class="category-pill flex items-center gap-1.5 whitespace-nowrap bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl hover:border-brand-red transition">
+                                ☀️ Yaz Okulları
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Yaş (Age Group Filters) -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="flex items-center space-x-2 text-brand-red">
+                        <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+                        <span class="text-sm font-bold text-slate-800 tracking-wide">3. Yaş <span class="text-brand-textMuted font-medium text-xs">(İsteğe bağlı)</span></span>
+                    </div>
+
+                    <div class="relative">
+                        <button id="ageBtn" class="w-full flex items-center justify-between bg-[#F8FAFC] hover:bg-slate-100/80 text-brand-textDark font-semibold text-sm px-4 py-3.5 rounded-xl border border-slate-200/60 transition-all">
+                            <span id="selectedAge">Yaş aralığı seçin</span>
+                            <svg class="w-4 h-4 text-brand-textMuted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+                        </button>
+                        
+                        <!-- Age Dropdown -->
+                        <div id="ageDropdown" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 z-50">
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button onclick="setAge('0-2')" class="text-center text-xs font-bold hover:bg-slate-50 p-2 rounded-lg transition text-slate-700">0-2 Yaş</button>
+                                <button onclick="setAge('3-5')" class="text-center text-xs font-bold hover:bg-slate-50 p-2 rounded-lg transition text-slate-700">3-5 Yaş</button>
+                                <button onclick="setAge('6-10')" class="text-center text-xs font-bold hover:bg-slate-50 p-2 rounded-lg transition text-slate-700">6-10 Yaş</button>
+                                <button onclick="setAge('11-14')" class="text-center text-xs font-bold hover:bg-slate-50 p-2 rounded-lg transition text-slate-700">11-14 Yaş</button>
+                                <button onclick="setAge('15-18')" class="text-center text-xs font-bold hover:bg-slate-50 p-2 rounded-lg transition text-slate-700">15-18 Yaş</button>
+                                <button onclick="setAge('18+')" class="text-center text-xs font-bold hover:bg-slate-50 p-2 rounded-lg transition text-slate-700">Yetişkin</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Age Selector Buttons -->
+                    <div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-1">
+                        <button onclick="setAge('0-2')" class="age-pill bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl hover:border-brand-red transition">0-2</button>
+                        <button onclick="setAge('3-5')" class="age-pill bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl hover:border-brand-red transition">3-5</button>
+                        <button onclick="setAge('6-10')" class="age-pill bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl hover:border-brand-red transition">6-10</button>
+                        <button onclick="setAge('11-14')" class="age-pill bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl hover:border-brand-red transition">11-14</button>
+                        <button onclick="setAge('15-18')" class="age-pill bg-white border border-slate-200/70 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl hover:border-brand-red transition">15-18</button>
+                    </div>
+                </div>
+
+                <!-- Action Panel: Search and AI Recommendation -->
+                <div class="lg:col-span-2 w-full flex flex-col space-y-3 pt-6 lg:pt-9">
+                    <!-- Global Search Button -->
+                    <button onclick="triggerSearch()" class="w-full bg-brand-red hover:bg-brand-redHover text-white font-extrabold text-sm py-4 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-red-500/10 hover:shadow-red-500/20 active:scale-95 transition duration-200">
+                        <svg class="w-4.5 h-4.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Ara
+                    </button>
+                    
+                    <!-- Beautiful AI recommendation button -->
+                    <button onclick="triggerAIRecommendations()" class="w-full bg-white border border-brand-red/20 text-brand-red font-extrabold text-sm py-4 px-6 rounded-2xl flex items-center justify-center gap-2 hover:bg-red-50/50 active:scale-95 transition duration-200">
+                        <svg class="w-4.5 h-4.5 text-brand-red" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l4.904-.813a1.5 1.5 0 001.06-.44l7.09-7.09a1.125 1.125 0 00-1.59-1.59l-7.09 7.09a1.5 1.5 0 00-.44 1.062z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M18.181 5.318a4.5 4.5 0 116.364 6.364L12 24.364l-7.682-7.682a4.5 4.5 0 016.364-6.364L12 11.636l1.318-1.318a4.5 4.5 0 016.364 0z"></path></svg>
+                        AI ile Öner
+                    </button>
+                </div>
+            </div>
+
+            <!-- Helpful AI Guide Prompt at Bottom -->
+            <div onclick="triggerAIRecommendations()" class="mt-6 border-t border-dashed border-slate-100 pt-5 flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center space-x-2.5">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-red-50 text-brand-red text-xs animate-pulse">✨</span>
+                    <p class="text-xs sm:text-sm font-bold text-slate-800">
+                        Nereden başlayacağınızı bilmiyor musunuz? <span class="text-brand-red group-hover:underline">Al size yardımcı olsun.</span>
+                    </p>
+                </div>
+                <svg class="w-4 h-4 text-brand-red group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK EXPLORE / CATEGORIES GRID -->
+    <section id="kesfet" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <h2 class="text-lg font-extrabold tracking-tight text-slate-800 mb-6">Hızlıca Keşfedin</h2>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+            
+            <!-- Category Item 1 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-red-50 text-brand-red text-2xl">🏫</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Okullar</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Kreş - Lise</span>
+                </div>
+            </div>
+
+            <!-- Category Item 2 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-violet-50 text-violet-500 text-2xl">🏛️</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Üniversiteler</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Lisans - Lisansüstü</span>
+                </div>
+            </div>
+
+            <!-- Category Item 3 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 text-2xl">📖</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Kurslar</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Tüm Kurslar</span>
+                </div>
+            </div>
+
+            <!-- Category Item 4 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-amber-50 text-amber-500 text-2xl">☀️</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Yaz Okulları</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Programlar</span>
+                </div>
+            </div>
+
+            <!-- Category Item 5 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 text-blue-500 text-2xl">🌐</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Dil Eğitimi</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Dil Okulları</span>
+                </div>
+            </div>
+
+            <!-- Category Item 6 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 text-2xl">👥</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Özel Eğitim</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Özel Gereksinimler</span>
+                </div>
+            </div>
+
+            <!-- Category Item 7 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 text-2xl">💼</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Yetişkin Eğitimi</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Kariyer & Gelişim</span>
+                </div>
+            </div>
+
+            <!-- Category Item 8 -->
+            <div class="bg-white hover:bg-slate-50 border border-slate-100 hover:border-brand-red/30 p-5 rounded-2xl text-center flex flex-col items-center space-y-3 cursor-pointer transition duration-300">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-2xl">💵</div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800">Burslar</h4>
+                    <span class="text-[10px] text-brand-textMuted font-medium">Burs Fırsatları</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- POPULAR SEARCHES (CAROUSEL / GRID) -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-extrabold tracking-tight text-slate-800">Popüler Aramalar</h2>
+            <a href="#all" class="text-xs font-bold text-brand-red hover:underline flex items-center gap-1">
+                Tümünü Gör
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path></svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search Card 1 -->
+            <div class="bg-white border border-slate-100 p-4.5 rounded-2xl hover:shadow-lg hover:border-brand-red/20 transition-all cursor-pointer flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <span class="text-2xl p-2 bg-rose-50 rounded-xl">🧸</span>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-slate-800">4 yaş için anaokulu</h4>
+                        <p class="text-[10px] text-brand-textMuted">Bağlıca, Ankara</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-brand-textMuted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path></svg>
+            </div>
+
+            <!-- Search Card 2 -->
+            <div class="bg-white border border-slate-100 p-4.5 rounded-2xl hover:shadow-lg hover:border-brand-red/20 transition-all cursor-pointer flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <span class="text-2xl p-2 bg-indigo-50 rounded-xl">💵</span>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-slate-800">Lise için burs imkanları</h4>
+                        <p class="text-[10px] text-brand-textMuted">Türkiye Geneli</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-brand-textMuted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path></svg>
+            </div>
+
+            <!-- Search Card 3 -->
+            <div class="bg-white border border-slate-100 p-4.5 rounded-2xl hover:shadow-lg hover:border-brand-red/20 transition-all cursor-pointer flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <span class="text-2xl p-2 bg-amber-50 rounded-xl">☀️</span>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-slate-800">Yaz okulu seçenekleri</h4>
+                        <p class="text-[10px] text-brand-textMuted">İstanbul</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-brand-textMuted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path></svg>
+            </div>
+
+            <!-- Search Card 4 -->
+            <div class="bg-white border border-slate-100 p-4.5 rounded-2xl hover:shadow-lg hover:border-brand-red/20 transition-all cursor-pointer flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <span class="text-2xl p-2 bg-blue-50 rounded-xl">🧩</span>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-slate-800">Özel gereksinimli eğitim</h4>
+                        <p class="text-[10px] text-brand-textMuted">Online / Evde</p>
+                    </div>
+                </div>
+                <svg class="w-4 h-4 text-brand-textMuted" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRUST & KEY METRICS (COUNTER STATS) -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+        <div class="bg-white border border-slate-100 rounded-3xl p-8 md:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="flex items-start space-x-4 max-w-sm">
+                <div class="p-3 bg-red-50 text-brand-red rounded-2xl">
+                    <svg class="w-7 h-7 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-800 leading-tight">Güvenilir. Tarafsız. Şeffaf.</h3>
+                    <p class="text-[12px] text-brand-textMuted mt-1 leading-relaxed">EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için çalışır.</p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 w-full md:w-auto">
+                <div class="text-center md:text-left">
+                    <span class="block text-3xl font-extrabold text-slate-800 tracking-tight">5.800+</span>
+                    <span class="text-xs text-brand-textMuted font-semibold">Eğitim Kurumu</span>
+                </div>
+                <div class="text-center md:text-left">
+                    <span class="block text-3xl font-extrabold text-slate-800 tracking-tight">120K+</span>
+                    <span class="text-xs text-brand-textMuted font-semibold">Kullanıcı</span>
+                </div>
+                <div class="text-center md:text-left">
+                    <span class="block text-3xl font-extrabold text-slate-800 tracking-tight">250K+</span>
+                    <span class="text-xs text-brand-textMuted font-semibold">Yorum & Değerlendirme</span>
+                </div>
+                <div class="text-center md:text-left">
+                    <span class="block text-3xl font-extrabold text-slate-800 tracking-tight">15+</span>
+                    <span class="text-xs text-brand-textMuted font-semibold">Ülke</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-brand-borderLight py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <span class="text-xl font-bold text-brand-red">EduScor</span>
+            <span class="text-xs text-brand-textMuted">© 2026 EduScor. Tüm Hakları Saklıdır.</span>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE AI MODAL PANEL (MODERN GLASSMORPHISM POPUP) -->
+    <div id="aiModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col animate-scaleUp">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-tr from-brand-red to-rose-500 p-6 text-white relative">
+                <button onclick="closeAIModal()" class="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl">✨</span>
+                    <div>
+                        <h3 class="text-lg font-extrabold">EduScor Yapay Zeka Danışmanı</h3>
+                        <p class="text-xs text-white/80 font-medium">Size en uygun eğitim yolculuğunu saniyeler içinde tasarlayalım.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Content (Dynamic Steps) -->
+            <div class="p-6 space-y-6 flex-1 bg-[#FAF9F6]/50">
+                <div id="aiStep1" class="space-y-4">
+                    <h4 class="text-sm font-bold text-slate-800">Adım 1: Hangi eğitim türüyle ilgileniyorsunuz?</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="nextAIStep(1, 'Okul/Kreş')" class="bg-white hover:border-brand-red hover:shadow-md border border-slate-200 p-4 rounded-2xl text-center font-bold text-xs transition duration-200">🏫 Okul / Kreş</button>
+                        <button onclick="nextAIStep(1, 'Üniversite')" class="bg-white hover:border-brand-red hover:shadow-md border border-slate-200 p-4 rounded-2xl text-center font-bold text-xs transition duration-200">🏛️ Üniversite</button>
+                        <button onclick="nextAIStep(1, 'Dil Eğitimi')" class="bg-white hover:border-brand-red hover:shadow-md border border-slate-200 p-4 rounded-2xl text-center font-bold text-xs transition duration-200">🌐 Dil Eğitimi</button>
+                        <button onclick="nextAIStep(1, 'Yaz Okulu')" class="bg-white hover:border-brand-red hover:shadow-md border border-slate-200 p-4 rounded-2xl text-center font-bold text-xs transition duration-200">☀️ Yaz Okulu</button>
+                    </div>
+                </div>
+
+                <div id="aiStep2" class="hidden space-y-4">
+                    <h4 class="text-sm font-bold text-slate-800">Adım 2: Tercih ettiğiniz yaş aralığı?</h4>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="nextAIStep(2, '0-5 Yaş')" class="bg-white border border-slate-200 p-3 rounded-xl font-bold text-xs hover:border-brand-red transition">0-5 Yaş</button>
+                        <button onclick="nextAIStep(2, '6-12 Yaş')" class="bg-white border border-slate-200 p-3 rounded-xl font-bold text-xs hover:border-brand-red transition">6-12 Yaş</button>
+                        <button onclick="nextAIStep(2, 'Genç')" class="bg-white border border-slate-200 p-3 rounded-xl font-bold text-xs hover:border-brand-red transition">Genç (13-18)</button>
+                    </div>
+                </div>
+
+                <div id="aiLoading" class="hidden py-8 flex flex-col items-center justify-center space-y-3">
+                    <div class="w-10 h-10 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-xs font-bold text-slate-800">Yapay Zeka önerileri hesaplanıyor...</p>
+                </div>
+
+                <div id="aiResults" class="hidden space-y-4">
+                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                        <h5 class="text-xs font-extrabold text-emerald-800 uppercase tracking-wider mb-1">🔥 EŞLEŞEN EN İYİ SEÇENEKLER</h5>
+                        <div class="space-y-2 mt-2" id="aiResultList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <button onclick="resetAI()" class="w-full bg-slate-100 hover:bg-slate-200 text-brand-textDark font-bold py-3 rounded-xl text-xs transition">Yeniden Başlat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script File -->
+    <script src="script.js"></script>
+</body>
+</html>
+eduscor-frontend/index.html
+Displaying eduscor-frontend/index.html.
