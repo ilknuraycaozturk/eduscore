@@ -2,389 +2,98 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduScor | Global Education Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#E8543A',
-                        brandRedDark: '#CC3F28',
-                        brandDark: '#241A16',
-                        brandGray: '#8A7A72',
-                        brandBg: '#FDF8F5'
-                    }
-                }
-            }
-        }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        #map { height: 100%; width: 100%; }
     </style>
 </head>
-<body class="bg-brandBg text-brandDark min-h-screen flex flex-col">
+<body class="bg-[#FDF8F5] text-[#241A16] min-h-screen flex flex-col overflow-hidden">
 
     <!-- Üst Menü -->
-    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center shrink-0">
-        <div class="flex items-center gap-3">
-            <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
-        </div>
-        <div class="flex items-center gap-4 text-sm font-semibold">
-            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors text-xs sm:text-sm">🏠 Ana Sayfa</a>
-            <button class="px-4 py-1.5 bg-brandDark text-white hover:bg-brandRed rounded-full transition-all text-xs">Giriş Yap</button>
-        </div>
+    <header class="w-full bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 z-10">
+        <span class="text-xl font-bold text-[#E8543A]">EduScor</span>
+        <a href="index.html" class="text-sm font-semibold text-[#8A7A72]">🏠 Ana Sayfa</a>
     </header>
 
-    <div id="aiBanner" class="hidden w-full bg-brandRed/10 border-b border-brandRed/20 px-6 py-2 text-center text-xs font-medium text-brandRedDark">
-        ✨ AI destekli kişiselleştirilmiş öneriler yakında geliyor — şimdilik arama sonuçlarınızı aşağıda listeliyoruz.
-    </div>
+    <!-- Ana İçerik Konteynırı -->
+    <div class="flex-grow flex w-full h-full relative overflow-hidden">
 
-    <div class="flex-grow flex flex-col md:flex-row overflow-hidden relative">
-
-        <!-- SOL SÜTUN -->
-        <main id="listContainer" class="w-full md:w-[60%] flex flex-col h-full overflow-y-auto p-4 md:p-6">
-
-            <!-- Arama + Yaş + Konum Barı -->
+        <!-- SOL SÜTUN (Liste) -->
+        <main id="listContainer" class="w-full md:w-[60%] h-full overflow-y-auto p-4 md:p-6 bg-[#FDF8F5]">
+            <!-- Arama Barı -->
             <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <div class="flex-grow flex items-center gap-2 px-2">
-                        <span class="text-slate-400">🔍</span>
-                        <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Okul, kurs, üniversite arayın...">
-                    </div>
-                    <div class="flex items-center gap-2 px-2 border-l border-slate-200">
-                        <span class="text-slate-400">🎂</span>
-                        <input type="number" id="ageInput" min="0" max="99" class="w-16 bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Yaş">
-                    </div>
-                    <button id="nearMeBtn" class="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 hover:border-brandRed hover:text-brandRed transition-all shrink-0">
-                        📍 Yakınımda
-                    </button>
-                    <button id="updateBtn" class="bg-brandRed hover:bg-brandRedDark text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shrink-0">
-                        Ara
-                    </button>
+                <div class="flex gap-2">
+                    <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm" placeholder="Kurum arayın...">
+                    <button id="updateBtn" class="bg-[#E8543A] text-white px-4 py-1.5 rounded-lg text-xs font-bold">Ara</button>
                 </div>
-                <div id="nearMeStatus" class="hidden text-[11px] text-brandGray px-2"></div>
             </div>
 
-            <!-- Kategori Hızlı Filtreleri -->
             <div id="categoryChips" class="flex flex-wrap gap-2 mb-6"></div>
-
-            <div class="flex justify-between items-center mb-4">
-                <h2 id="resultsTitle" class="text-sm font-bold text-brandGray uppercase tracking-wider">Yükleniyor...</h2>
-            </div>
-
+            <h2 id="resultsTitle" class="text-xs font-bold text-[#8A7A72] uppercase mb-4">Yükleniyor...</h2>
             <div id="resultsList" class="space-y-4"></div>
-
-            <!-- Boş Durum (Empty State) - Global Vizyona Göre Güncellendi -->
+            
             <div id="emptyState" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center">
-                <p class="text-brandDark font-semibold mb-1">Aradığınız kriterlere uygun kurum henüz bulunamadı</p>
-                <p class="text-xs text-brandGray leading-relaxed">EduScor veritabanı küresel ölçekte her gün genişlemeye devam ediyor. Farklı anahtar kelimelerle arama yapabilir veya filtrelerinizi esnetebilirsiniz.</p>
+                <p class="font-semibold">Sonuç bulunamadı</p>
+                <p class="text-xs text-[#8A7A72]">Veritabanımız küresel ölçekte genişliyor, lütfen tekrar deneyin.</p>
             </div>
-
         </main>
 
-        <!-- SAĞ SÜTUN: Harita (Mobil Uyumlu) -->
-        <aside id="mapContainer" class="hidden md:block w-full md:w-[40%] h-full relative border-l border-slate-200">
-            <div id="map"></div>
+        <!-- SAĞ SÜTUN (Harita) -->
+        <aside id="mapContainer" class="hidden md:flex w-[40%] h-full border-l border-slate-200 bg-white">
+            <div id="map" class="w-full h-full"></div>
         </aside>
 
     </div>
 
-    <!-- Mobil Görünüm Geçiş Butonu (Sadece mobilde altta sabit görünür) -->
-    <div class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999]">
-        <button id="toggleMobileView" onclick="toggleMobileMap()" class="bg-brandDark text-white px-5 py-3 rounded-full shadow-xl font-semibold flex items-center gap-2 border border-slate-700 active:scale-95 transition-transform text-sm whitespace-nowrap">
-            <span id="toggleMobileIcon">📍</span>
-            <span id="toggleMobileText">Haritayı Göster</span>
-        </button>
-    </div>
+    <!-- Mobil Buton -->
+    <button id="mobileToggleBtn" onclick="toggleMobileMap()" class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] bg-[#241A16] text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm">
+        📍 Haritayı Göster
+    </button>
 
     <script>
-        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+        let map, markersLayer, isMobileMap = false;
 
-        const CATEGORIES = [
-            ["okul-oncesi-k12", "Okul Öncesi & K-12"],
-            ["yuksekogretim", "Yükseköğretim"],
-            ["dil-egitimi", "Dil Eğitimi"],
-            ["online-uzaktan", "Online & Uzaktan"],
-            ["yetiskin-yasam-boyu", "Yetişkin & Yaşam Boyu"],
-            ["ileri-yas", "İleri Yaş"],
-            ["mesleki-teknik", "Mesleki & Teknik"],
-            ["burs-finansman", "Burs & Finansman"],
-            ["yaz-kisa-sureli", "Yaz & Kısa Süreli"],
-            ["sertifika-programlari", "Sertifika Programları"],
-            ["ozel-egitim-kapsayici", "Özel Eğitim & Kapsayıcı"],
-            ["sanat-spor-hobi", "Sanat, Spor & Hobi"],
-        ];
-
-        const params = new URLSearchParams(window.location.search);
-        const qParam = params.get('q') || '';
-        const categoryParam = params.get('category') || '';
-        const ageParam = params.get('age') ? parseInt(params.get('age')) : null;
-        const aiParam = params.get('ai');
-        let userLat = params.get('lat') ? parseFloat(params.get('lat')) : null;
-        let userLng = params.get('lng') ? parseFloat(params.get('lng')) : null;
-
-        document.getElementById('searchInput').value = qParam;
-        if (ageParam) document.getElementById('ageInput').value = ageParam;
-        if (aiParam) document.getElementById('aiBanner').classList.remove('hidden');
-
-        const chipsEl = document.getElementById('categoryChips');
-        CATEGORIES.forEach(([slug, label]) => {
-            const isActive = slug === categoryParam;
-            const chip = document.createElement('a');
-            const p = new URLSearchParams(window.location.search);
-            p.set('category', slug);
-            chip.href = `explorer.html?${p.toString()}`;
-            chip.textContent = label;
-            chip.className = `px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                isActive ? 'bg-brandRed text-white border-brandRed'
-                         : 'bg-white border-slate-200 text-brandGray hover:border-brandRed hover:text-brandRed'
-            }`;
-            chipsEl.appendChild(chip);
-        });
-
-        function buildUrl(extra) {
-            const p = new URLSearchParams();
-            const q = document.getElementById('searchInput').value.trim();
-            const age = document.getElementById('ageInput').value;
-            if (q) p.set('q', q);
-            if (categoryParam) p.set('category', categoryParam);
-            if (age) p.set('age', age);
-            Object.entries(extra || {}).forEach(([k, v]) => p.set(k, v));
-            return 'explorer.html' + (p.toString() ? '?' + p.toString() : '');
-        }
-
-        document.getElementById('updateBtn').addEventListener('click', () => { window.location.href = buildUrl(); });
-        document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('updateBtn').click(); });
-
-        document.getElementById('nearMeBtn').addEventListener('click', () => {
-            const statusEl = document.getElementById('nearMeStatus');
-            statusEl.classList.remove('hidden');
-            statusEl.textContent = 'Konumunuz alınıyor...';
-            if (!navigator.geolocation) {
-                statusEl.textContent = 'Tarayıcınız konum özelliğini desteklemiyor.';
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    window.location.href = buildUrl({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                },
-                () => {
-                    statusEl.textContent = 'Konum izni verilmedi — yakınımda araması için tarayıcı ayarlarından izin verebilirsiniz.';
-                }
-            );
-        });
-
-        // Haversine mesafe hesabı (km)
-        function distanceKm(lat1, lng1, lat2, lng2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLng = (lng2 - lng1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        }
-
-        let map, markersLayer;
         function initMap() {
             map = L.map('map').setView([39.90, 32.65], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> katkıda bulunanları',
-                maxZoom: 19
-            }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             markersLayer = L.layerGroup().addTo(map);
         }
 
-        function campusInfoLine(info) {
-            if (!info) return '';
-            const facts = [];
-            if (info.metrekare) facts.push(`📐 ${info.metrekare} m²`);
-            if (info.laboratuvar) facts.push('🔬 Laboratuvar');
-            if (info.kapali_spor_salonu) facts.push('🏀 Kapalı Spor Salonu');
-            if (info.kütüphane) facts.push('📚 Kütüphane');
-            if (info.yemekhane) facts.push('🍽️ Yemekhane');
-            if (!facts.length) return '';
-            return `<p class="text-[11px] text-brandGray mt-1">${facts.join(' · ')}</p>`;
-        }
-
-        function renderCard(inst) {
-            const typeLabel = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
-            const locationLabel = inst.locations ? `${inst.locations.name}, Ankara` : 'Ankara';
-            const publicBadge = inst.is_public
-                ? '<span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">🏛️ Kamu</span>'
-                : '<span class="bg-red-50 text-brandRedDark text-[10px] font-bold px-2 py-0.5 rounded">🎓 Özel</span>';
-            const verifiedBadge = inst.is_verified
-                ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
-                : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak Veri</span>';
-            const ageBadge = (inst.age_min != null && inst.age_max != null)
-                ? `<span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">🎂 ${inst.age_min}-${inst.age_max} yaş</span>`
-                : '';
-
-            const mapsUrl = inst.google_maps_url
-                ? inst.google_maps_url
-                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(inst.name + ' ' + (inst.address || 'Ankara'))}`;
-
-            const websiteLink = inst.website
-                ? `<a href="${inst.website}" target="_blank" rel="noopener" class="text-[11px] text-brandRed hover:underline font-medium">Web sitesi →</a>`
-                : '';
-
-            const classSizeLine = inst.class_size_avg
-                ? `<p class="text-[11px] text-brandGray mt-1">👥 Ortalama sınıf mevcudu: ${inst.class_size_avg}</p>` : '';
-
-            const successLine = inst.success_score
-                ? `<p class="text-[11px] font-semibold text-brandRedDark mt-1">🏆 Başarı Skoru: ${inst.success_score}${inst.success_score_note ? ` — ${inst.success_score_note}` : ''}</p>` : '';
-
-            const distanceLine = (userLat && userLng && inst.lat && inst.lng)
-                ? `<span class="text-xs text-brandGray">📏 ${distanceKm(userLat, userLng, inst.lat, inst.lng).toFixed(1)} km</span>` : '';
-
-            return `
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
-                    <div class="w-full sm:w-32 h-24 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60">
-                        <span class="text-2xl">🏫</span>
-                    </div>
-                    <div class="flex-grow flex flex-col justify-between">
-                        <div>
-                            <div class="flex flex-wrap items-center gap-2 mb-1">
-                                <span class="bg-red-50 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">${typeLabel}</span>
-                                ${publicBadge} ${verifiedBadge} ${ageBadge}
-                                <span class="text-xs text-brandGray">📍 ${locationLabel}</span>
-                                ${distanceLine}
-                            </div>
-                            <h3 class="font-bold text-base text-brandDark">${inst.name}</h3>
-                            ${inst.address ? `<p class="text-xs text-brandGray mt-1">${inst.address}</p>` : ''}
-                            ${classSizeLine}
-                            ${campusInfoLine(inst.campus_info)}
-                            ${successLine}
-                        </div>
-                        <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
-                            <span class="text-[11px] text-brandGray italic">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</span>
-                            <div class="flex items-center gap-3">
-                                <a href="${mapsUrl}" target="_blank" rel="noopener" class="text-[11px] text-brandGray hover:text-brandRed hover:underline font-medium">Google'da görüntüle →</a>
-                                ${websiteLink}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        function toggleMobileMap() {
+            const list = document.getElementById('listContainer');
+            const mapC = document.getElementById('mapContainer');
+            const btn = document.getElementById('mobileToggleBtn');
+            
+            isMobileMap = !isMobileMap;
+            if(isMobileMap) {
+                list.classList.add('hidden');
+                mapC.classList.remove('hidden');
+                mapC.style.display = 'block';
+                btn.textContent = '📋 Listeyi Göster';
+                map.invalidateSize();
+            } else {
+                list.classList.remove('hidden');
+                mapC.classList.add('hidden');
+                btn.textContent = '📍 Haritayı Göster';
+            }
         }
 
         async function loadResults() {
-            // 1. Sorguyu Sunucu Taraflı Başlat
-            let query = sb.from('institutions').select(`
-                id, name, is_public, is_verified, address, website, google_maps_url, lat, lng,
-                age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
-                institution_types ( name_tr ),
-                categories ( slug, name_tr ),
-                locations ( name )
-            `);
-
-            // 2. Yaş Filtresi (Sunucu Taraflı Optimizasyon)
-            if (ageParam !== null) {
-                query = query.or(`and(age_min.lte.${ageParam},age_max.gte.${ageParam}),and(age_min.is.null,age_max.is.null)`);
-            }
-
-            const { data, error } = await query;
-
-            if (error) {
-                document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
-                console.error(error);
-                return;
-            }
-
-            let results = data || [];
-
-            // 3. Kategori Filtresi (İstemci Taraflı Kontrol)
-            if (categoryParam) {
-                results = results.filter(r => r.categories && r.categories.slug === categoryParam);
-            }
-
-            // 4. Metin Araması (İstemci Taraflı Kontrol)
-            if (qParam) {
-                const needle = qParam.toLocaleLowerCase('tr');
-                results = results.filter(r => {
-                    const haystack = [
-                        r.name, r.address,
-                        r.institution_types && r.institution_types.name_tr,
-                        r.categories && r.categories.name_tr,
-                        r.locations && r.locations.name,
-                    ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
-                    return haystack.includes(needle);
-                });
-            }
-
-            // 5. Konum Sıralaması
-            if (userLat && userLng) {
-                results = results
-                    .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
-                    .sort((a, b) => a._dist - b._dist);
-                document.getElementById('nearMeStatus').classList.remove('hidden');
-                document.getElementById('nearMeStatus').textContent = '📍 Sonuçlar konumunuza yakınlığa göre sıralandı.';
-            }
-
-            // 6. DOM Elementlerini Güncelleme ve Render
-            document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
-
-            const listEl = document.getElementById('resultsList');
-            const emptyEl = document.getElementById('emptyState');
-
-            if (results.length === 0) {
-                listEl.innerHTML = '';
-                emptyEl.classList.remove('hidden');
-            } else {
-                emptyEl.classList.add('hidden');
-                listEl.innerHTML = results.map(renderCard).join('');
-            }
-
-            // 7. Harita İşaretçilerini Güncelleme
+            let query = sb.from('institutions').select(`*, institution_types(name_tr), categories(slug), locations(name)`);
+            const { data } = await query;
+            
+            document.getElementById('resultsTitle').textContent = `Bulunan: ${data?.length || 0}`;
+            document.getElementById('resultsList').innerHTML = data?.map(r => `<div class="bg-white p-4 rounded-xl border">${r.name}</div>`).join('') || '';
+            
             markersLayer.clearLayers();
-            const withCoords = results.filter(r => r.lat && r.lng);
-            withCoords.forEach(r => {
-                L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`);
-            });
-            if (userLat && userLng) {
-                L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 })
-                    .addTo(markersLayer).bindPopup('Konumunuz');
-            }
-            if (withCoords.length > 0) {
-                const boundsPoints = withCoords.map(r => [r.lat, r.lng]);
-                if (userLat && userLng) boundsPoints.push([userLat, userLng]);
-                map.fitBounds(L.latLngBounds(boundsPoints), { padding: [40, 40], maxZoom: 15 });
-            }
-        }
-
-        // Mobil Görünüm Geçiş Mekanizması
-        let isMobileMapVisible = false;
-        function toggleMobileMap() {
-            const mapContainer = document.getElementById('mapContainer');
-            const listContainer = document.getElementById('listContainer');
-            const btnText = document.getElementById('toggleMobileText');
-            const btnIcon = document.getElementById('toggleMobileIcon');
-
-            isMobileMapVisible = !isMobileMapVisible;
-
-            if (isMobileMapVisible) {
-                mapContainer.classList.remove('hidden');
-                listContainer.classList.add('hidden');
-                btnText.textContent = "Listeyi Göster";
-                btnIcon.textContent = "📋";
-                
-                setTimeout(() => {
-                    if (typeof map !== 'undefined') map.invalidateSize();
-                }, 100);
-            } else {
-                mapContainer.classList.add('hidden');
-                listContainer.classList.remove('hidden');
-                btnText.textContent = "Haritayı Göster";
-                btnIcon.textContent = "📍";
-            }
+            data?.forEach(r => { if(r.lat && r.lng) L.marker([r.lat, r.lng]).addTo(markersLayer); });
         }
 
         initMap();
