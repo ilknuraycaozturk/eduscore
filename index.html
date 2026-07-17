@@ -510,9 +510,8 @@
             border: 1px solid #fed7aa;
             border-radius: 1.5rem;
             padding: 2rem;
-            display: grid;
-            grid-template-columns: 1.5fr repeat(4, 1fr);
-            gap: 2rem;
+            display: flex;
+            justify-content: center;
             align-items: center;
         }
 
@@ -862,34 +861,9 @@
                     <p>EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için çalışır.</p>
                 </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-icon"><i class="fa-solid fa-school"></i></div>
-                <div>
-                    <div class="stat-number">5.800+</div>
-                    <div class="stat-label">Eğitim Kurumu</div>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                <div>
-                    <div class="stat-number">120K+</div>
-                    <div class="stat-label">Kullanıcı</div>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
-                <div>
-                    <div class="stat-number">250K+</div>
-                    <div class="stat-label">Yorum & Değerlendirme</div>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon"><i class="fa-solid fa-earth-americas"></i></div>
-                <div>
-                    <div class="stat-number">15+</div>
-                    <div class="stat-label">Ülke</div>
-                </div>
-            </div>
+            <!-- NOT: Gerçek kullanıcı/kurum/yorum sayıları büyüdükçe buraya
+                 Supabase'den canlı çekilen GERÇEK rakamlar eklenecek.
+                 Trust-First ilkemiz gereği sahte/uydurma rakam kullanılmıyor. -->
         </div>
     </section>
 
