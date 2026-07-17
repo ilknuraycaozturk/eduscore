@@ -27,18 +27,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .en-text { font-language-override: "ENG"; font-variant-ligatures: no-common-ligatures; }
         #map { height: 100%; width: 100%; }
     </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen flex flex-col">
 
-    <!-- Üst Menü / Navbar -->
+    <!-- Üst Menü -->
     <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center shrink-0">
         <div class="flex items-center gap-3">
             <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
-            <span class="h-4 w-[1px] bg-slate-300 hidden sm:block"></span>
-            <span class="text-[9px] text-brandGray tracking-widest uppercase hidden sm:block en-text">The Global Education Intelligence Platform</span>
         </div>
         <div class="flex items-center gap-4 text-sm font-semibold">
             <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors text-xs sm:text-sm">🏠 Ana Sayfa</a>
@@ -46,7 +43,6 @@
         </div>
     </header>
 
-    <!-- AI Yakında Bandı (sadece ?ai=1 ile gelindiğinde görünür) -->
     <div id="aiBanner" class="hidden w-full bg-brandRed/10 border-b border-brandRed/20 px-6 py-2 text-center text-xs font-medium text-brandRedDark">
         ✨ AI destekli kişiselleştirilmiş öneriler yakında geliyor — şimdilik arama sonuçlarınızı aşağıda listeliyoruz.
     </div>
@@ -56,37 +52,44 @@
         <!-- SOL SÜTUN -->
         <main class="w-full md:w-[60%] flex flex-col h-full overflow-y-auto p-4 md:p-6">
 
-            <!-- Arama Barı -->
-            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col sm:flex-row gap-2">
-                <div class="flex-grow flex items-center gap-2 px-2">
-                    <span class="text-slate-400">🔍</span>
-                    <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Konum veya okul arayın...">
+            <!-- Arama + Yaş + Konum Barı -->
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex-grow flex items-center gap-2 px-2">
+                        <span class="text-slate-400">🔍</span>
+                        <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Okul, kurs, üniversite arayın...">
+                    </div>
+                    <div class="flex items-center gap-2 px-2 border-l border-slate-200">
+                        <span class="text-slate-400">🎂</span>
+                        <input type="number" id="ageInput" min="0" max="99" class="w-16 bg-transparent outline-none text-sm font-medium text-brandDark" placeholder="Yaş">
+                    </div>
+                    <button id="nearMeBtn" class="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 hover:border-brandRed hover:text-brandRed transition-all shrink-0">
+                        📍 Yakınımda
+                    </button>
+                    <button id="updateBtn" class="bg-brandRed hover:bg-brandRedDark text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shrink-0">
+                        Ara
+                    </button>
                 </div>
-                <button id="updateBtn" class="bg-brandRed hover:bg-brandRedDark text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shrink-0">
-                    Güncelle
-                </button>
+                <div id="nearMeStatus" class="hidden text-[11px] text-brandGray px-2"></div>
             </div>
 
-            <!-- Kategori Hızlı Filtreleri (gerçek kategorilerimiz) -->
+            <!-- Kategori Hızlı Filtreleri -->
             <div id="categoryChips" class="flex flex-wrap gap-2 mb-6"></div>
 
-            <!-- Sonuç Başlığı -->
             <div class="flex justify-between items-center mb-4">
                 <h2 id="resultsTitle" class="text-sm font-bold text-brandGray uppercase tracking-wider">Yükleniyor...</h2>
             </div>
 
-            <!-- KURUM KARTLARI LİSTESİ -->
             <div id="resultsList" class="space-y-4"></div>
 
-            <!-- Boş Sonuç Durumu -->
             <div id="emptyState" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center">
                 <p class="text-brandDark font-semibold mb-1">Bu kritere uygun kurum henüz veritabanımızda yok</p>
-                <p class="text-xs text-brandGray leading-relaxed">EduScor şu an Bağlıca (Ankara) pilot bölgesinde ve veritabanımız her hafta büyüyor. Başka bir kategori deneyebilir ya da daha sonra tekrar bakabilirsiniz.</p>
+                <p class="text-xs text-brandGray leading-relaxed">EduScor şu an Bağlıca (Ankara) pilot bölgesinde ve veritabanımız her hafta büyüyor. Başka bir kriter deneyebilir ya da daha sonra tekrar bakabilirsiniz.</p>
             </div>
 
         </main>
 
-        <!-- SAĞ SÜTUN: Gerçek Harita (Leaflet + OpenStreetMap) -->
+        <!-- SAĞ SÜTUN: Harita -->
         <aside class="hidden md:block w-[40%] h-full relative border-l border-slate-200">
             <div id="map"></div>
         </aside>
@@ -110,45 +113,80 @@
             ["yaz-kisa-sureli", "Yaz & Kısa Süreli"],
             ["sertifika-programlari", "Sertifika Programları"],
             ["ozel-egitim-kapsayici", "Özel Eğitim & Kapsayıcı"],
+            ["sanat-spor-hobi", "Sanat, Spor & Hobi"],
         ];
 
         const params = new URLSearchParams(window.location.search);
         const qParam = params.get('q') || '';
         const categoryParam = params.get('category') || '';
+        const ageParam = params.get('age') ? parseInt(params.get('age')) : null;
         const aiParam = params.get('ai');
+        let userLat = params.get('lat') ? parseFloat(params.get('lat')) : null;
+        let userLng = params.get('lng') ? parseFloat(params.get('lng')) : null;
 
         document.getElementById('searchInput').value = qParam;
+        if (ageParam) document.getElementById('ageInput').value = ageParam;
         if (aiParam) document.getElementById('aiBanner').classList.remove('hidden');
 
-        // Kategori çipleri
         const chipsEl = document.getElementById('categoryChips');
         CATEGORIES.forEach(([slug, label]) => {
             const isActive = slug === categoryParam;
             const chip = document.createElement('a');
-            chip.href = `explorer.html?category=${slug}`;
+            const p = new URLSearchParams(window.location.search);
+            p.set('category', slug);
+            chip.href = `explorer.html?${p.toString()}`;
             chip.textContent = label;
             chip.className = `px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                isActive
-                    ? 'bg-brandRed text-white border-brandRed'
-                    : 'bg-white border-slate-200 text-brandGray hover:border-brandRed hover:text-brandRed'
+                isActive ? 'bg-brandRed text-white border-brandRed'
+                         : 'bg-white border-slate-200 text-brandGray hover:border-brandRed hover:text-brandRed'
             }`;
             chipsEl.appendChild(chip);
         });
 
-        document.getElementById('updateBtn').addEventListener('click', () => {
-            const q = document.getElementById('searchInput').value.trim();
+        function buildUrl(extra) {
             const p = new URLSearchParams();
+            const q = document.getElementById('searchInput').value.trim();
+            const age = document.getElementById('ageInput').value;
             if (q) p.set('q', q);
             if (categoryParam) p.set('category', categoryParam);
-            window.location.href = 'explorer.html' + (p.toString() ? '?' + p.toString() : '');
+            if (age) p.set('age', age);
+            Object.entries(extra || {}).forEach(([k, v]) => p.set(k, v));
+            return 'explorer.html' + (p.toString() ? '?' + p.toString() : '');
+        }
+
+        document.getElementById('updateBtn').addEventListener('click', () => { window.location.href = buildUrl(); });
+        document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('updateBtn').click(); });
+
+        document.getElementById('nearMeBtn').addEventListener('click', () => {
+            const statusEl = document.getElementById('nearMeStatus');
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = 'Konumunuz alınıyor...';
+            if (!navigator.geolocation) {
+                statusEl.textContent = 'Tarayıcınız konum özelliğini desteklemiyor.';
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    window.location.href = buildUrl({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                },
+                () => {
+                    statusEl.textContent = 'Konum izni verilmedi — yakınımda araması için tarayıcı ayarlarından izin verebilirsiniz.';
+                }
+            );
         });
-        document.getElementById('searchInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') document.getElementById('updateBtn').click();
-        });
+
+        // Haversine mesafe hesabı (km)
+        function distanceKm(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
 
         let map, markersLayer;
         function initMap() {
-            map = L.map('map').setView([39.90, 32.65], 13); // Bağlıca civarı
+            map = L.map('map').setView([39.90, 32.65], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> katkıda bulunanları',
                 maxZoom: 19
@@ -156,20 +194,47 @@
             markersLayer = L.layerGroup().addTo(map);
         }
 
+        function campusInfoLine(info) {
+            if (!info) return '';
+            const facts = [];
+            if (info.metrekare) facts.push(`📐 ${info.metrekare} m²`);
+            if (info.laboratuvar) facts.push('🔬 Laboratuvar');
+            if (info.kapali_spor_salonu) facts.push('🏀 Kapalı Spor Salonu');
+            if (info.kütüphane) facts.push('📚 Kütüphane');
+            if (info.yemekhane) facts.push('🍽️ Yemekhane');
+            if (!facts.length) return '';
+            return `<p class="text-[11px] text-brandGray mt-1">${facts.join(' · ')}</p>`;
+        }
+
         function renderCard(inst) {
             const typeLabel = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
             const locationLabel = inst.locations ? `${inst.locations.name}, Ankara` : 'Ankara';
             const publicBadge = inst.is_public
-                ? '<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">Kamu</span>'
-                : '<span class="bg-purple-50 text-purple-600 text-[10px] font-bold px-2 py-0.5 rounded">Özel</span>';
-
+                ? '<span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">🏛️ Kamu</span>'
+                : '<span class="bg-red-50 text-brandRedDark text-[10px] font-bold px-2 py-0.5 rounded">🎓 Özel</span>';
             const verifiedBadge = inst.is_verified
                 ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
                 : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak Veri</span>';
+            const ageBadge = (inst.age_min != null && inst.age_max != null)
+                ? `<span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">🎂 ${inst.age_min}-${inst.age_max} yaş</span>`
+                : '';
+
+            const mapsUrl = inst.google_maps_url
+                ? inst.google_maps_url
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(inst.name + ' ' + (inst.address || 'Ankara'))}`;
 
             const websiteLink = inst.website
                 ? `<a href="${inst.website}" target="_blank" rel="noopener" class="text-[11px] text-brandRed hover:underline font-medium">Web sitesi →</a>`
                 : '';
+
+            const classSizeLine = inst.class_size_avg
+                ? `<p class="text-[11px] text-brandGray mt-1">👥 Ortalama sınıf mevcudu: ${inst.class_size_avg}</p>` : '';
+
+            const successLine = inst.success_score
+                ? `<p class="text-[11px] font-semibold text-brandRedDark mt-1">🏆 Başarı Skoru: ${inst.success_score}${inst.success_score_note ? ` — ${inst.success_score_note}` : ''}</p>` : '';
+
+            const distanceLine = (userLat && userLng && inst.lat && inst.lng)
+                ? `<span class="text-xs text-brandGray">📏 ${distanceKm(userLat, userLng, inst.lat, inst.lng).toFixed(1)} km</span>` : '';
 
             return `
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 transition-all flex flex-col sm:flex-row gap-4">
@@ -180,16 +245,22 @@
                         <div>
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <span class="bg-red-50 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">${typeLabel}</span>
-                                ${publicBadge}
-                                ${verifiedBadge}
+                                ${publicBadge} ${verifiedBadge} ${ageBadge}
                                 <span class="text-xs text-brandGray">📍 ${locationLabel}</span>
+                                ${distanceLine}
                             </div>
                             <h3 class="font-bold text-base text-brandDark">${inst.name}</h3>
                             ${inst.address ? `<p class="text-xs text-brandGray mt-1">${inst.address}</p>` : ''}
+                            ${classSizeLine}
+                            ${campusInfoLine(inst.campus_info)}
+                            ${successLine}
                         </div>
-                        <div class="flex items-center justify-between mt-2">
+                        <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
                             <span class="text-[11px] text-brandGray italic">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</span>
-                            ${websiteLink}
+                            <div class="flex items-center gap-3">
+                                <a href="${mapsUrl}" target="_blank" rel="noopener" class="text-[11px] text-brandGray hover:text-brandRed hover:underline font-medium">Google'da görüntüle →</a>
+                                ${websiteLink}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -197,18 +268,13 @@
         }
 
         async function loadResults() {
-            let query = sb.from('institutions').select(`
-                id, name, is_public, is_verified, address, website, lat, lng,
+            const { data, error } = await sb.from('institutions').select(`
+                id, name, is_public, is_verified, address, website, google_maps_url, lat, lng,
+                age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
                 institution_types ( name_tr ),
                 categories ( slug, name_tr ),
                 locations ( name )
             `);
-
-            if (categoryParam) {
-                query = query.eq('categories.slug', categoryParam);
-            }
-
-            const { data, error } = await query;
 
             if (error) {
                 document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
@@ -218,23 +284,36 @@
 
             let results = data || [];
 
-            // Kategori join filtresi PostgREST'te bazen gevşek çalışabildiği için client-side'da da doğruluyoruz
             if (categoryParam) {
                 results = results.filter(r => r.categories && r.categories.slug === categoryParam);
+            }
+
+            if (ageParam !== null) {
+                results = results.filter(r =>
+                    (r.age_min == null && r.age_max == null) ||
+                    (r.age_min <= ageParam && ageParam <= r.age_max)
+                );
             }
 
             if (qParam) {
                 const needle = qParam.toLocaleLowerCase('tr');
                 results = results.filter(r => {
                     const haystack = [
-                        r.name,
-                        r.address,
+                        r.name, r.address,
                         r.institution_types && r.institution_types.name_tr,
                         r.categories && r.categories.name_tr,
                         r.locations && r.locations.name,
                     ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
                     return haystack.includes(needle);
                 });
+            }
+
+            if (userLat && userLng) {
+                results = results
+                    .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
+                    .sort((a, b) => a._dist - b._dist);
+                document.getElementById('nearMeStatus').classList.remove('hidden');
+                document.getElementById('nearMeStatus').textContent = '📍 Sonuçlar konumunuza yakınlığa göre sıralandı.';
             }
 
             document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
@@ -250,15 +329,19 @@
                 listEl.innerHTML = results.map(renderCard).join('');
             }
 
-            // Harita pinleri
             markersLayer.clearLayers();
             const withCoords = results.filter(r => r.lat && r.lng);
             withCoords.forEach(r => {
                 L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`);
             });
+            if (userLat && userLng) {
+                L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 })
+                    .addTo(markersLayer).bindPopup('Konumunuz');
+            }
             if (withCoords.length > 0) {
-                const bounds = L.latLngBounds(withCoords.map(r => [r.lat, r.lng]));
-                map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+                const boundsPoints = withCoords.map(r => [r.lat, r.lng]);
+                if (userLat && userLng) boundsPoints.push([userLat, userLng]);
+                map.fitBounds(L.latLngBounds(boundsPoints), { padding: [40, 40], maxZoom: 15 });
             }
         }
 
