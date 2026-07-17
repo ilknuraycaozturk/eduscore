@@ -1,202 +1,52 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduScor — Eğitimin her aşamasında doğru seçimi yapın</title>
-
-<!-- SEO -->
-<meta name="description" content="EduScor, okulları, üniversiteleri, kursları, bursları ve yaz okullarını tek platformda keşfetmenizi, karşılaştırmanızı ve size en uygun eğitim fırsatını bulmanızı sağlayan global eğitim zekası platformudur.">
-<meta name="keywords" content="eğitim, okul, üniversite, kurs, burs, yaz okulu, eğitim platformu, EduScor">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://ilknuraycaozturk.github.io/eduscore/">
-
-<!-- Open Graph (sosyal medya paylaşım önizlemesi) -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="EduScor — Eğitimin her aşamasında doğru seçimi yapın">
-<meta property="og:description" content="Okulları, üniversiteleri, kursları, bursları ve eğitim fırsatlarını tek platformda keşfedin ve karşılaştırın.">
-<meta property="og:url" content="https://ilknuraycaozturk.github.io/eduscore/">
-<meta property="og:locale" content="tr_TR">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div class="wrap">
-
-  <!-- HEADER -->
-  <header>
-    <div class="header-row">
-      <span class="logo">EduScor</span>
-      <div class="nav-right">
-        <a href="#" class="link-giris">Giriş</a>
-        <button type="button" class="lang-switch" id="langSwitch" aria-label="Dil seçimi">
-          <span class="lang-active">EN</span> / <span>TR</span>
-        </button>
-      </div>
+<!-- Hero & Search Container -->
+<section class="bg-[#F8F9FA] py-12 px-6 md:px-12 rounded-3xl max-w-7xl mx-auto">
+  <!-- Hero Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] leading-tight">
+        Eğitimin her aşamasında <span class="text-[#E31E24]">doğru seçimi</span> yapın.
+      </h1>
+      <p class="text-gray-600 mt-4 text-lg">
+        Okulları, üniversiteleri, kursları, bursları, yaz okullarını ve diğer tüm eğitim fırsatlarını tek platformda keşfedin...
+      </p>
+      <!-- Rozetler buraya gelecek -->
     </div>
-  </header>
+    <div class="relative">
+      <!-- Kolaj Görseli veya İllüstrasyon -->
+      <img src="hero-collage.png" alt="EduScor Education" class="w-full h-auto" />
+    </div>
+  </div>
 
-  <!-- HERO -->
-  <section class="hero-center">
-    <p class="eyebrow">The global education intelligence platform</p>
-    <h1>Eğitimin her aşamasında <span class="accent">doğru seçimi</span> yapın</h1>
-    <p class="hero-sub">Okulları, üniversiteleri, kursları, bursları ve eğitim fırsatlarını tek platformda keşfedin ve karşılaştırın.</p>
-
-    <!-- SEARCH ROW -->
-    <div class="search-row">
-
-      <div class="dropdown" data-dropdown="konum">
-        <div class="dropdown-trigger">
-          <i class="ti ti-map-pin"></i>
-          <input type="text" class="dt-input" placeholder="Konum" autocomplete="off">
-          <i class="ti ti-chevron-down chev"></i>
-        </div>
-        <div class="dropdown-panel">
-          <button type="button" class="dropdown-option" data-value="Konumumu Kullan"><i class="ti ti-current-location"></i> Konumumu Kullan</button>
-          <button type="button" class="dropdown-option" data-value="Bağlıca, Ankara">Bağlıca, Ankara</button>
-          <button type="button" class="dropdown-option" data-value="Çayyolu, Ankara">Çayyolu, Ankara</button>
-          <button type="button" class="dropdown-option" data-value="İstanbul">İstanbul</button>
-        </div>
-      </div>
-
-      <div class="dropdown dropdown-wide" data-dropdown="kategori">
-        <div class="dropdown-trigger">
-          <i class="ti ti-target-arrow"></i>
-          <input type="text" class="dt-input" placeholder="Ne Arıyorsunuz" autocomplete="off">
-          <i class="ti ti-chevron-down chev"></i>
-        </div>
-        <div class="dropdown-panel">
-          <button type="button" class="dropdown-option" data-value="Özel Okullar">Özel Okullar</button>
-          <button type="button" class="dropdown-option" data-value="Devlet Okulları">Devlet Okulları</button>
-          <button type="button" class="dropdown-option" data-value="Anaokulları">Anaokulları</button>
-          <button type="button" class="dropdown-option" data-value="İlkokullar">İlkokullar</button>
-          <button type="button" class="dropdown-option" data-value="Ortaokullar">Ortaokullar</button>
-          <button type="button" class="dropdown-option" data-value="Liseler">Liseler</button>
-          <button type="button" class="dropdown-option" data-value="Üniversiteler">Üniversiteler</button>
-          <button type="button" class="dropdown-option" data-value="Kurslar">Kurslar</button>
-          <button type="button" class="dropdown-option" data-value="Dil Kursları">Dil Kursları</button>
-          <button type="button" class="dropdown-option" data-value="Yaz Okulları">Yaz Okulları</button>
-          <button type="button" class="dropdown-option" data-value="Özel Eğitim">Özel Eğitim</button>
-          <button type="button" class="dropdown-option" data-value="Yetişkin Eğitimi">Yetişkin Eğitimi</button>
-          <button type="button" class="dropdown-option" data-value="Burslar">Burslar</button>
-        </div>
-      </div>
-
-      <div class="dropdown" data-dropdown="yas">
-        <div class="dropdown-trigger">
-          <i class="ti ti-baby-carriage"></i>
-          <input type="text" class="dt-input" placeholder="Yaş" autocomplete="off">
-          <i class="ti ti-chevron-down chev"></i>
-        </div>
-        <div class="dropdown-panel">
-          <button type="button" class="dropdown-option" data-value="0-2 yaş">0-2 yaş</button>
-          <button type="button" class="dropdown-option" data-value="3-5 yaş">3-5 yaş</button>
-          <button type="button" class="dropdown-option" data-value="6-10 yaş">6-10 yaş</button>
-          <button type="button" class="dropdown-option" data-value="11-14 yaş">11-14 yaş</button>
-          <button type="button" class="dropdown-option" data-value="15-18 yaş">15-18 yaş</button>
-          <button type="button" class="dropdown-option" data-value="19-25 yaş">19-25 yaş</button>
-          <button type="button" class="dropdown-option" data-value="26-40 yaş">26-40 yaş</button>
-          <button type="button" class="dropdown-option" data-value="41-60 yaş">41-60 yaş</button>
-          <button type="button" class="dropdown-option" data-value="60+ yaş">60+ yaş</button>
-        </div>
-      </div>
-
+  <!-- Gelişmiş Arama Paneli -->
+  <div class="bg-white shadow-xl rounded-3xl p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- 1. Konum -->
+    <div class="border-r border-gray-100 pr-4">
+      <label class="text-sm font-bold text-gray-700 block mb-2">1. Konum</label>
+      <select class="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-[#E31E24]">
+        <option>Konumumu Kullan</option>
+      </select>
+    </div>
+    
+    <!-- 2. Ne Arıyorsunuz -->
+    <div class="border-r border-gray-100 pr-4">
+      <label class="text-sm font-bold text-gray-700 block mb-2">2. Ne arıyorsunuz?</label>
+      <input type="text" placeholder="Ne arıyorsunuz?" class="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-[#E31E24]" />
+    </div>
+    
+    <!-- 3. Yaş -->
+    <div class="border-r border-gray-100 pr-4">
+      <label class="text-sm font-bold text-gray-700 block mb-2">3. Yaş (İsteğe bağlı)</label>
+      <input type="text" placeholder="Yaş aralığı seçin" class="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-[#E31E24]" />
     </div>
 
-    <!-- ACTION BUTTONS -->
-    <div class="action-row">
-      <button type="button" class="btn-search"><i class="ti ti-search"></i> Ara</button>
-      <button type="button" class="btn-ai"><i class="ti ti-sparkles"></i> AI ile Yardım Al</button>
+    <!-- Butonlar Grubu -->
+    <div class="flex flex-col justify-center gap-2">
+      <button class="bg-[#E31E24] text-white font-bold py-3 px-6 rounded-xl hover:bg-red-700 transition">
+        Ara
+      </button>
+      <button class="border border-gray-200 text-gray-700 font-bold py-2 px-6 rounded-xl hover:bg-gray-50 transition flex items-center justify-center gap-2">
+        <span>✨</span> AI ile Öner
+      </button>
     </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- HIZLI KEŞFET -->
-  <section class="quick-explore">
-    <h2>Hızlı Keşfet</h2>
-    <div class="quick-grid">
-      <a href="#" class="quick-item"><i class="ti ti-building"></i> Okullar</a>
-      <a href="#" class="quick-item"><i class="ti ti-school"></i> Üniversiteler</a>
-      <a href="#" class="quick-item"><i class="ti ti-book-2"></i> Kurslar</a>
-      <a href="#" class="quick-item"><i class="ti ti-world"></i> Dil Eğitimi</a>
-      <a href="#" class="quick-item"><i class="ti ti-tent"></i> Yaz Okulları</a>
-      <a href="#" class="quick-item"><i class="ti ti-wheelchair"></i> Özel Eğitim</a>
-      <a href="#" class="quick-item"><i class="ti ti-briefcase"></i> Yetişkin Eğitimi</a>
-      <a href="#" class="quick-item quick-all">Tüm Kategoriler <i class="ti ti-arrow-right"></i></a>
-    </div>
-  </section>
-
-  <!-- ÜRÜN GÖRSELİ YER TUTUCU -->
-  <section class="screenshot-slot">
-    <div class="screenshot-placeholder">
-      <i class="ti ti-photo"></i>
-      <div class="ph-title">Gerçek EduScor ekran görüntüsü</div>
-      <div class="ph-sub">(İnsan fotoğrafı yerine ürün mockup'ı buraya yerleştirilecek)</div>
-    </div>
-  </section>
-
-  <!-- POPULAR SEARCHES -->
-  <section class="popular">
-    <div class="section-head">
-      <h2>Popüler Aramalar</h2>
-      <a href="#" class="link">Tümünü Gör <i class="ti ti-chevron-right"></i></a>
-    </div>
-    <div class="pop-grid">
-      <a href="#" class="pop-card">
-        <div class="pop-icon"><i class="ti ti-baby-carriage"></i></div>
-        <div class="txt">4 yaş için anaokulu arıyorum</div>
-        <div class="loc">Bağlıca, Ankara <i class="ti ti-chevron-right"></i></div>
-      </a>
-      <a href="#" class="pop-card">
-        <div class="pop-icon"><i class="ti ti-book-2"></i></div>
-        <div class="txt">Lise için burs imkanları</div>
-        <div class="loc">Türkiye <i class="ti ti-chevron-right"></i></div>
-      </a>
-      <a href="#" class="pop-card">
-        <div class="pop-icon"><i class="ti ti-sun"></i></div>
-        <div class="txt">Yaz okulu seçenekleri</div>
-        <div class="loc">İstanbul <i class="ti ti-chevron-right"></i></div>
-      </a>
-      <a href="#" class="pop-card">
-        <div class="pop-icon"><i class="ti ti-heart-handshake"></i></div>
-        <div class="txt">Özel gereksinimli çocuğum için eğitim</div>
-        <div class="loc">Online <i class="ti ti-chevron-right"></i></div>
-      </a>
-      <a href="#" class="pop-card">
-        <div class="pop-icon"><i class="ti ti-world"></i></div>
-        <div class="txt">Yurt dışı üniversite programları</div>
-        <div class="loc">Tüm Aramalar <i class="ti ti-chevron-right"></i></div>
-      </a>
-    </div>
-  </section>
-
-  <!-- TRUST FOOTER -->
-  <section class="trust-footer">
-    <div class="tf-top">
-      <i class="ti ti-shield-check"></i>
-      <div>
-        <div class="t">Güvenilir. Tarafsız. Şeffaf.</div>
-        <div class="s">EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için çalışır. Eurodesk ve TOBB gibi kurumlarla iş birliği içinde doğrulanmış veriler sağlıyoruz.</div>
-      </div>
-    </div>
-    <div class="partners">
-      <div class="partner-chip">Eurodesk</div>
-      <div class="partner-chip">TOBB</div>
-      <div class="partner-chip">MEB Onaylı Veri Kaynakları</div>
-    </div>
-    <div class="stats-row">
-      <div class="stat"><i class="ti ti-building"></i><div><div class="n">5.800+</div><div class="l">Eğitim Kurumu</div></div></div>
-      <div class="stat"><i class="ti ti-users"></i><div><div class="n">120K+</div><div class="l">Kullanıcı</div></div></div>
-      <div class="stat"><i class="ti ti-star"></i><div><div class="n">250K+</div><div class="l">Yorum ve Değerlendirme</div></div></div>
-      <div class="stat"><i class="ti ti-world"></i><div><div class="n">15+</div><div class="l">Ülke</div></div></div>
-    </div>
-  </section>
-
-</div>
-
-<script src="script.js"></script>
-</body>
-</html>
+  </div>
+</section>
