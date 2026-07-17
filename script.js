@@ -1,4 +1,4 @@
-// EduScor — arama sihirbazı dropdown davranışları
+// EduScor — arama sihirbazı: yazılabilir combobox davranışı
 document.addEventListener('DOMContentLoaded', function () {
 
   var dropdowns = document.querySelectorAll('.dropdown');
@@ -10,37 +10,82 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   dropdowns.forEach(function (dropdown) {
-    var trigger = dropdown.querySelector('.dropdown-trigger');
-    var label = trigger.querySelector('.dt-label');
+    var input = dropdown.querySelector('.dt-input');
+    var chevron = dropdown.querySelector('.chev');
+    var panel = dropdown.querySelector('.dropdown-panel');
     var options = dropdown.querySelectorAll('.dropdown-option');
 
-    trigger.addEventListener('click', function (e) {
-      e.stopPropagation();
+    function openPanel() {
       var isOpen = dropdown.classList.contains('open');
       closeAll();
       if (!isOpen) dropdown.classList.add('open');
+    }
+
+    // Input'a tıklayınca veya odaklanınca paneli aç
+    input.addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeAll(dropdown);
+      dropdown.classList.add('open');
+    });
+    input.addEventListener('focus', function () {
+      closeAll(dropdown);
+      dropdown.classList.add('open');
     });
 
+    // Ok ikonuna tıklayınca aç/kapa
+    chevron.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openPanel();
+      if (dropdown.classList.contains('open')) input.focus();
+    });
+
+    // Yazarken seçenekleri filtrele (kelime bazlı, sıra önemsiz)
+    input.addEventListener('input', function () {
+      var tokens = input.value.trim().toLocaleLowerCase('tr').split(/\s+/).filter(Boolean);
+      options.forEach(function (opt) {
+        var text = opt.textContent.trim().toLocaleLowerCase('tr');
+        var match = tokens.length === 0 || tokens.every(function (t) {
+          return text.indexOf(t) !== -1;
+        });
+        opt.style.display = match ? '' : 'none';
+      });
+      if (!dropdown.classList.contains('open')) {
+        closeAll(dropdown);
+        dropdown.classList.add('open');
+      }
+    });
+
+    // Seçenek tıklanınca input'a yaz, paneli kapat
     options.forEach(function (opt) {
       opt.addEventListener('click', function () {
-        label.textContent = opt.dataset.value;
+        input.value = opt.dataset.value;
         dropdown.classList.remove('open');
       });
     });
+
+    // Panel içine tıklamanın dışarı tıklama sayılmaması için
+    panel.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
   });
 
-  // Dışarı tıklanınca tüm dropdown'ları kapat
+  // Dışarı tıklanınca tüm dropdown'ları kapat ve filtreleri sıfırla
   document.addEventListener('click', function () {
     closeAll();
+    dropdowns.forEach(function (dropdown) {
+      dropdown.querySelectorAll('.dropdown-option').forEach(function (opt) {
+        opt.style.display = '';
+      });
+    });
   });
 
   // Ara butonu — basit demo davranışı
   var searchBtn = document.querySelector('.btn-search');
   if (searchBtn) {
     searchBtn.addEventListener('click', function () {
-      var konum = document.querySelector('[data-dropdown="konum"] .dt-label').textContent;
-      var kategori = document.querySelector('[data-dropdown="kategori"] .dt-label').textContent;
-      var yas = document.querySelector('[data-dropdown="yas"] .dt-label').textContent;
+      var konum = document.querySelector('[data-dropdown="konum"] .dt-input').value;
+      var kategori = document.querySelector('[data-dropdown="kategori"] .dt-input').value;
+      var yas = document.querySelector('[data-dropdown="yas"] .dt-input').value;
       console.log('Arama yapılıyor:', { konum: konum, kategori: kategori, yas: yas });
       // TODO: gerçek arama/yönlendirme mantığı burada devreye girecek
     });
