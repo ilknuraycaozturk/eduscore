@@ -1,304 +1,275 @@
-:root{
-  --cream:#FAF7F1;
-  --card:#FFFFFF;
-  --ink:#1C1C1A;
-  --ink-soft:#6B6A64;
-  --ink-faint:#9A9990;
-  --red:#B9241F;
-  --red-dark:#8C1B17;
-  --navy:#241C38;
-  --line:#E7E2D6;
-  --line-strong:#D8D2C2;
-  --radius:14px;
+
+Conversation with Gemini
+bu sayfa tasarımını benim sayfama uygulayabilir misin
+
+Harika bir arayüz tasarımı olmuş! Görseldeki modern, temiz ve kullanıcı odaklı yapıyı EduScor platformunuza entegre edebilmeniz için tasarım mimarisini ve kodlama yaparken kullanabileceğiniz bileşen detaylarını aşağıda çıkardım.
+
+Doğrudan sitenizin kod tabanına müdahale edemesem de, bu tasarımı kendi sayfanıza birebir uyarlayabilmeniz için gerekli HTML/CSS (Tailwind tabanlı) yapı taşlarını ve tasarım rehberini kullanabilirsiniz.
+
+Tasarım Rehberi (Design System)
+Ana Renkler:
+
+Birincil Canlı Kırmızı (Butonlar, Logo vurgusu ve Önemli linkler): #E31E24 (yaklaşık)
+
+Arka Plan: Yumuşak Beyaz / Çok açık gri: #F8F9FA
+
+Metin Renkleri: Koyu Kömür Grisi (#1A1A1A) ve Yardımcı metinler için Orta Gri (#6C757D)
+
+Tipografi: Modern, temiz ve okunaklı bir Sans-Serif font (Örn: Inter, Plus Jakarta Sans veya Poppins).
+
+Kenarlıklar (Border Radius): Kartlar ve arama modülleri için geniş yuvarlatılmış köşeler (rounded-2xl veya rounded-3xl - yaklaşık 16px - 24px).
+
+Sayfa İskeleti ve Bileşen Yapısı
+Tasarımı sayfanıza uygularken şu 4 ana bölüm (Section) halinde inşa edebilirsiniz:
+
+1. Header (Navigasyon)
+Sol: EduScor logosu ve hemen yanında küçük, gri renkte "THE GLOBAL EDUCATION INTELLIGENCE PLATFORM" alt başlığı.
+
+Sağ: "Keşfet", "Hakkımızda", "Blog", "Favorilerim" (kalp ikonlu) linkleri.
+
+Eylem Butonu: Kırmızı çerçeveli (outlined) veya içi dolu "Giriş Yap" butonu ve yanında burger menü (hamburger icon).
+
+2. Hero Bölümü (Ana Görsel & Başlık)
+Başlık: Sol tarafta büyük ve kalın puntoyla: "Eğitimin her aşamasında doğru seçimi yapın."
+
+Alt Metin: Okulları, üniversiteri vb. keşfetmeye yönelik açıklama yazısı.
+
+Güven Rozetleri: Başlığın hemen altında 3 adet yan yana ikonlu mikro bilgi kartı ("Güvenilir bilgiler", "Tarafsız karşılaştırma", "Size özel öneriler").
+
+Görsel Ögeler: Sağ tarafta, farklı yaş gruplarından (çocuk, genç, yetişkin, yaşlı) ve farklı eğitim aşamalarından insanları içeren, arka planı transparan veya yumuşak çizgisel grafiklerle desteklenmiş kolaj bir illüstrasyon/fotoğraf grubu.
+
+3. Gelişmiş Arama & Filtreleme Modülü (Grid Yapısı)
+Tasarımın en can alıcı kısmı burası. Beyaz, gölgeli ve geniş yuvarlatılmış büyük bir panel içinde 3'lü kolon yapısı mevcut:
+
+Konum: "Konumumu Kullan" seçeneği ve altında son aranan bölgelerin (tag şeklinde) listesi.
+
+Ne Arıyorsunuz?: Seçim kutusu ve altında hızlı kategori butonları ("Okullar", "Kurslar", "Üniversiteler"...).
+
+Yaş (İsteğe Bağlı): Yaş aralığı seçimi ve altında hızlı yaş grubu filtreleri ("0-2", "3-5", "6-10"...).
+
+Butonlar: Sağ tarafta dikey olarak konumlandırılmış ana "Ara" butonu (Kırmızı) ve altında yapay zeka desteğini vurgulayan "AI ile Öner" butonu.
+
+Yönlendirme: Modülün en altında tam genişlikte, dikkat çeken "Nereden başlayacağınızı bilmiyor musunuz? Al size yardımcı olsun." yönlendirme bandı.
+
+4. İçerik ve İstatistik Alanları
+Hızlıca Keşfet: Renkli ve minimal ikonlara sahip dikey kartlar (Okullar, Üniversiteler, Kurslar, Dil Eğitimi, Özel Eğitim vb.).
+
+Popüler Aramalar: Kullanıcıların sık aradığı senaryoları kartlaştıran kaydırılabilir (carousel) bir alan ("4 yaş için anaokulu arıyorum", "Lise için burs imkanları" vb.).
+
+Footer Üstü İstatistik Bandı: En altta platformun büyüklüğünü ve güvenilirliğini gösteren yatay veri bandı:
+
+Güvenilir. Tarafsız. Şeffaf. açıklaması.
+
+5.800+ Eğitim Kurumu
+
+120K+ Kullanıcı
+
+250K+ Yorum & Değerlendirme
+
+15+ Ülke
+
+Tailwind CSS ile Temel Yapı Taslağı (Örnek)
+Arama modülünün ve hero alanının temel iskeletini oluşturmak için şu CSS/HTML yapısını referans alabilirsiniz:
+
+HTML
+<!-- Hero & Search Container -->
+<section class="bg-[#F8F9FA] py-12 px-6 md:px-12 rounded-3xl max-w-7xl mx-auto">
+  <!-- Hero Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] leading-tight">
+        Eğitimin her aşamasında <span class="text-[#E31E24]">doğru seçimi</span> yapın.
+      </h1>
+      <p class="text-gray-600 mt-4 text-lg">
+        Okulları, üniversiteleri, kursları, bursları, yaz okullarını ve diğer tüm eğitim fırsatlarını tek platformda keşfedin...
+      </p>
+      <!-- Rozetler buraya gelecek -->
+    </div>
+    <div class="relative">
+      <!-- Kolaj Görseli veya İllüstrasyon -->
+      <img src="hero-collage.png" alt="EduScor Education" class="w-full h-auto" />
+    </div>
+  </div>
+
+  <!-- Gelişmiş Arama Paneli -->
+  <div class="bg-white shadow-xl rounded-3xl p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- 1. Konum -->
+    <div class="border-r border-gray-100 pr-4">
+      <label class="text-sm font-bold text-gray-700 block mb-2">1. Konum</label>
+      <select class="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-[#E31E24]">
+        <option>Konumumu Kullan</option>
+      </select>
+    </div>
+    
+    <!-- 2. Ne Arıyorsunuz -->
+    <div class="border-r border-gray-100 pr-4">
+      <label class="text-sm font-bold text-gray-700 block mb-2">2. Ne arıyorsunuz?</label>
+      <input type="text" placeholder="Ne arıyorsunuz?" class="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-[#E31E24]" />
+    </div>
+    
+    <!-- 3. Yaş -->
+    <div class="border-r border-gray-100 pr-4">
+      <label class="text-sm font-bold text-gray-700 block mb-2">3. Yaş (İsteğe bağlı)</label>
+      <input type="text" placeholder="Yaş aralığı seçin" class="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-[#E31E24]" />
+    </div>
+
+    <!-- Butonlar Grubu -->
+    <div class="flex flex-col justify-center gap-2">
+      <button class="bg-[#E31E24] text-white font-bold py-3 px-6 rounded-xl hover:bg-red-700 transition">
+        Ara
+      </button>
+      <button class="border border-gray-200 text-gray-700 font-bold py-2 px-6 rounded-xl hover:bg-gray-50 transition flex items-center justify-center gap-2">
+        <span>✨</span> AI ile Öner
+      </button>
+    </div>
+  </div>
+</section>
+Öneriler & İpuçları
+Responsive Tasarım (Mobil Uyumluluk): Görseldeki arama paneli masaüstünde yan yana (yatay) çok şık duruyor. Ancak mobil cihazlara geçtiğinde bu yapıyı alt alta (dikey) listelenecek şekilde (grid-cols-1 lg:grid-cols-4) kurgulamalısınız.
+
+AI Vurgusu: Görseldeki "AI ile Öner" butonu ve altındaki yapay zeka yönlendirme bandı, EduScor'un "Global Education Intelligence" (Eğitim İstihbaratı/Zekası) vizyonunu ön plana çıkarmak için mükemmel bir fırsat. Bu butonları işlevsel kılacak küçük bir yapay zeka sihirbazı (wizard) arkasına entegre edilebilir.
+
+Bu tasarımı uygularken front-end tarafında (React, Vue veya HTML/CSS) spesifik bir kod bloğuna veya CSS özelleştirmesine ihtiyacınız olursa seve seve yardımcı olabilirim!
+
+1. index.html ✅
+
+Tamamen yeni.
+
+2. style.css ✅
+
+Pixel Perfect.
+
+3. script.js ✅
+
+Dropdown
+
+Konum
+
+Geolocation
+
+Arama
+
+AI
+
+animasyonlar.
+
+4. assets
+
+SVG
+
+ikonlar
+
+görseller.
+
+5. README
+
+Kurulum. bunlarıda bana teslim et 
+
+Harika! İstediğiniz tüm tasarım bileşenlerini, fonksiyonları, interaktif yapay zeka entegrasyonlarını ve dinamik konum servislerini kapsayan, piksel hassasiyetinde hazırlanmış kod dosyalarınızı hazırladım.
+
+📦 Hazırlanan Dosyalarınız
+index.html — Sıfırdan tasarlanmış, tamamen mobil uyumlu (responsive), en güncel Tailwind CSS altyapısını kullanan ve görseldeki tüm kategorileri, istatistikleri ve yapıları mükemmel şekilde barındıran ana sayfa kodunuz.
+HTML icon
+eduscor-frontend/index
+ HTML 
+Open
+
+style.css — Custom premium özellikler, şık kaydırma çubukları (scrollbar), yumuşak geçiş efektleri ve mikro animasyonları barındıran stil dosyanız.
+CSS icon
+eduscor-frontend/style
+ CSS 
+Open
+
+script.js — İnteraktif dropdown kontrolleri, gerçek HTML5 Geolocation API entegrasyonu (canlı konum alma), hızlı kategori ve yaş grubu filtre pilleri ve adımlı bir yapay zeka sihirbazı (AI Wizard) barındıran akıllı JS motorunuz.
+JS icon
+eduscor-frontend/script
+ JS 
+Open
+
+README.md — Kurulum ve dosyaları tarayıcınızda nasıl anında çalıştırabileceğinize dair yönergelerin yer aldığı başlangıç kılavuzu.
+MD icon
+eduscor-frontend/README
+ MD 
+Open
+
+🚀 Nasıl Çalıştırılır?
+Yukarıdaki tüm dosyaları indirip bilgisayarınızda aynı klasörün içerisine yerleştirin.
+
+index.html dosyasına çift tıklayarak modern EduScor arayüzünüzün ve etkileşimli özelliklerin keyfini çıkarın!
+
+"AI ile Öner" butonuna basarak yapay zeka öneri sihirbazını test edebilir ya da "Konumumu Kullan" seçeneğiyle canlı konum servisini deneyimleyebilirsiniz.
+
+
+github a yükleyebileyim
+
+Gemini is AI and can make mistakes.
+
+/* Custom Styles complementing Tailwind CSS */
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
 }
 
-*{box-sizing:border-box;}
-
-body{
-  margin:0;
-  background:var(--cream);
-  color:var(--ink);
-  font-family:'Helvetica Neue',Arial,sans-serif;
+/* Custom Scrollbar for a premium look */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #FAF9F6;
+}
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
 }
 
-a{text-decoration:none;color:inherit;}
-button{font-family:inherit;}
-
-.wrap{
-  max-width:1200px;
-  margin:0 auto;
-  padding:0 48px;
+/* Hide horizontal scrollbar class helper */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-/* ================= HEADER ================= */
-header{padding:28px 0;}
-.header-row{display:flex;align-items:center;justify-content:space-between;}
-.logo{font-size:26px;font-weight:700;color:var(--red);letter-spacing:-0.5px;}
-
-.nav-right{display:flex;align-items:center;gap:26px;}
-.link-giris{font-size:15px;font-weight:500;color:var(--ink);}
-
-.lang-switch{
-  background:none;border:none;
-  font-size:14px;font-weight:600;color:var(--ink-soft);
-  cursor:pointer;display:flex;gap:4px;
-}
-.lang-switch .lang-active{color:var(--ink);}
-
-/* ================= HERO (centered) ================= */
-.hero-center{
-  text-align:center;
-  padding:36px 0 40px;
-  max-width:760px;
-  margin:0 auto;
+/* Keyframe animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.eyebrow{
-  font-size:12px;
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-  color:var(--ink-faint);
-  font-weight:700;
-  margin:0 0 18px;
+@keyframes scaleUp {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
-h1{
-  font-size:38px;
-  line-height:1.25;
-  font-weight:700;
-  margin:0 0 18px;
-  letter-spacing:-0.5px;
-}
-h1 .accent{color:var(--red);}
-
-.hero-sub{
-  font-size:16px;
-  line-height:1.65;
-  color:var(--ink-soft);
-  max-width:520px;
-  margin:0 auto 32px;
+.animate-fadeIn {
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Search row - pill dropdowns */
-.search-row{
-  display:flex;
-  justify-content:center;
-  gap:14px;
-  flex-wrap:wrap;
-  margin-bottom:22px;
+.animate-scaleUp {
+    animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.dropdown{position:relative;width:190px;}
-.dropdown-wide{width:230px;}
-
-.dropdown-trigger{
-  width:100%;height:54px;
-  border:1px solid var(--line-strong);
-  border-radius:27px;
-  padding:0 18px;
-  font-size:14px;color:var(--ink);
-  background:var(--card);
-  display:flex;align-items:center;gap:10px;
-}
-.dropdown-trigger i:first-child{color:var(--red);font-size:18px;flex-shrink:0;}
-.dropdown-trigger .dt-label{
-  flex:1;text-align:left;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  font-weight:500;
-}
-.dropdown-trigger .dt-input{
-  flex:1;min-width:0;
-  border:none;outline:none;background:transparent;
-  font-family:inherit;font-size:14px;color:var(--ink);font-weight:500;
-  padding:0;
-}
-.dropdown-trigger .dt-input::placeholder{color:var(--ink);font-weight:500;opacity:1;}
-.dropdown-trigger .chev{
-  color:var(--ink-faint);font-size:16px;transition:transform .15s ease;
-  cursor:pointer;flex-shrink:0;
-}
-.dropdown.open .dropdown-trigger .chev{transform:rotate(180deg);}
-.dropdown.open .dropdown-trigger{border-color:var(--red);}
-
-.dropdown-panel{
-  display:none;
-  position:absolute;
-  top:calc(100% + 8px);
-  left:0;right:0;
-  min-width:220px;
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:6px;
-  box-shadow:0 12px 28px rgba(28,28,26,0.10);
-  z-index:20;
-  max-height:240px;
-  overflow-y:auto;
-  text-align:left;
-}
-.dropdown.open .dropdown-panel{display:block;}
-
-.dropdown-option{
-  width:100%;text-align:left;
-  background:none;border:none;
-  padding:10px 12px;
-  font-size:14px;color:var(--ink);
-  border-radius:8px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;
-}
-.dropdown-option:hover{background:var(--cream);}
-
-/* Action buttons */
-.action-row{
-  display:flex;justify-content:center;gap:14px;flex-wrap:wrap;
+.animate-spin-slow {
+    animation: spin 8s linear infinite;
 }
 
-.btn-search{
-  height:52px;padding:0 30px;border:none;border-radius:26px;
-  background:var(--red);color:#fff;
-  font-size:15px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  cursor:pointer;
-}
-.btn-search:hover{background:var(--red-dark);}
-
-.btn-ai{
-  height:52px;padding:0 26px;border:none;border-radius:26px;
-  background:linear-gradient(100deg,var(--navy) 0%,var(--red-dark) 55%,var(--red) 100%);
-  color:#fff;font-size:14.5px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  cursor:pointer;
-}
-.btn-ai:hover{filter:brightness(1.08);}
-
-/* Divider */
-.divider{height:1px;background:var(--line);margin:36px 0;}
-
-/* ================= HIZLI KEŞFET ================= */
-.quick-explore{
-  text-align:center;
-  margin-bottom:48px;
-}
-.quick-explore h2{
-  font-size:20px;font-weight:700;margin:0 0 22px;
-}
-.quick-grid{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:12px;
-}
-.quick-item{
-  display:flex;align-items:center;gap:8px;
-  padding:12px 20px;
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:24px;
-  font-size:14px;font-weight:600;color:var(--ink);
-  transition:box-shadow .15s ease, transform .15s ease, border-color .15s ease;
-}
-.quick-item i{color:var(--red);font-size:17px;}
-.quick-item:hover{box-shadow:0 8px 20px rgba(28,28,26,0.06);transform:translateY(-1px);border-color:var(--line-strong);}
-.quick-item.quick-all{color:var(--red);border-color:var(--red);}
-.quick-item.quick-all i{color:var(--red);}
-
-/* ================= SCREENSHOT PLACEHOLDER ================= */
-.screenshot-slot{margin-bottom:56px;}
-.screenshot-placeholder{
-  border:2px dashed var(--line-strong);
-  border-radius:20px;
-  background:#FBFAF6;
-  min-height:340px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;
-  color:var(--ink-faint);
-  text-align:center;
-  padding:24px;
-}
-.screenshot-placeholder i{font-size:36px;margin-bottom:6px;}
-.screenshot-placeholder .ph-title{font-size:15px;font-weight:600;color:var(--ink-soft);}
-.screenshot-placeholder .ph-sub{font-size:12.5px;}
-
-/* ================= SECTION HEAD (shared) ================= */
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-.section-head h2{font-size:20px;font-weight:700;margin:0;}
-.section-head .link{font-size:14px;color:var(--red);font-weight:600;display:flex;align-items:center;gap:4px;}
-
-/* ================= POPULAR SEARCHES ================= */
-.popular{margin-bottom:56px;}
-.pop-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
-.pop-card{
-  background:var(--card);border:1px solid var(--line);border-radius:16px;
-  padding:20px;display:flex;flex-direction:column;gap:14px;justify-content:space-between;
-  min-height:120px;
-  transition:box-shadow .15s ease, transform .15s ease;
-}
-.pop-card:hover{box-shadow:0 10px 24px rgba(28,28,26,0.07);transform:translateY(-2px);}
-.pop-icon{
-  width:38px;height:38px;border-radius:10px;background:#FBEAE9;
-  display:flex;align-items:center;justify-content:center;color:var(--red);font-size:18px;
-}
-.pop-card .txt{font-size:14.5px;font-weight:600;line-height:1.4;}
-.pop-card .loc{font-size:12.5px;color:var(--ink-faint);display:flex;align-items:center;justify-content:space-between;}
-
-/* ================= TRUST FOOTER ================= */
-.trust-footer{
-  background:var(--card);border:1px solid var(--line);border-radius:20px;
-  padding:32px 40px;margin-bottom:60px;
-}
-.tf-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:26px;}
-.tf-top i{font-size:26px;color:var(--red);}
-.tf-top .t{font-size:16px;font-weight:700;margin-bottom:4px;}
-.tf-top .s{font-size:13px;color:var(--ink-soft);max-width:520px;line-height:1.5;}
-
-.partners{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px;}
-.partner-chip{
-  border:1px solid var(--line-strong);border-radius:24px;
-  padding:8px 18px;font-size:13px;font-weight:600;color:var(--ink-soft);
+/* Interactive Pill Active states styling */
+.category-pill.active {
+    background-color: #E31E24 !important;
+    color: #FFFFFF !important;
+    border-color: #E31E24 !important;
 }
 
-.stats-row{display:flex;gap:0;border-top:1px solid var(--line);padding-top:26px;flex-wrap:wrap;}
-.stat{flex:1;min-width:140px;display:flex;align-items:center;gap:14px;margin-bottom:12px;}
-.stat i{font-size:24px;color:var(--red);}
-.stat .n{font-size:22px;font-weight:700;}
-.stat .l{font-size:12.5px;color:var(--ink-faint);}
-
-
-/* ============ RESPONSIVE ============ */
-
-@media (max-width: 1080px){
-  .wrap{padding:0 28px;}
-  .pop-grid{grid-template-columns:repeat(3,1fr);}
+.age-pill.active {
+    background-color: #1E293B !important;
+    color: #FFFFFF !important;
+    border-color: #1E293B !important;
 }
-
-@media (max-width: 900px){
-  h1{font-size:30px;}
-  .dropdown,.dropdown-wide{width:100%;max-width:320px;}
-  .search-row{flex-direction:column;align-items:center;}
-  .action-row{width:100%;}
-  .btn-search,.btn-ai{flex:1;}
-}
-
-@media (max-width: 720px){
-  .pop-grid{grid-template-columns:repeat(2,1fr);}
-  .stats-row{justify-content:space-between;}
-  .stat{min-width:45%;}
-  .quick-grid{gap:10px;}
-  .quick-item{padding:10px 16px;font-size:13px;}
-}
-
-@media (max-width: 520px){
-  .wrap{padding:0 18px;}
-  h1{font-size:24px;}
-  .hero-sub{font-size:14px;}
-
-  .action-row{flex-direction:column;}
-  .btn-search,.btn-ai{width:100%;}
-
-  .pop-grid{grid-template-columns:1fr;}
-
-  .trust-footer{padding:24px 20px;}
-  .stat{min-width:100%;}
-
-  .screenshot-placeholder{min-height:220px;}
-}
+eduscor-frontend/style.css
+Displaying eduscor-frontend/style.css.
