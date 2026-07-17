@@ -1,146 +1,177 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduScor | The Global Education Intelligence Platform</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brandRed: '#E8543A',
-                        brandRedDark: '#CC3F28',
-                        brandDark: '#241A16',
-                        brandGray: '#8A7A72',
-                        brandBg: '#FDF8F5'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts (Plus Jakarta Sans) -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        /* İngilizce başlıkların Türkçe tarayıcılarda büyük 'İ' olmasını engelleyen global CSS kuralı */
-        .en-text {
-            font-language-override: "ENG";
-            -webkit-font-variant-ligatures: no-common-ligatures;
-            font-variant-ligatures: no-common-ligatures;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduScor — Eğitimin her aşamasında doğru seçimi yapın</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-brandBg text-brandDark min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- Üst Menü (Minimalist & Transparan) -->
-    <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center">
-        <div></div>
-        
-        <!-- Sağ Üst Hızlı Linkler -->
-        <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-semibold">
-            <a href="#" class="text-brandGray hover:text-brandDark transition-colors">Hakkımızda</a>
-            <a href="#" class="text-brandGray hover:text-brandDark transition-colors">Ağ</a>
-            <a href="#" class="px-3 sm:px-4 py-1.5 border border-brandRed text-brandRed hover:bg-brandRed hover:text-white rounded-full transition-all text-xs whitespace-nowrap">Giriş Yap</a>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-row">
+      <span class="logo">EduScor</span>
+      <div class="nav-right">
+        <a href="#" class="link-giris">Giriş</a>
+        <button type="button" class="lang-switch" id="langSwitch" aria-label="Dil seçimi">
+          <span class="lang-active">EN</span> / <span>TR</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero-center">
+    <p class="eyebrow">The global education intelligence platform</p>
+    <h1>Eğitimin her aşamasında <span class="accent">doğru seçimi</span> yapın</h1>
+    <p class="hero-sub">Okulları, üniversiteleri, kursları, bursları ve eğitim fırsatlarını tek platformda keşfedin ve karşılaştırın.</p>
+
+    <!-- SEARCH ROW -->
+    <div class="search-row">
+
+      <div class="dropdown" data-dropdown="konum">
+        <button type="button" class="dropdown-trigger">
+          <i class="ti ti-map-pin"></i>
+          <span class="dt-label">Konum</span>
+          <i class="ti ti-chevron-down chev"></i>
+        </button>
+        <div class="dropdown-panel">
+          <button type="button" class="dropdown-option" data-value="Konumumu Kullan"><i class="ti ti-current-location"></i> Konumumu Kullan</button>
+          <button type="button" class="dropdown-option" data-value="Bağlıca, Ankara">Bağlıca, Ankara</button>
+          <button type="button" class="dropdown-option" data-value="Çayyolu, Ankara">Çayyolu, Ankara</button>
+          <button type="button" class="dropdown-option" data-value="İstanbul">İstanbul</button>
         </div>
-    </header>
+      </div>
 
-    <!-- Ana Arama Ekranı (Merkezlenmiş AI Arayüzü) -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 md:py-0 md:-mt-16">
-        <div class="w-full max-w-2xl text-center">
-            
-            <!-- EduScor Başlık Grubu -->
-            <div class="mb-8 select-none">
-                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-brandRed mb-2">EduScor</h1>
-                <!-- lang="en" ve class="en-text" eklenerek büyük harf dönüşüm hatası engellendi -->
-                <p lang="en" class="en-text text-xs md:text-sm text-brandGray tracking-[0.2em] font-medium uppercase">
-                    The Global Education Intelligence Platform
-                </p>
-            </div>
-
-            <!-- Davet Cümlesi -->
-            <h2 class="text-xl md:text-2xl font-bold text-brandDark mb-6">Size nasıl yardımcı olabiliriz?</h2>
-
-            <!-- Arama ve Girdi Kutusu (Büyük Minimalist Metin Alanı) -->
-            <div class="bg-white rounded-3xl shadow-xl shadow-slate-100 border border-slate-200/80 p-4 mb-6 transition-all focus-within:shadow-brandRed/5 focus-within:border-brandRed/40">
-                <textarea 
-                    id="searchInput"
-                    rows="2"
-                    placeholder="Bir okul, üniversite veya eğitim fırsatı arayın..." 
-                    class="w-full bg-transparent resize-none outline-none text-base md:text-lg text-brandDark placeholder-brandGray/50 font-normal px-2 py-1 leading-relaxed"
-                ></textarea>
-            </div>
-
-            <!-- Çift Buton Aksiyonu -->
-            <div class="flex items-center justify-center gap-4 mb-12">
-                <!-- Klasik Arama Butonu -->
-               <a href="explorer.html" id="searchBtn" class="flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-brandDark border border-slate-200 shadow-sm rounded-full font-semibold text-sm transition-all">
-                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Ara
-               </a>
-                
-                <!-- AI Sihirbazı Butonu (EduScor Kırmızısı Vurgulu) -->
-                <button id="aiBtn" class="flex items-center gap-2 px-6 py-3 bg-brandRed hover:bg-brandRedDark text-white shadow-md shadow-red-100 rounded-full font-semibold text-sm transition-all transform hover:-translate-y-0.5">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-2.2L12 1.5z"/><path d="M19.5 14l1 2.9 2.9 1-2.9 1-1 2.9-1-2.9-2.9-1 2.9-1 1-2.9z"/></svg> AI ile Başla
-                </button>
-            </div>
-
-            <!-- Popüler Aramalar (Popular Searches) -->
-            <div class="border-t border-slate-200/60 pt-6">
-                <p class="text-xs font-semibold text-brandGray uppercase tracking-wider mb-4">Popüler Aramalar</p>
-                <div class="flex flex-wrap justify-center gap-2">
-                    <a href="explorer.html?category=okul-oncesi-k12" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Okul Öncesi &amp; K-12 Eğitim</a>
-                    <a href="explorer.html?category=yuksekogretim" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Yükseköğretim</a>
-                    <a href="explorer.html?category=dil-egitimi" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Dil Eğitimi</a>
-                    <a href="explorer.html?category=online-uzaktan" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Online &amp; Uzaktan Eğitim</a>
-                    <a href="explorer.html?category=yetiskin-yasam-boyu" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Yetişkin &amp; Yaşam Boyu Öğrenme</a>
-                    <a href="explorer.html?category=ileri-yas" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• İleri Yaş için Eğitim</a>
-                    <a href="explorer.html?category=mesleki-teknik" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Mesleki &amp; Teknik Eğitim</a>
-                    <a href="explorer.html?category=burs-finansman" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Burs &amp; Finansman</a>
-                    <a href="explorer.html?category=yaz-kisa-sureli" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Yaz &amp; Kısa Süreli Programlar</a>
-                    <a href="explorer.html?category=sertifika-programlari" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Sertifika Programları</a>
-                    <a href="explorer.html?category=ozel-egitim-kapsayici" class="px-4 py-2 bg-white hover:bg-brandRed hover:text-white border border-slate-200/80 hover:border-brandRed rounded-full text-xs font-medium text-brandDark shadow-sm transition-all">• Özel Eğitim &amp; Kapsayıcı Öğrenme</a>
-                </div>
-            </div>
-
+      <div class="dropdown dropdown-wide" data-dropdown="kategori">
+        <button type="button" class="dropdown-trigger">
+          <i class="ti ti-target-arrow"></i>
+          <span class="dt-label">Ne Arıyorsunuz</span>
+          <i class="ti ti-chevron-down chev"></i>
+        </button>
+        <div class="dropdown-panel">
+          <button type="button" class="dropdown-option" data-value="Okullar">Okullar</button>
+          <button type="button" class="dropdown-option" data-value="Üniversiteler">Üniversiteler</button>
+          <button type="button" class="dropdown-option" data-value="Kurslar">Kurslar</button>
+          <button type="button" class="dropdown-option" data-value="Yaz Okulları">Yaz Okulları</button>
+          <button type="button" class="dropdown-option" data-value="Burslar">Burslar</button>
         </div>
-    </main>
+      </div>
 
-    <!-- Küçük Alt Bilgi (Footer) -->
-    <footer class="w-full py-4 text-center text-[11px] text-brandGray font-medium">
-        <p>&copy; 2026 EduScor. Tüm hakları saklıdır. Global eğitim ekosistemini Education Graph ile birbirine bağlıyoruz[cite: 1].</p>
-    </footer>
+      <div class="dropdown" data-dropdown="yas">
+        <button type="button" class="dropdown-trigger">
+          <i class="ti ti-baby-carriage"></i>
+          <span class="dt-label">Yaş</span>
+          <i class="ti ti-chevron-down chev"></i>
+        </button>
+        <div class="dropdown-panel">
+          <button type="button" class="dropdown-option" data-value="0-2 yaş">0-2 yaş</button>
+          <button type="button" class="dropdown-option" data-value="3-5 yaş">3-5 yaş</button>
+          <button type="button" class="dropdown-option" data-value="6-10 yaş">6-10 yaş</button>
+          <button type="button" class="dropdown-option" data-value="11-14 yaş">11-14 yaş</button>
+          <button type="button" class="dropdown-option" data-value="15-18 yaş">15-18 yaş</button>
+          <button type="button" class="dropdown-option" data-value="18+ yaş / Yetişkin">18+ yaş / Yetişkin</button>
+        </div>
+      </div>
 
-    <script>
-        function goToExplorer(withAI) {
-            const q = document.getElementById('searchInput').value.trim();
-            const params = new URLSearchParams();
-            if (q) params.set('q', q);
-            if (withAI) params.set('ai', '1');
-            const qs = params.toString();
-            window.location.href = 'explorer.html' + (qs ? '?' + qs : '');
-        }
+    </div>
 
-        document.getElementById('searchBtn').addEventListener('click', function (e) {
-            e.preventDefault();
-            goToExplorer(false);
-        });
+    <!-- ACTION BUTTONS -->
+    <div class="action-row">
+      <button type="button" class="btn-search"><i class="ti ti-search"></i> Ara</button>
+      <button type="button" class="btn-ai"><i class="ti ti-sparkles"></i> AI ile Yardım Al</button>
+    </div>
+  </section>
 
-        document.getElementById('aiBtn').addEventListener('click', function (e) {
-            e.preventDefault();
-            goToExplorer(true);
-        });
+  <div class="divider"></div>
 
-        document.getElementById('searchInput').addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                goToExplorer(false);
-            }
-        });
-    </script>
+  <!-- HIZLI KEŞFET -->
+  <section class="quick-explore">
+    <h2>Hızlı Keşfet</h2>
+    <div class="quick-grid">
+      <a href="#" class="quick-item"><i class="ti ti-building"></i> Okullar</a>
+      <a href="#" class="quick-item"><i class="ti ti-school"></i> Üniversiteler</a>
+      <a href="#" class="quick-item"><i class="ti ti-book-2"></i> Kurslar</a>
+      <a href="#" class="quick-item"><i class="ti ti-world"></i> Dil Eğitimi</a>
+      <a href="#" class="quick-item"><i class="ti ti-tent"></i> Yaz Okulları</a>
+      <a href="#" class="quick-item"><i class="ti ti-wheelchair"></i> Özel Eğitim</a>
+      <a href="#" class="quick-item"><i class="ti ti-briefcase"></i> Yetişkin Eğitimi</a>
+      <a href="#" class="quick-item quick-all">Tüm Kategoriler <i class="ti ti-arrow-right"></i></a>
+    </div>
+  </section>
+
+  <!-- ÜRÜN GÖRSELİ YER TUTUCU -->
+  <section class="screenshot-slot">
+    <div class="screenshot-placeholder">
+      <i class="ti ti-photo"></i>
+      <div class="ph-title">Gerçek EduScor ekran görüntüsü</div>
+      <div class="ph-sub">(İnsan fotoğrafı yerine ürün mockup'ı buraya yerleştirilecek)</div>
+    </div>
+  </section>
+
+  <!-- POPULAR SEARCHES -->
+  <section class="popular">
+    <div class="section-head">
+      <h2>Popüler Aramalar</h2>
+      <a href="#" class="link">Tümünü Gör <i class="ti ti-chevron-right"></i></a>
+    </div>
+    <div class="pop-grid">
+      <a href="#" class="pop-card">
+        <div class="pop-icon"><i class="ti ti-baby-carriage"></i></div>
+        <div class="txt">4 yaş için anaokulu arıyorum</div>
+        <div class="loc">Bağlıca, Ankara <i class="ti ti-chevron-right"></i></div>
+      </a>
+      <a href="#" class="pop-card">
+        <div class="pop-icon"><i class="ti ti-book-2"></i></div>
+        <div class="txt">Lise için burs imkanları</div>
+        <div class="loc">Türkiye <i class="ti ti-chevron-right"></i></div>
+      </a>
+      <a href="#" class="pop-card">
+        <div class="pop-icon"><i class="ti ti-sun"></i></div>
+        <div class="txt">Yaz okulu seçenekleri</div>
+        <div class="loc">İstanbul <i class="ti ti-chevron-right"></i></div>
+      </a>
+      <a href="#" class="pop-card">
+        <div class="pop-icon"><i class="ti ti-heart-handshake"></i></div>
+        <div class="txt">Özel gereksinimli çocuğum için eğitim</div>
+        <div class="loc">Online <i class="ti ti-chevron-right"></i></div>
+      </a>
+      <a href="#" class="pop-card">
+        <div class="pop-icon"><i class="ti ti-world"></i></div>
+        <div class="txt">Yurt dışı üniversite programları</div>
+        <div class="loc">Tüm Aramalar <i class="ti ti-chevron-right"></i></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- TRUST FOOTER -->
+  <section class="trust-footer">
+    <div class="tf-top">
+      <i class="ti ti-shield-check"></i>
+      <div>
+        <div class="t">Güvenilir. Tarafsız. Şeffaf.</div>
+        <div class="s">EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için çalışır. Eurodesk ve TOBB gibi kurumlarla iş birliği içinde doğrulanmış veriler sağlıyoruz.</div>
+      </div>
+    </div>
+    <div class="partners">
+      <div class="partner-chip">Eurodesk</div>
+      <div class="partner-chip">TOBB</div>
+      <div class="partner-chip">MEB Onaylı Veri Kaynakları</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><i class="ti ti-building"></i><div><div class="n">5.800+</div><div class="l">Eğitim Kurumu</div></div></div>
+      <div class="stat"><i class="ti ti-users"></i><div><div class="n">120K+</div><div class="l">Kullanıcı</div></div></div>
+      <div class="stat"><i class="ti ti-star"></i><div><div class="n">250K+</div><div class="l">Yorum ve Değerlendirme</div></div></div>
+      <div class="stat"><i class="ti ti-world"></i><div><div class="n">15+</div><div class="l">Ülke</div></div></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
