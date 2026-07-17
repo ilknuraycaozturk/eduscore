@@ -287,6 +287,13 @@
             color: var(--primary-red);
         }
 
+        .tag-active {
+            background: var(--primary-red) !important;
+            border-color: var(--primary-red) !important;
+            color: #ffffff !important;
+        }
+        .tag-active i { color: #ffffff !important; }
+
         .tag-label {
             font-size: 0.75rem;
             color: var(--gray-text);
@@ -693,14 +700,14 @@
                 <!-- Adım 1 -->
                 <div class="search-step">
                     <div class="step-title"><i class="fa-solid fa-location-dot"></i> 1. Konum</div>
-                    <div class="custom-select">
-                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.5rem;"></i> Konumumu Kullan</span>
+                    <div class="custom-select" id="useMyLocationBtn" style="cursor:pointer;">
+                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.5rem;"></i> <span id="locationLabel">Konumumu Kullan</span></span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="tag-label">Son aramalarım</div>
-                    <div class="tag-list">
-                        <a href="#" class="tag-item">Bağlıca, Ankara</a>
-                        <a href="#" class="tag-item">Çayyolu, Ankara</a>
+                    <div class="tag-list" id="locationTags">
+                        <a href="#" class="tag-item" data-location="Bağlıca">Bağlıca, Ankara</a>
+                        <a href="#" class="tag-item" data-location="Çayyolu">Çayyolu, Ankara</a>
                     </div>
                 </div>
 
@@ -708,13 +715,13 @@
                 <div class="search-step">
                     <div class="step-title"><i class="fa-solid fa-magnifying-glass"></i> 2. Ne arıyorsunuz?</div>
                     <div class="custom-select">
-                        <span>Ne arıyorsunuz?</span>
+                        <span id="whatLabel">Ne arıyorsunuz?</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div class="tag-list" style="margin-top: 1.8rem;">
-                        <a href="#" class="tag-item"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> Okullar</a>
-                        <a href="#" class="tag-item"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> Kurslar</a>
-                        <a href="#" class="tag-item"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> Üniversiteler</a>
+                    <div class="tag-list" style="margin-top: 1.8rem;" id="whatTags">
+                        <a href="#" class="tag-item" data-category="okul-oncesi-k12" data-label="Okullar"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> Okullar</a>
+                        <a href="#" class="tag-item" data-keyword="kurs" data-label="Kurslar"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> Kurslar</a>
+                        <a href="#" class="tag-item" data-category="yuksekogretim" data-label="Üniversiteler"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> Üniversiteler</a>
                     </div>
                 </div>
 
@@ -722,29 +729,29 @@
                 <div class="search-step">
                     <div class="step-title"><i class="fa-solid fa-user"></i> 3. Yaş <span style="font-weight:400; color:var(--gray-text);">(İsteğe bağlı)</span></div>
                     <div class="custom-select">
-                        <span>Yaş aralığı seçin veya doğum yılı girin</span>
+                        <span id="ageLabel">Yaş aralığı seçin veya doğum yılı girin</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div class="tag-list" style="margin-top: 1.8rem;">
-                        <a href="#" class="tag-item">0-2</a>
-                        <a href="#" class="tag-item">3-5</a>
-                        <a href="#" class="tag-item">6-10</a>
-                        <a href="#" class="tag-item">11-14</a>
-                        <a href="#" class="tag-item">15-18</a>
+                    <div class="tag-list" style="margin-top: 1.8rem;" id="ageTags">
+                        <a href="#" class="tag-item" data-age="1">0-2</a>
+                        <a href="#" class="tag-item" data-age="4">3-5</a>
+                        <a href="#" class="tag-item" data-age="8">6-10</a>
+                        <a href="#" class="tag-item" data-age="12">11-14</a>
+                        <a href="#" class="tag-item" data-age="16">15-18</a>
                     </div>
                 </div>
 
                 <!-- Arama Butonları -->
                 <div class="action-buttons">
-                    <button class="btn-search"><i class="fa-solid fa-magnifying-glass"></i> Ara</button>
-                    <button class="btn-ai"><i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Öner</button>
+                    <button class="btn-search" id="panelSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> Ara</button>
+                    <button class="btn-ai" id="panelAiBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Öner</button>
                 </div>
 
             </div>
 
             <!-- Yardım Alt Satırı -->
             <div class="search-bottom-link">
-                <a href="#"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> Nereden başlayacağınızı bilmiyor musunuz? <span>AI size yardımcı olsun.</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i></a>
+                <a href="#" id="panelAiLink"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> Nereden başlayacağınızı bilmiyor musunuz? <span>AI size yardımcı olsun.</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i></a>
             </div>
         </div>
     </section>
@@ -867,5 +874,92 @@
         </div>
     </section>
 
+    <script>
+        // ---- 3 Adımlı Arama Paneli Mantığı ----
+        let panelState = { locationText: null, locationLat: null, locationLng: null, category: null, keyword: null, age: null };
+
+        function setActiveTag(container, clickedEl) {
+            container.querySelectorAll('.tag-item').forEach(el => el.classList.remove('tag-active'));
+            clickedEl.classList.add('tag-active');
+        }
+
+        // Adım 1: Konum etiketleri
+        document.getElementById('locationTags').querySelectorAll('.tag-item').forEach(tag => {
+            tag.addEventListener('click', function (e) {
+                e.preventDefault();
+                panelState.locationText = this.dataset.location;
+                panelState.locationLat = null;
+                panelState.locationLng = null;
+                document.getElementById('locationLabel').textContent = this.textContent;
+                setActiveTag(document.getElementById('locationTags'), this);
+            });
+        });
+
+        // Adım 1: "Konumumu Kullan"
+        document.getElementById('useMyLocationBtn').addEventListener('click', function () {
+            const label = document.getElementById('locationLabel');
+            if (!navigator.geolocation) { label.textContent = 'Konum desteklenmiyor'; return; }
+            label.textContent = 'Konum alınıyor...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    panelState.locationLat = pos.coords.latitude;
+                    panelState.locationLng = pos.coords.longitude;
+                    panelState.locationText = null;
+                    label.textContent = 'Konumunuz alındı ✓';
+                    document.getElementById('locationTags').querySelectorAll('.tag-item').forEach(el => el.classList.remove('tag-active'));
+                },
+                () => { label.textContent = 'Konum izni verilmedi'; }
+            );
+        });
+
+        // Adım 2: Ne arıyorsunuz etiketleri
+        document.getElementById('whatTags').querySelectorAll('.tag-item').forEach(tag => {
+            tag.addEventListener('click', function (e) {
+                e.preventDefault();
+                panelState.category = this.dataset.category || null;
+                panelState.keyword = this.dataset.keyword || null;
+                document.getElementById('whatLabel').textContent = this.dataset.label;
+                setActiveTag(document.getElementById('whatTags'), this);
+            });
+        });
+
+        // Adım 3: Yaş etiketleri
+        document.getElementById('ageTags').querySelectorAll('.tag-item').forEach(tag => {
+            tag.addEventListener('click', function (e) {
+                e.preventDefault();
+                panelState.age = this.dataset.age;
+                document.getElementById('ageLabel').textContent = this.textContent + ' yaş';
+                setActiveTag(document.getElementById('ageTags'), this);
+            });
+        });
+
+        function buildExplorerUrl(withAI) {
+            const p = new URLSearchParams();
+            const qParts = [];
+            if (panelState.locationText) qParts.push(panelState.locationText);
+            if (panelState.keyword) qParts.push(panelState.keyword);
+            if (qParts.length) p.set('q', qParts.join(' '));
+            if (panelState.category) p.set('category', panelState.category);
+            if (panelState.age) p.set('age', panelState.age);
+            if (panelState.locationLat && panelState.locationLng) {
+                p.set('lat', panelState.locationLat);
+                p.set('lng', panelState.locationLng);
+            }
+            if (withAI) p.set('ai', '1');
+            const qs = p.toString();
+            return 'explorer.html' + (qs ? '?' + qs : '');
+        }
+
+        document.getElementById('panelSearchBtn').addEventListener('click', () => {
+            window.location.href = buildExplorerUrl(false);
+        });
+        document.getElementById('panelAiBtn').addEventListener('click', () => {
+            window.location.href = buildExplorerUrl(true);
+        });
+        document.getElementById('panelAiLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = buildExplorerUrl(true);
+        });
+    </script>
 </body>
 </html>
