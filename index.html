@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EduScor | Global Education Intelligence Platform</title>
     
     <!-- Google Fonts & FontAwesome Simgeleri -->
@@ -32,6 +32,7 @@
             background-color: var(--light-gray);
             color: var(--dark-blue);
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ------------------ HEADER / MENÜ ------------------ */
@@ -49,17 +50,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.25rem 2rem;
+            padding: 1rem 1.5rem;
         }
 
         .logo-group {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--primary-red);
             text-decoration: none;
@@ -70,34 +71,34 @@
         }
 
         .logo-subtitle {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 700;
             color: var(--gray-text);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             line-height: 1.2;
             border-left: 1px solid var(--border-color);
-            padding-left: 1rem;
+            padding-left: 0.75rem;
         }
 
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .nav-menu {
             display: flex;
             list-style: none;
             align-items: center;
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .nav-menu a {
             text-decoration: none;
             color: var(--dark-blue);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: color 0.2s;
         }
 
@@ -116,12 +117,12 @@
             border: 1px solid var(--border-color);
             padding: 0.5rem 0.8rem;
             border-radius: 99px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.3rem;
             color: var(--dark-blue);
             transition: all 0.2s;
         }
@@ -134,12 +135,13 @@
         .btn-login {
             border: 1px solid var(--primary-red);
             color: var(--primary-red);
-            padding: 0.6rem 1.5rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 999px;
             text-decoration: none;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .btn-login:hover {
@@ -149,30 +151,56 @@
 
         .menu-toggle {
             display: none;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             cursor: pointer;
+            color: var(--dark-blue);
+            padding: 0.5rem;
         }
 
         /* ------------------ HERO SECTION ------------------ */
         .hero {
             max-width: 1300px;
             margin: 0 auto;
-            padding: 3.5rem 2rem 2rem 2rem;
+            padding: 2.5rem 1.5rem;
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            gap: 2rem;
+            gap: 2.5rem;
         }
 
         .hero-content {
             flex: 1.2;
         }
 
+        .hero-badges {
+            display: flex; 
+            gap: 0.5rem; 
+            margin-bottom: 1.2rem; 
+            flex-wrap: wrap;
+        }
+
+        .badge-item {
+            background: #FFF5F5; 
+            color: var(--primary-red); 
+            border: 1px solid var(--border-color); 
+            padding: 0.3rem 0.75rem; 
+            border-radius: 99px; 
+            font-size: 0.7rem; 
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge-item.blue { background: #EFF6FF; color: #1E40AF; border-color: #BFDBFE; }
+        .badge-item.green { background: #F0FDF4; color: #166534; border-color: #BBF7D0; }
+
         .hero-title {
-            font-size: 3.4rem;
+            font-size: 3rem;
             font-weight: 800;
             line-height: 1.15;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             letter-spacing: -1px;
         }
 
@@ -181,24 +209,69 @@
         }
 
         .hero-desc {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--gray-text);
             line-height: 1.6;
             margin-bottom: 2rem;
             max-width: 600px;
         }
 
+        .pdf-card {
+            background: #ffffff; 
+            border: 1px dashed var(--primary-red); 
+            padding: 1rem; 
+            border-radius: 1rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+            max-width: 580px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+        }
+
+        .pdf-card i {
+            font-size: 2rem; 
+            color: var(--primary-red);
+            flex-shrink: 0;
+        }
+
+        .pdf-card h5 {
+            font-size: 0.9rem; 
+            font-weight: 700; 
+            margin-bottom: 0.2rem;
+        }
+
+        .pdf-card p {
+            font-size: 0.75rem; 
+            color: var(--gray-text); 
+            margin: 0; 
+            line-height: 1.4;
+        }
+        
+        .hero-image {
+            flex: 0.8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1.5rem;
+            object-fit: cover;
+        }
+
         /* ------------------ 3-ADIMLI ARAMA PANELİ ------------------ */
         .search-panel-container {
             max-width: 1300px;
             margin: 0 auto 3rem auto;
-            padding: 0 2rem;
+            padding: 0 1.5rem;
         }
 
         .search-panel {
             background-color: #ffffff;
             border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border-color);
             padding: 1.5rem;
         }
@@ -206,7 +279,7 @@
         .search-grid {
             display: grid;
             grid-template-columns: 1fr 1.2fr 1fr auto;
-            gap: 1.5rem;
+            gap: 1.25rem;
             align-items: start;
         }
 
@@ -214,10 +287,11 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            width: 100%;
         }
 
         .step-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--dark-blue);
             display: flex;
@@ -233,29 +307,30 @@
             background: var(--light-gray);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
-            padding: 0.85rem 1rem;
-            font-size: 0.9rem;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
             color: var(--gray-text);
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            min-height: 44px;
         }
 
         /* Etiketler / Tagler */
         .tag-list {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             flex-wrap: wrap;
-            margin-top: 0.5rem;
+            margin-top: 0.25rem;
         }
 
         .tag-item {
             background: var(--light-gray);
             border: 1px solid var(--border-color);
-            padding: 0.4rem 0.8rem;
+            padding: 0.35rem 0.7rem;
             border-radius: 99px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
@@ -266,31 +341,30 @@
             gap: 0.3rem;
         }
 
-        .tag-item:hover {
-            border-color: var(--primary-red);
-            color: var(--primary-red);
+        .tag-item:hover, .tag-active {
+            border-color: var(--primary-red) !important;
+            color: var(--primary-red) !important;
         }
 
         .tag-active {
-            background: var(--primary-red) !important;
-            border-color: var(--primary-red) !important;
-            color: #ffffff !important;
+            background: var(--beige-bg) !important;
         }
-        .tag-active i { color: #ffffff !important; }
 
         .tag-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gray-text);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.1rem;
+            font-weight: 600;
         }
 
         /* Arama Butonları */
         .action-buttons {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.6rem;
             justify-content: center;
             height: 100%;
+            padding-top: 1.2rem;
         }
 
         .btn-search {
@@ -298,15 +372,17 @@
             color: #ffffff;
             border: none;
             border-radius: 99px;
-            padding: 0.9rem 2.5rem;
+            padding: 0.85rem 2rem;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
             transition: background-color 0.2s;
+            width: 100%;
+            white-space: nowrap;
         }
 
         .btn-search:hover {
@@ -318,7 +394,7 @@
             color: var(--primary-red);
             border: 1px solid var(--border-color);
             border-radius: 99px;
-            padding: 0.8rem 2rem;
+            padding: 0.85rem 2rem;
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
@@ -327,15 +403,13 @@
             justify-content: center;
             gap: 0.5rem;
             transition: all 0.2s;
+            width: 100%;
+            white-space: nowrap;
         }
 
         .btn-ai:hover {
             background-color: #fff5f5;
             border-color: var(--primary-red);
-        }
-
-        .btn-ai i {
-            color: var(--primary-red);
         }
 
         /* Yardım Al Alt Satırı */
@@ -350,37 +424,80 @@
             text-decoration: none;
             color: var(--dark-blue);
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            line-height: 1.4;
         }
 
         .search-bottom-link a span {
             color: var(--primary-red);
         }
 
-        /* ------------------ HIZLICA KEŞFEDİN VE POPÜLER ------------------ */
+        /* ------------------ MANİFESTO VE ALGORİTMA ------------------ */
+        .manifesto-section {
+            max-width: 1300px; 
+            margin: 0 auto 3.5rem auto; 
+            padding: 0 1.5rem;
+        }
+
+        .manifesto-box {
+            background: linear-gradient(135deg, #241A16 0%, #3A2A24 100%); 
+            color: #ffffff; 
+            border-radius: 1.5rem; 
+            padding: 2.5rem 2rem; 
+            position: relative; 
+            overflow: hidden; 
+            border: 1px solid var(--border-color);
+        }
+
+        .formula-section {
+            max-width: 1300px; 
+            margin: 0 auto 4rem auto; 
+            padding: 0 1.5rem;
+        }
+
+        .formula-grid {
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 1.5rem;
+        }
+
+        .formula-card {
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            padding: 1.75rem; 
+            border-radius: 1.25rem; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* ------------------ KEŞFEDİN VE POPÜLER ------------------ */
         .discover-section {
             max-width: 1300px;
             margin: 0 auto 3rem auto;
-            padding: 0 2rem;
+            padding: 0 1.5rem;
             display: grid;
             grid-template-columns: 1.8fr 1.2fr;
-            gap: 3rem;
+            gap: 2.5rem;
         }
 
         .section-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .all-link {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray-text);
             text-decoration: none;
             font-weight: 600;
@@ -390,14 +507,14 @@
         .quick-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .quick-card {
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 1rem;
-            padding: 1.25rem;
+            padding: 1rem 0.5rem;
             text-align: center;
             text-decoration: none;
             color: var(--dark-blue);
@@ -406,7 +523,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .quick-card:hover {
@@ -416,17 +533,18 @@
         }
 
         .quick-card i {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: var(--primary-red);
         }
 
         .quick-card h4 {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
+            line-height: 1.2;
         }
 
         .quick-card p {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--gray-text);
         }
 
@@ -448,6 +566,7 @@
             text-decoration: none;
             color: var(--dark-blue);
             transition: all 0.2s;
+            gap: 1rem;
         }
 
         .popular-card:hover {
@@ -457,50 +576,55 @@
         .popular-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .popular-icon {
-            font-size: 1.4rem;
-            padding: 0.6rem;
+            font-size: 1.2rem;
+            padding: 0.5rem;
             border-radius: 0.75rem;
             background: var(--light-gray);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* İkonların Özel Renkleri */
         .icon-orange { color: #f97316; background: #fff7ed; }
         .icon-green { color: #22c55e; background: #f0fdf4; }
         .icon-blue { color: #3b82f6; background: #eff6ff; }
         .icon-purple { color: #a855f7; background: #faf5ff; }
 
         .popular-text h4 {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             margin-bottom: 0.2rem;
+            line-height: 1.3;
         }
 
         .popular-text p {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gray-text);
         }
 
         .popular-arrow {
             color: var(--gray-text);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            flex-shrink: 0;
         }
 
         /* ------------------ ALT STATS BANDI ------------------ */
         .stats-section-container {
             max-width: 1300px;
             margin: 0 auto 4rem auto;
-            padding: 0 2rem;
+            padding: 0 1.5rem;
         }
 
         .stats-band {
             background-color: var(--beige-bg);
             border: 1px solid #F0D5C8;
             border-radius: 1.5rem;
-            padding: 2rem;
+            padding: 1.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -509,29 +633,31 @@
         .stats-info {
             display: flex;
             gap: 1rem;
-            align-items: flex-start;
+            align-items: center;
         }
 
         .stats-info i {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: var(--primary-red);
+            flex-shrink: 0;
         }
 
         .stats-info h3 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 800;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
         }
 
         .stats-info p {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray-text);
             line-height: 1.4;
         }
 
 
-        /* ==================== MOBİL UYUMLULUK ==================== */
+        /* ==================== MOBİL UYUMLULUK VE MEDYA SORGULARI ==================== */
         
+        /* 1100px Altı - Tablet ve Yatay Görünüm */
         @media (max-width: 1100px) {
             .search-grid {
                 grid-template-columns: 1fr 1fr;
@@ -539,58 +665,127 @@
             .action-buttons {
                 grid-column: span 2;
                 flex-direction: row;
+                padding-top: 0.5rem;
             }
             .btn-search, .btn-ai {
                 flex: 1;
             }
             .discover-section {
                 grid-template-columns: 1fr;
+                gap: 2rem;
             }
-            .stats-band {
+            .formula-grid {
                 grid-template-columns: 1fr 1fr;
-            }
-            .stats-info {
-                grid-column: span 2;
             }
         }
 
+        /* 768px Altı - Mobil Dikey Ekranlar */
         @media (max-width: 768px) {
-            .nav-menu, .btn-login {
-                display: none;
+            /* Mobil Hamburger Menü Yapısı */
+            .nav-menu {
+                position: fixed;
+                top: 61px;
+                right: -100%;
+                width: 70%;
+                height: calc(100vh - 61px);
+                background-color: #ffffff;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 2rem 1.5rem;
+                gap: 1.5rem;
+                box-shadow: -5px 5px 15px rgba(0,0,0,0.05);
+                transition: right 0.3s ease;
+                z-index: 999;
+                border-left: 1px solid var(--border-color);
             }
+
+            .nav-menu.active {
+                right: 0;
+            }
+
+            .btn-login {
+                display: none; /* Mobilde menü içerisine veya hamburger yanına alınabilir, şimdilik gizli */
+            }
+
             .menu-toggle {
                 display: block;
             }
+
+            /* Hero Bölümü */
             .hero {
                 flex-direction: column-reverse;
                 text-align: center;
-                padding-top: 1rem;
+                padding: 1.5rem 1rem;
+                gap: 1.5rem;
             }
+
+            .hero-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-badges {
+                justify-content: center;
+            }
+
             .hero-title {
-                font-size: 2.2rem;
+                font-size: 2rem;
+                margin-bottom: 1rem;
             }
+
             .hero-desc {
-                margin: 0 auto 1.5rem auto;
+                font-size: 0.9rem;
+                margin-bottom: 1.5rem;
             }
+
+            .pdf-card {
+                text-align: left;
+                align-items: flex-start;
+            }
+
+            .hero-image {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            /* Arama Paneli */
             .search-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
+
             .action-buttons {
                 grid-column: span 1;
                 flex-direction: column;
+                padding-top: 0.5rem;
             }
+
+            /* Hızlı Keşfet Grid 4'ten 2'ye Düşüyor */
             .quick-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
             }
-            .stats-band {
+
+            .quick-card {
+                padding: 1rem 0.25rem;
+            }
+
+            /* Formül Kartları */
+            .formula-grid {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1rem;
             }
+
+            /* Alt Bilgi Bandı */
+            .stats-band {
+                padding: 1.25rem;
+            }
+
             .stats-info {
-                grid-column: span 1;
-                text-align: center;
                 flex-direction: column;
-                align-items: center;
+                text-align: center;
+                gap: 0.5rem;
             }
         }
     </style>
@@ -605,7 +800,7 @@
                 <div class="logo-subtitle" data-i18n="logo_subtitle">Küresel Eğitim<br>İstihbarat Platformu</div>
             </div>
             <div class="nav-right">
-                <ul class="nav-menu">
+                <ul class="nav-menu" id="navMenu">
                     <li><a href="#" class="active" data-i18n="menu_explore">Keşfet</a></li>
                     <li><a href="#" data-i18n="menu_about">Hakkımızda</a></li>
                     <li><a href="#" data-i18n="menu_blog">Blog</a></li>
@@ -619,7 +814,7 @@
                 </button>
 
                 <a href="#" class="btn-login" data-i18n="btn_login">Giriş Yap</a>
-                <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+                <div class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
             </div>
         </div>
     </header>
@@ -628,21 +823,21 @@
     <section class="hero">
         <div class="hero-content">
             <!-- Global İstihbarat Rozetleri -->
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap;">
-                <span style="background: #FFF5F5; color: var(--primary-red); border: 1px solid var(--border-color); padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-shield-check"></i> <span data-i18n="badge_independent">Bağımsız Veri</span></span>
-                <span style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-chart-network"></i> <span data-i18n="badge_rankings">Küresel Sıralama</span></span>
-                <span style="background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-eye"></i> <span data-i18n="badge_transparency">Şeffaf Metodoloji</span></span>
+            <div class="hero-badges">
+                <span class="badge-item"><i class="fa-solid fa-shield-check"></i> <span data-i18n="badge_independent">Bağımsız Veri</span></span>
+                <span class="badge-item blue"><i class="fa-solid fa-chart-network"></i> <span data-i18n="badge_rankings">Küresel Sıralama</span></span>
+                <span class="badge-item green"><i class="fa-solid fa-eye"></i> <span data-i18n="badge_transparency">Şeffaf Metodoloji</span></span>
             </div>
 
             <h1 class="hero-title" id="heroTitle">Eğitim kararı<br><span>şansa bırakılmaz.</span></h1>
             <p class="hero-desc" data-i18n="hero_desc">Binlerce çelişkili yorum ve manipüle edilmiş puanlar arasında kaybolmayın. EduScor; doğrulanmış akademik başarılar, bağımsız Google metrikleri ve gerçek veli deneyimleriyle kararlarınızı destekler.</p>
             
             <!-- Rapor Oluşturma Kartı -->
-            <div style="background: #ffffff; border: 1px dashed var(--primary-red); padding: 1.25rem; border-radius: 1.25rem; display: flex; align-items: center; gap: 1.25rem; max-width: 580px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
-                <i class="fa-solid fa-file-pdf" style="font-size: 2.2rem; color: var(--primary-red);"></i>
+            <div class="pdf-card">
+                <i class="fa-solid fa-file-pdf"></i>
                 <div>
-                    <h5 data-i18n="pdf_title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;">Akıllı Eğitim Raporları Üretin</h5>
-                    <p data-i18n="pdf_desc" style="font-size: 0.78rem; color: var(--gray-text); margin: 0; line-height: 1.4;">Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.</p>
+                    <h5 data-i18n="pdf_title">Akıllı Eğitim Raporları Üretin</h5>
+                    <p data-i18n="pdf_desc">Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.</p>
                 </div>
             </div>
         </div>
@@ -660,8 +855,8 @@
                 <!-- Adım 1 -->
                 <div class="search-step">
                     <div class="step-title"><i class="fa-solid fa-location-dot"></i> <span data-i18n="step1_title">1. Konum</span></div>
-                    <div class="custom-select" id="useMyLocationBtn" style="cursor:pointer;">
-                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.5rem;"></i> <span id="locationLabel" data-i18n="step1_placeholder">Konumumu Kullan</span></span>
+                    <div class="custom-select" id="useMyLocationBtn">
+                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.3rem;"></i> <span id="locationLabel" data-i18n="step1_placeholder">Konumumu Kullan</span></span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="tag-label" data-i18n="step1_tags_label">Örnek Keşif Bölgesi</div>
@@ -678,7 +873,7 @@
                         <span id="whatLabel" data-i18n="step2_placeholder">Ne arıyorsunuz?</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div class="tag-list" style="margin-top: 1.8rem;" id="whatTags">
+                    <div class="tag-list" style="margin-top: 0.5rem;" id="whatTags">
                         <a href="#" class="tag-item" data-category="okul-oncesi-k12" data-label="Okullar" data-label-en="Schools"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> <span data-i18n="tag_schools">Okullar</span></a>
                         <a href="#" class="tag-item" data-keyword="kurs" data-label="Kurslar" data-label-en="Courses"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> <span data-i18n="tag_courses">Kurslar</span></a>
                         <a href="#" class="tag-item" data-category="yuksekogretim" data-label="Üniversiteler" data-label-en="Universities"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> <span data-i18n="tag_universities">Üniversiteler</span></a>
@@ -692,7 +887,7 @@
                         <span id="ageLabel" data-i18n="step3_placeholder">Yaş aralığı seçin</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div class="tag-list" style="margin-top: 1.8rem;" id="ageTags">
+                    <div class="tag-list" style="margin-top: 0.5rem;" id="ageTags">
                         <a href="#" class="tag-item" data-age="1">0-2</a>
                         <a href="#" class="tag-item" data-age="4">3-5</a>
                         <a href="#" class="tag-item" data-age="8">6-10</a>
@@ -716,52 +911,49 @@
         </div>
     </section>
 
-    <!-- EDUSCOR ŞEFFAFLIK VE BAĞIMSIZLIK MANİFESTOSU -->
-    <section style="max-width: 1300px; margin: 0 auto 3.5rem auto; padding: 0 2rem;">
-        <div style="background: linear-gradient(135deg, #241A16 0%, #3A2A24 100%); color: #ffffff; border-radius: 1.5rem; padding: 2.5rem; position: relative; overflow: hidden; border: 1px solid var(--border-color);">
-            <div style="position: absolute; right: -20px; bottom: -20px; font-size: 12rem; color: rgba(232, 84, 58, 0.04); pointer-events: none;">
+    <!-- MANİFESTO -->
+    <section class="manifesto-section">
+        <div class="manifesto-box">
+            <div style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; color: rgba(232, 84, 58, 0.03); pointer-events: none;">
                 <i class="fa-solid fa-gavel"></i>
             </div>
             <div style="max-width: 850px; position: relative; z-index: 2;">
-                <span style="color: var(--primary-red); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 0.5rem;" data-i18n="manifesto_badge">🛡️ Ticari Manipülasyona Karşı Koruma</span>
-                <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff;" data-i18n="manifesto_title">Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.</h2>
-                <p style="color: #EAE0D9; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;" data-i18n="manifesto_desc">
-                    Platformumuzda listelenen hiçbir K-12 okulu, üniversite veya kurs ücret karşılığında olumsuz değerlendirmeleri sildiremez, sıralamalarda yapay olarak üst sıralara taşınamaz veya algoritmayı manipüle edemez. EduScor tamamen şeffaf, bağımsız bir <strong>Eğitim İstihbaratı</strong> girişimidir.
+                <span style="color: var(--primary-red); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;" data-i18n="manifesto_badge">🛡️ Ticari Manipülasyona Karşı Koruma</span>
+                <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff;" data-i18n="manifesto_title">Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.</h2>
+                <p style="color: #EAE0D9; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;" data-i18n="manifesto_desc">
+                    Platformumuzda listelenen hiçbir K-12 okulu, üniversite veya kurs ücret karşılığında olumsuz değerlendirmeleri sildiremez, sıralamalarda yapay olarak üst sıralara taşınamaz veya algoritmayı manipüle edemez. EduScor tamamen şeffaf, bağımsız bir Eğitim İstihbaratı girişimidir.
                 </p>
-                <a href="#" style="color: var(--primary-red); font-weight: 700; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" data-i18n="manifesto_link">
+                <a href="#" style="color: var(--primary-red); font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" data-i18n="manifesto_link">
                     Metodolojimizi ve Objektif Puanlama Kriterlerini Görün <i class="fa-solid fa-arrow-right"></i>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- EDUSCOR SCORE ALGORİTMA ALANI -->
-    <section style="max-width: 1300px; margin: 0 auto 4rem auto; padding: 0 2rem;">
-        <div style="text-align: center; margin-bottom: 2.5rem;">
-            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;" data-i18n="formula_title">EduScor Score Nasıl Hesaplanıyor?</h2>
-            <p style="color: var(--gray-text); font-size: 0.95rem;" data-i18n="formula_subtitle">Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.</p>
+    <!-- HESAPLAMA METRİKLERİ -->
+    <section class="formula-section">
+        <div style="text-align: center; margin-bottom: 2rem; padding: 0 1rem;">
+            <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem;" data-i18n="formula_title">EduScor Score Nasıl Hesaplanıyor?</h2>
+            <p style="color: var(--gray-text); font-size: 0.9rem;" data-i18n="formula_subtitle">Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.</p>
         </div>
         
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
-            <!-- Kart 1: Akademik Veriler -->
-            <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 2rem; border-radius: 1.25rem; border-top: 4px solid #3B82F6; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
-                <div style="font-size: 2rem; color: #3B82F6; margin-bottom: 1rem;"><i class="fa-solid fa-chart-line-up"></i></div>
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;" data-i18n="card1_title">1. Resmi Başarı Metrikleri (%40)</h3>
-                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;" data-i18n="card1_desc">Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.</p>
+        <div class="formula-grid">
+            <div class="formula-card" style="border-top: 4px solid #3B82F6;">
+                <div style="font-size: 1.8rem; color: #3B82F6;"><i class="fa-solid fa-chart-line-up"></i></div>
+                <h3 style="font-size: 1rem; font-weight: 800;" data-i18n="card1_title">1. Resmi Başarı Metrikleri (%40)</h3>
+                <p style="color: var(--gray-text); font-size: 0.8rem; line-height: 1.5;" data-i18n="card1_desc">Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.</p>
             </div>
             
-            <!-- Kart 2: Canlı Google Metrikleri -->
-            <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 2rem; border-radius: 1.25rem; border-top: 4px solid #22C55E; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
-                <div style="font-size: 2rem; color: #22C55E; margin-bottom: 1rem;"><i class="fa-solid fa-map-location-dot"></i></div>
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;" data-i18n="card2_title">2. Canlı Google Metrikleri (%30)</h3>
-                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;" data-i18n="card2_desc">Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve dönemsel memnuniyet eğilimleri.</p>
+            <div class="formula-card" style="border-top: 4px solid #22C55E;">
+                <div style="font-size: 1.8rem; color: #22C55E;"><i class="fa-solid fa-map-location-dot"></i></div>
+                <h3 style="font-size: 1rem; font-weight: 800;" data-i18n="card2_title">2. Canlı Google Metrikleri (%30)</h3>
+                <p style="color: var(--gray-text); font-size: 0.8rem; line-height: 1.5;" data-i18n="card2_desc">Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve memnuniyet eğilimleri.</p>
             </div>
             
-            <!-- Kart 3: Doğrulanmış Veli Analizleri -->
-            <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 2rem; border-radius: 1.25rem; border-top: 4px solid var(--primary-red); box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
-                <div style="font-size: 2rem; color: var(--primary-red); margin-bottom: 1rem;"><i class="fa-solid fa-user-check"></i></div>
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;" data-i18n="card3_title">3. Onaylı Veli/Öğrenci Analizleri (%30)</h3>
-                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;" data-i18n="card3_desc">Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.</p>
+            <div class="formula-card" style="border-top: 4px solid var(--primary-red);">
+                <div style="font-size: 1.8rem; color: var(--primary-red);"><i class="fa-solid fa-user-check"></i></div>
+                <h3 style="font-size: 1rem; font-weight: 800;" data-i18n="card3_title">3. Onaylı Veli/Öğrenci Analizleri (%30)</h3>
+                <p style="color: var(--gray-text); font-size: 0.8rem; line-height: 1.5;" data-i18n="card3_desc">Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.</p>
             </div>
         </div>
     </section>
@@ -1047,40 +1239,30 @@
         let currentLang = localStorage.getItem('eduscor_lang') || 'tr';
 
         function applyLanguage(lang) {
-            // HTML lang özelliğini güncelle
             document.documentElement.lang = lang;
             
-            // Tüm data-i18n elementlerini tarayarak metinleri güncelle
             document.querySelectorAll('[data-i18n]').forEach(element => {
                 const key = element.getAttribute('data-i18n');
                 if (translations[lang][key]) {
-                    element.textContent = translations[lang][key];
+                    element.innerHTML = translations[lang][key];
                 }
             });
 
-            // HTML içeren özel alanlar
-            document.getElementById('logo_subtitle'); // data-i18n bunu halleder ama HTML formatında:
-            document.querySelector('[data-i18n="logo_subtitle"]').innerHTML = translations[lang].logo_subtitle;
             document.getElementById('heroTitle').innerHTML = translations[lang].hero_title_html;
 
-            // Yardım Alt Satırı özel span birleşimi
             const aiLink = document.getElementById('panelAiLink');
             aiLink.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> ${translations[lang].ai_link_text} <span>${translations[lang].ai_link_span}</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i>`;
 
-            // Seçici ve Butonların dillerini güncelle
             updateSelectorsUI(lang);
 
-            // Dil Değiştirici Buton Etiketini Güncelle
             const nextLang = lang === 'tr' ? 'EN' : 'TR';
             document.getElementById('langLabel').textContent = nextLang;
             
-            // Seçimi kaydet
             localStorage.setItem('eduscor_lang', lang);
             currentLang = lang;
         }
 
         function updateSelectorsUI(lang) {
-            // Arama Adımlarındaki Placeholder metinlerini dinamik güncelle
             if (!panelState.locationText && !panelState.locationLat) {
                 document.getElementById('locationLabel').textContent = translations[lang].step1_placeholder;
             }
@@ -1093,7 +1275,6 @@
                 document.getElementById('ageLabel').textContent = panelState.age + translations[lang].js_age_suffix;
             }
 
-            // Ne arıyorsunuz aktif etiketlerinin label eşleşmesini güncelle
             document.getElementById('whatTags').querySelectorAll('.tag-item').forEach(tag => {
                 if (tag.classList.contains('tag-active')) {
                     const labelKey = lang === 'tr' ? tag.dataset.label : tag.dataset.labelEn;
@@ -1102,15 +1283,24 @@
             });
         }
 
-        // Dil Değiştirme Buton Tetikleyicisi
         document.getElementById('langBtn').addEventListener('click', () => {
             const targetLang = currentLang === 'tr' ? 'en' : 'tr';
             applyLanguage(targetLang);
         });
 
-        // Sayfa yüklendiğinde dili uygula
-        document.addEventListener('DOMContentLoaded', () => {
-            applyLanguage(currentLang);
+        // ---- Hamburger Menü Tetikleyicisi ----
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            // İkonu kapat/aç olarak değiştirme
+            const icon = menuToggle.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.className = 'fa-solid fa-xmark';
+            } else {
+                icon.className = 'fa-solid fa-bars';
+            }
         });
 
 
@@ -1192,7 +1382,7 @@
                 p.set('lng', panelState.locationLng);
             }
             if (withAI) p.set('ai', '1');
-            p.set('lang', currentLang); // Explorer sayfasının da doğru dille açılabilmesi için parametre gönderiyoruz
+            p.set('lang', currentLang);
             const qs = p.toString();
             return 'explorer.html' + (qs ? '?' + qs : '');
         }
@@ -1206,6 +1396,11 @@
         document.getElementById('panelAiLink').addEventListener('click', (e) => {
             e.preventDefault();
             window.location.href = buildExplorerUrl(true);
+        });
+
+        // Sayfa yüklendiğinde dili uygula
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLanguage(currentLang);
         });
     </script>
 </body>
