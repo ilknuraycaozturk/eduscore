@@ -2,1422 +2,593 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EduScor | Global Education Intelligence Platform</title>
-    
-    <!-- Google Fonts & FontAwesome Simgeleri -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Eğitim Kararı Şansa Bırakılmaz</title>
+    <!-- Plus Jakarta Sans Fontu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Genel Tasarım ve Değişkenler */
+        /* CSS Değişkenleri ve Reset */
         :root {
             --primary-red: #E8543A;
-            --primary-red-hover: #CC3F28;
-            --dark-blue: #241A16;
-            --gray-text: #8A7A72;
-            --light-gray: #FDF8F5;
-            --border-color: #EAE0D9;
-            --beige-bg: #FDF3EC;
+            --primary-hover: #D1432A;
+            --dark-brown: #241A16;
+            --dark-text: #3D2D27;
+            --light-bg: #FFFDFB;
+            --pure-white: #FFFFFF;
+            --card-border: #F3EFEA;
+            --gray-text: #7D706A;
+            --light-orange-bg: #FFF5F2;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --shadow-sm: 0 4px 20px rgba(36, 26, 22, 0.04);
+            --shadow-md: 0 12px 40px rgba(36, 26, 22, 0.08);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: var(--font-main);
         }
 
         body {
-            background-color: var(--light-gray);
-            color: var(--dark-blue);
+            background-color: var(--light-bg);
+            color: var(--dark-text);
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
         }
 
-        /* ------------------ HEADER / MENÜ ------------------ */
+        /* Header & Navigasyon */
         header {
-            background-color: #ffffff;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
+            background-color: rgba(255, 253, 251, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--card-border);
+            position: fixed;
             top: 0;
+            left: 0;
+            width: 100%;
             z-index: 1000;
+            transition: var(--transition);
         }
 
         .nav-container {
-            max-width: 1300px;
+            max-width: 1280px;
             margin: 0 auto;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.5rem;
-        }
-
-        .logo-group {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
         }
 
         .logo {
-            font-size: 1.6rem;
+            font-size: 26px;
             font-weight: 800;
-            color: var(--primary-red);
+            color: var(--dark-brown);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: -0.5px;
         }
 
         .logo span {
-            color: var(--dark-blue);
-        }
-
-        .logo-subtitle {
-            font-size: 0.6rem;
-            font-weight: 700;
-            color: var(--gray-text);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            line-height: 1.2;
-            border-left: 1px solid var(--border-color);
-            padding-left: 0.75rem;
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            color: var(--primary-red);
         }
 
         .nav-menu {
             display: flex;
+            align-items: center;
+            gap: 32px;
             list-style: none;
-            align-items: center;
-            gap: 1.5rem;
         }
 
-        .nav-menu a {
+        .nav-link {
             text-decoration: none;
-            color: var(--dark-blue);
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: color 0.2s;
+            color: var(--dark-text);
+            font-weight: 500;
+            font-size: 15px;
+            transition: var(--transition);
+            position: relative;
         }
 
-        .nav-menu a:hover, .nav-menu a.active {
+        .nav-link:hover, .nav-link.active {
             color: var(--primary-red);
         }
 
-        .nav-menu a i {
-            color: var(--primary-red);
-            margin-right: 0.3rem;
-        }
-
-        /* Dil Seçici Buton */
-        .lang-selector {
-            background: var(--light-gray);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem 0.8rem;
-            border-radius: 99px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            color: var(--dark-blue);
-            transition: all 0.2s;
-        }
-
-        .lang-selector:hover {
-            border-color: var(--primary-red);
-            color: var(--primary-red);
-        }
-
-        .btn-login {
-            border: 1px solid var(--primary-red);
-            color: var(--primary-red);
-            padding: 0.5rem 1.2rem;
-            border-radius: 999px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-login:hover {
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
             background-color: var(--primary-red);
-            color: #ffffff;
+            transition: var(--transition);
+            border-radius: 2px;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .cta-btn {
+            background-color: var(--dark-brown);
+            color: var(--pure-white);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            border: 1px solid var(--dark-brown);
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--dark-brown);
+            transform: translateY(-2px);
         }
 
         .menu-toggle {
             display: none;
-            font-size: 1.3rem;
+            flex-direction: column;
+            gap: 6px;
             cursor: pointer;
-            color: var(--dark-blue);
-            padding: 0.5rem;
+            border: none;
+            background: none;
+            padding: 4px;
         }
 
-        /* ------------------ HERO SECTION ------------------ */
-        .hero {
-            max-width: 1300px;
+        .menu-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background-color: var(--dark-brown);
+            transition: var(--transition);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 180px 40px 100px 40px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 2.5rem 1.5rem;
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 2.5rem;
-            overflow: hidden;
+            text-align: center;
+            position: relative;
         }
 
-        .hero-content {
-            flex: 1.2;
-            min-width: 0; /* Taşıp sığmayan metinlerin flex içinde sıkışmasını engeller */
-        }
-
-        .hero-badges {
-            display: flex; 
-            gap: 0.5rem; 
-            margin-bottom: 1.2rem; 
-            flex-wrap: wrap;
-        }
-
-        .badge-item {
-            background: #FFF5F5; 
-            color: var(--primary-red); 
-            border: 1px solid var(--border-color); 
-            padding: 0.3rem 0.75rem; 
-            border-radius: 99px; 
-            font-size: 0.7rem; 
+        .hero-badge {
+            background-color: var(--light-orange-bg);
+            color: var(--primary-red);
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 13px;
             font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: 1px solid rgba(232, 84, 58, 0.1);
+            animation: fadeInUp 0.6s ease-out;
         }
-
-        .badge-item.blue { background: #EFF6FF; color: #1E40AF; border-color: #BFDBFE; }
-        .badge-item.green { background: #F0FDF4; color: #166534; border-color: #BBF7D0; }
 
         .hero-title {
-            font-size: 3rem;
+            font-size: 56px;
             font-weight: 800;
+            color: var(--dark-brown);
             line-height: 1.15;
-            margin-bottom: 1.2rem;
-            letter-spacing: -1px;
+            max-width: 900px;
+            margin-bottom: 24px;
+            letter-spacing: -1.5px;
+            animation: fadeInUp 0.8s ease-out;
         }
 
         .hero-title span {
             color: var(--primary-red);
+            position: relative;
+            display: inline-block;
         }
 
-        .hero-desc {
-            font-size: 1rem;
+        .hero-subtitle {
+            font-size: 18px;
             color: var(--gray-text);
-            line-height: 1.6;
-            margin-bottom: 2rem;
-            max-width: 600px;
+            max-width: 640px;
+            margin-bottom: 48px;
+            font-weight: 400;
+            animation: fadeInUp 1s ease-out;
         }
 
-        .pdf-card {
-            background: #ffffff; 
-            border: 1px dashed var(--primary-red); 
-            padding: 1rem; 
-            border-radius: 1rem; 
-            display: flex; 
-            align-items: center; 
-            gap: 1rem; 
-            max-width: 580px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
-        }
-
-        .pdf-card i {
-            font-size: 2rem; 
-            color: var(--primary-red);
-            flex-shrink: 0;
-        }
-
-        .pdf-card h5 {
-            font-size: 0.9rem; 
-            font-weight: 700; 
-            margin-bottom: 0.2rem;
-        }
-
-        .pdf-card p {
-            font-size: 0.75rem; 
-            color: var(--gray-text); 
-            margin: 0; 
-            line-height: 1.4;
-        }
-        
-        .hero-image {
-            flex: 0.8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-width: 0;
-        }
-
-        .hero-image img {
+        /* Arama Arayüzü */
+        .search-container {
             width: 100%;
-            height: auto;
-            max-height: 450px;
-            border-radius: 1.5rem;
-            object-fit: cover;
+            max-width: 1060px;
+            background-color: var(--pure-white);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--card-border);
+            animation: fadeInUp 1.2s ease-out;
         }
 
-        /* ------------------ 3-ADIMLI ARAMA PANELİ ------------------ */
-        .search-panel-container {
-            max-width: 1300px;
-            margin: 0 auto 3rem auto;
-            padding: 0 1.5rem;
+        .search-steps {
+            display: flex;
+            align-items: center;
+            width: 100%;
         }
 
-        .search-panel {
-            background-color: #ffffff;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-        }
-
-        .search-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr auto;
-            gap: 1.25rem;
-            align-items: start;
-        }
-
-        .search-step {
+        .step-box {
+            flex: 1;
+            padding: 12px 24px;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            width: 100%;
+            align-items: flex-start;
+            position: relative;
         }
 
-        .step-title {
-            font-size: 0.8rem;
+        .step-box:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 40px;
+            background-color: var(--card-border);
+        }
+
+        .step-label {
+            font-size: 11px;
             font-weight: 700;
-            color: var(--dark-blue);
+            color: var(--primary-red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 6px;
         }
 
-        .step-title i {
-            color: var(--primary-red);
+        .step-box select, .step-box input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-brown);
+            background: transparent;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        .step-box input::placeholder {
+            color: var(--gray-text);
+            font-weight: 500;
         }
 
         .custom-select {
-            background: var(--light-gray);
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            padding: 0.8rem 1rem;
-            font-size: 0.85rem;
-            color: var(--gray-text);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            min-height: 44px;
+            position: relative;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Etiketler / Tagler */
-        .tag-list {
-            display: flex;
-            gap: 0.4rem;
-            flex-wrap: wrap;
-            margin-top: 0.25rem;
-        }
-
-        .tag-item {
-            background: var(--light-gray);
-            border: 1px solid var(--border-color);
-            padding: 0.35rem 0.7rem;
-            border-radius: 99px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            color: var(--dark-blue);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .tag-item:hover, .tag-active {
-            border-color: var(--primary-red) !important;
-            color: var(--primary-red) !important;
-        }
-
-        .tag-active {
-            background: var(--beige-bg) !important;
-        }
-
-        .tag-label {
-            font-size: 0.7rem;
-            color: var(--gray-text);
-            margin-bottom: 0.1rem;
-            font-weight: 600;
-        }
-
-        /* Arama Butonları */
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-            justify-content: center;
-            height: 100%;
-            padding-top: 1.2rem;
-        }
-
-        .btn-search {
-            background-color: var(--primary-red);
-            color: #ffffff;
+        .location-btn {
+            background: none;
             border: none;
-            border-radius: 99px;
-            padding: 0.85rem 2rem;
-            font-weight: 700;
-            font-size: 0.9rem;
+            color: var(--gray-text);
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: background-color 0.2s;
-            width: 100%;
-            white-space: nowrap;
+            gap: 4px;
+            margin-top: 4px;
+            transition: var(--transition);
         }
 
-        .btn-search:hover {
-            background-color: var(--primary-red-hover);
-        }
-
-        .btn-ai {
-            background: #ffffff;
+        .location-btn:hover {
             color: var(--primary-red);
-            border: 1px solid var(--border-color);
-            border-radius: 99px;
-            padding: 0.85rem 2rem;
+        }
+
+        .search-action {
+            padding-left: 12px;
+        }
+
+        .search-submit {
+            background-color: var(--primary-red);
+            color: var(--pure-white);
+            border: none;
+            padding: 18px 36px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
             font-weight: 700;
-            font-size: 0.9rem;
             cursor: pointer;
+            transition: var(--transition);
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            width: 100%;
-            white-space: nowrap;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(232, 84, 58, 0.2);
         }
 
-        .btn-ai:hover {
-            background-color: #fff5f5;
-            border-color: var(--primary-red);
+        .search-submit:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 84, 58, 0.3);
         }
 
-        /* Yardım Al Alt Satırı */
-        .search-bottom-link {
-            border-top: 1px dashed var(--border-color);
-            margin-top: 1.25rem;
-            padding-top: 1rem;
-            text-align: center;
-        }
-
-        .search-bottom-link a {
-            text-decoration: none;
-            color: var(--dark-blue);
-            font-weight: 700;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            line-height: 1.4;
-        }
-
-        .search-bottom-link a span {
-            color: var(--primary-red);
-        }
-
-        /* ------------------ MANİFESTO VE ALGORİTMA ------------------ */
-        .manifesto-section {
-            max-width: 1300px; 
-            margin: 0 auto 3.5rem auto; 
-            padding: 0 1.5rem;
+        /* Algoritma ve Metodoloji Alanı */
+        .formula-section {
+            padding: 100px 40px;
+            max-width: 1280px;
+            margin: 0 auto;
         }
 
         .manifesto-box {
-            background: linear-gradient(135deg, #241A16 0%, #3A2A24 100%); 
-            color: #ffffff; 
-            border-radius: 1.5rem; 
-            padding: 2.5rem 2rem; 
-            position: relative; 
-            overflow: hidden; 
-            border: 1px solid var(--border-color);
+            background-color: var(--dark-brown);
+            color: var(--pure-white);
+            border-radius: var(--radius-lg);
+            padding: 60px;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .formula-section {
-            max-width: 1300px; 
-            margin: 0 auto 4rem auto; 
-            padding: 0 1.5rem;
+        .manifesto-box h3 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .manifesto-box p {
+            font-size: 18px;
+            color: #CFC7C4;
+            max-width: 800px;
+            font-weight: 400;
         }
 
         .formula-grid {
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
         }
 
         .formula-card {
-            background: #ffffff; 
-            border: 1px solid var(--border-color); 
-            padding: 1.75rem; 
-            border-radius: 1.25rem; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+            background-color: var(--pure-white);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .formula-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .formula-card .icon-wrapper {
+            width: 56px;
+            height: 56px;
+            background-color: var(--light-orange-bg);
+            border-radius: var(--radius-sm);
             display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        /* ------------------ KEŞFEDİN VE POPÜLER ------------------ */
-        .discover-section {
-            max-width: 1300px;
-            margin: 0 auto 3rem auto;
-            padding: 0 1.5rem;
-            display: grid;
-            grid-template-columns: 1.8fr 1.2fr;
-            gap: 2.5rem;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: 800;
-            margin-bottom: 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .all-link {
-            font-size: 0.75rem;
-            color: var(--gray-text);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        /* 8'li Izgara */
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.75rem;
-        }
-
-        .quick-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 1rem 0.5rem;
-            text-align: center;
-            text-decoration: none;
-            color: var(--dark-blue);
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
-        }
-
-        .quick-card:hover {
-            border-color: var(--primary-red);
-            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .quick-card i {
-            font-size: 1.5rem;
             color: var(--primary-red);
-        }
-
-        .quick-card h4 {
-            font-size: 0.8rem;
+            font-size: 24px;
             font-weight: 700;
-            line-height: 1.2;
+            margin-bottom: 24px;
         }
 
-        .quick-card p {
-            font-size: 0.65rem;
-            color: var(--gray-text);
-        }
-
-        /* Popüler Aramalar */
-        .popular-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .popular-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-decoration: none;
-            color: var(--dark-blue);
-            transition: all 0.2s;
-            gap: 1rem;
-        }
-
-        .popular-card:hover {
-            border-color: var(--primary-red);
-        }
-
-        .popular-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .popular-icon {
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
-            background: var(--light-gray);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-orange { color: #f97316; background: #fff7ed; }
-        .icon-green { color: #22c55e; background: #f0fdf4; }
-        .icon-blue { color: #3b82f6; background: #eff6ff; }
-        .icon-purple { color: #a855f7; background: #faf5ff; }
-
-        .popular-text h4 {
-            font-size: 0.8rem;
+        .formula-card h4 {
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 0.2rem;
-            line-height: 1.3;
+            color: var(--dark-brown);
+            margin-bottom: 12px;
         }
 
-        .popular-text p {
-            font-size: 0.7rem;
+        .formula-card p {
             color: var(--gray-text);
+            font-size: 15px;
         }
 
-        .popular-arrow {
-            color: var(--gray-text);
-            font-size: 0.8rem;
-            flex-shrink: 0;
-        }
-
-        /* ------------------ ALT STATS BANDI ------------------ */
-        .stats-section-container {
-            max-width: 1300px;
-            margin: 0 auto 4rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .stats-band {
-            background-color: var(--beige-bg);
-            border: 1px solid #F0D5C8;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .stats-info {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .stats-info i {
-            font-size: 1.6rem;
-            color: var(--primary-red);
-            flex-shrink: 0;
-        }
-
-        .stats-info h3 {
-            font-size: 1rem;
-            font-weight: 800;
-            margin-bottom: 0.2rem;
-        }
-
-        .stats-info p {
-            font-size: 0.75rem;
-            color: var(--gray-text);
-            line-height: 1.4;
-        }
-
-
-        /* ==================== MOBİL UYUMLULUK VE MEDYA SORGULARI ==================== */
-        
-        /* 1100px Altı - Tablet ve Yatay Görünüm */
-        @media (max-width: 1100px) {
-            .search-grid {
-                grid-template-columns: 1fr 1fr;
+        /* Animasyonlar */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            .action-buttons {
-                grid-column: span 2;
-                flex-direction: row;
-                padding-top: 0.5rem;
-            }
-            .btn-search, .btn-ai {
-                flex: 1;
-            }
-            .discover-section {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            .formula-grid {
-                grid-template-columns: 1fr 1fr;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        /* 768px Altı - Mobil Dikey Ekranlar */
+        /* Responsive Tasarım */
+        @media (max-width: 1024px) {
+            .hero-title { font-size: 44px; }
+            .formula-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
         @media (max-width: 768px) {
-            /* Mobil Hamburger Menü Yapısı */
+            .nav-container { padding: 16px 24px; }
+            .menu-toggle { display: flex; }
+            
             .nav-menu {
                 position: fixed;
-                top: 61px;
+                top: 75px;
                 right: -100%;
-                width: 70%;
-                height: calc(100vh - 61px);
-                background-color: #ffffff;
+                width: 100%;
+                height: calc(100vh - 75px);
+                background-color: var(--pure-white);
                 flex-direction: column;
+                padding: 40px;
+                gap: 24px;
+                transition: var(--transition);
+                box-shadow: var(--shadow-md);
                 align-items: flex-start;
-                padding: 2rem 1.5rem;
-                gap: 1.5rem;
-                box-shadow: -5px 5px 15px rgba(0,0,0,0.05);
-                transition: right 0.3s ease;
-                z-index: 999;
-                border-left: 1px solid var(--border-color);
             }
 
             .nav-menu.active {
                 right: 0;
             }
 
-            .btn-login {
-                display: none;
-            }
+            .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+            .menu-toggle.active span:nth-child(2) { opacity: 0; }
+            .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
 
-            .menu-toggle {
-                display: block;
-            }
+            .hero-section { padding: 140px 24px 60px 24px; }
+            .hero-title { font-size: 36px; }
+            
+            .search-container { padding: 16px; border-radius: var(--radius-md); }
+            .search-steps { flex-direction: column; gap: 16px; }
+            .step-box { width: 100%; padding: 8px 0; }
+            .step-box:not(:last-child)::after { display: none; }
+            
+            .search-action { width: 100%; padding-left: 0; margin-top: 8px; }
+            .search-submit { width: 100%; justify-content: center; }
 
-            /* Hero Bölümü */
-            .hero {
-                flex-direction: column-reverse; /* Mobilde görselin aşağıda kalmasını sağlar */
-                text-align: center;
-                padding: 1.5rem 1rem;
-                gap: 1.5rem;
-            }
-
-            .hero-content {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                width: 100%;
-            }
-
-            .hero-badges {
-                justify-content: center;
-            }
-
-            .hero-title {
-                font-size: 2rem;
-                margin-bottom: 1rem;
-            }
-
-            .hero-desc {
-                font-size: 0.9rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .pdf-card {
-                text-align: left;
-                align-items: flex-start;
-                width: 100%;
-            }
-
-            /* Görselin Mobilde Taşmasını ve Bozunmasını Önleyen Kritik Düzeltmeler */
-            .hero-image {
-                width: 100%;
-                max-width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-
-            .hero-image img {
-                width: 100%;
-                max-width: 320px; /* Telefonlarda görselin aşırı büyümesini engeller */
-                max-height: 220px; /* Dikey yüksekliği kısıtlayarak ekranı doldurmasını engeller */
-                aspect-ratio: 4 / 3; /* Sabit en-boy oranı vererek sağa sola yamulmayı önler */
-                border-radius: 1rem;
-                object-fit: cover;
-            }
-
-            /* Arama Paneli */
-            .search-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .action-buttons {
-                grid-column: span 1;
-                flex-direction: column;
-                padding-top: 0.5rem;
-            }
-
-            /* Hızlı Keşfet Grid */
-            .quick-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem;
-            }
-
-            .quick-card {
-                padding: 1rem 0.25rem;
-            }
-
-            /* Formül Kartları */
-            .formula-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            /* Alt Bilgi Bandı */
-            .stats-band {
-                padding: 1.25rem;
-            }
-
-            .stats-info {
-                flex-direction: column;
-                text-align: center;
-                gap: 0.5rem;
-            }
+            .formula-grid { grid-template-columns: 1fr; }
+            .manifesto-box { padding: 32px; }
+            .manifesto-box h3 { font-size: 24px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
+    <!-- Header / Navigasyon -->
     <header>
-        <div class="nav-container">
-            <div class="logo-group">
-                <a href="#" class="logo">Edu<span>Scor</span></a>
-                <div class="logo-subtitle" data-i18n="logo_subtitle">Küresel Eğitim<br>İstihbarat Platformu</div>
-            </div>
-            <div class="nav-right">
-                <ul class="nav-menu" id="navMenu">
-                    <li><a href="#" class="active" data-i18n="menu_explore">Keşfet</a></li>
-                    <li><a href="#" data-i18n="menu_about">Hakkımızda</a></li>
-                    <li><a href="#" data-i18n="menu_blog">Blog</a></li>
-                    <li><a href="#"><i class="fa-regular fa-heart"></i><span data-i18n="menu_favorites">Favorilerim</span></a></li>
-                </ul>
-                
-                <!-- Dil Değiştirici Buton -->
-                <button class="lang-selector" id="langBtn">
-                    <i class="fa-solid fa-globe"></i>
-                    <span id="langLabel">EN</span>
-                </button>
-
-                <a href="#" class="btn-login" data-i18n="btn_login">Giriş Yap</a>
-                <div class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
-            </div>
-        </div>
+        <nav class="nav-container">
+            <a href="#" class="logo">Edu<span>Scor</span></a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" class="nav-link active">Ana Sayfa</a></li>
+                <li><a href="#" class="nav-link">Nasıl Çalışır?</a></li>
+                <li><a href="#" class="nav-link">Metodoloji</a></li>
+                <li><a href="#" class="nav-link">Kurumlar İçin</a></li>
+                <li><a href="#" class="cta-btn">Platformu Keşfet</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
     </header>
 
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <div class="hero-content">
-            <!-- Global İstihbarat Rozetleri -->
-            <div class="hero-badges">
-                <span class="badge-item"><i class="fa-solid fa-shield-check"></i> <span data-i18n="badge_independent">Bağımsız Veri</span></span>
-                <span class="badge-item blue"><i class="fa-solid fa-chart-network"></i> <span data-i18n="badge_rankings">Küresel Sıralama</span></span>
-                <span class="badge-item green"><i class="fa-solid fa-eye"></i> <span data-i18n="badge_transparency">Şeffaf Metodoloji</span></span>
-            </div>
-
-            <h1 class="hero-title" id="heroTitle">Eğitim kararı<br><span>şansa bırakılmaz.</span></h1>
-            <p class="hero-desc" data-i18n="hero_desc">Binlerce çelişkili yorum ve manipüle edilmiş puanlar arasında kaybolmayın. EduScor; doğrulanmış akademik başarılar, bağımsız Google metrikleri ve gerçek veli deneyimleriyle kararlarınızı destekler.</p>
-            
-            <!-- Rapor Oluşturma Kartı -->
-            <div class="pdf-card">
-                <i class="fa-solid fa-file-pdf"></i>
-                <div>
-                    <h5 data-i18n="pdf_title">Akıllı Eğitim Raporları Üretin</h5>
-                    <p data-i18n="pdf_desc">Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.</p>
-                </div>
-            </div>
-        </div>
+    <!-- Hero Bölümü -->
+    <section class="hero-section">
+        <div class="hero-badge">Veriye Dayalı Bağımsız Analiz</div>
+        <h1 class="hero-title">En Doğru Eğitim Kararını <span>Veriyle</span> Alın</h1>
+        <p class="hero-subtitle">Kulaktan dolma bilgilerle değil, şeffaf kriterler ve bağımsız veri modelleriyle optimize edilmiş objektif başarı skorlarını keşfedin.</p>
         
-        <div class="hero-image">
-            <img src="students.jpg" alt="EduScor Öğrencileri">
-        </div>
-    </section>
-
-    <!-- 3-ADIMLI ARAMA PANELİ -->
-    <section class="search-panel-container">
-        <div class="search-panel">
-            <div class="search-grid">
-                
-                <!-- Adım 1 -->
-                <div class="search-step">
-                    <div class="step-title"><i class="fa-solid fa-location-dot"></i> <span data-i18n="step1_title">1. Konum</span></div>
-                    <div class="custom-select" id="useMyLocationBtn">
-                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.3rem;"></i> <span id="locationLabel" data-i18n="step1_placeholder">Konumumu Kullan</span></span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="tag-label" data-i18n="step1_tags_label">Örnek Keşif Bölgesi</div>
-                    <div class="tag-list" id="locationTags">
-                        <a href="#" class="tag-item" data-location="Bağlıca"><span data-i18n="tag_baglica">Bağlıca, Ankara</span></a>
-                        <a href="#" class="tag-item" data-location="Çayyolu"><span data-i18n="tag_cayyolu">Çayyolu, Ankara</span></a>
-                    </div>
-                </div>
-
-                <!-- Adım 2 -->
-                <div class="search-step">
-                    <div class="step-title"><i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="step2_title">2. Ne arıyorsunuz?</span></div>
+        <!-- Arama Arayüzü -->
+        <div class="search-container">
+            <form action="#" method="GET" class="search-steps">
+                <!-- Adım 1: Eğitim Kademesi -->
+                <div class="step-box">
+                    <span class="step-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                        Eğitim Tipi
+                    </span>
                     <div class="custom-select">
-                        <span id="whatLabel" data-i18n="step2_placeholder">Ne arıyorsunuz?</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="tag-list" style="margin-top: 0.5rem;" id="whatTags">
-                        <a href="#" class="tag-item" data-category="okul-oncesi-k12" data-label="Okullar" data-label-en="Schools"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> <span data-i18n="tag_schools">Okullar</span></a>
-                        <a href="#" class="tag-item" data-keyword="kurs" data-label="Kurslar" data-label-en="Courses"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> <span data-i18n="tag_courses">Kurslar</span></a>
-                        <a href="#" class="tag-item" data-category="yuksekogretim" data-label="Üniversiteler" data-label-en="Universities"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> <span data-i18n="tag_universities">Üniversiteler</span></a>
+                        <select name="education_level" required>
+                            <option value="" disabled selected>Kademe Seçin</option>
+                            <option value="preschool">Okul Öncesi / Anaokulu</option>
+                            <option value="primary">İlkokul</option>
+                            <option value="middle">Ortaokul</option>
+                            <option value="high">Lise</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Adım 3 -->
-                <div class="search-step">
-                    <div class="step-title"><i class="fa-solid fa-user"></i> <span data-i18n="step3_title">3. Yaş</span> <span style="font-weight:400; color:var(--gray-text);" data-i18n="step3_optional">(İsteğe bağlı)</span></div>
+                <!-- Adım 2: Konum -->
+                <div class="step-box">
+                    <span class="step-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Bölge / Konum
+                    </span>
                     <div class="custom-select">
-                        <span id="ageLabel" data-i18n="step3_placeholder">Yaş aralığı seçin</span>
-                        <i class="fa-solid fa-chevron-down"></i>
+                        <input type="text" name="location" placeholder="İl, ilçe veya mahalle..." autocomplete="off" required>
                     </div>
-                    <div class="tag-list" style="margin-top: 0.5rem;" id="ageTags">
-                        <a href="#" class="tag-item" data-age="1">0-2</a>
-                        <a href="#" class="tag-item" data-age="4">3-5</a>
-                        <a href="#" class="tag-item" data-age="8">6-10</a>
-                        <a href="#" class="tag-item" data-age="12">11-14</a>
-                        <a href="#" class="tag-item" data-age="16">15-18</a>
+                    <button type="button" class="location-btn">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
+                        Yakınımda Ara
+                    </button>
+                </div>
+
+                <!-- Adım 3: Kurum Adı veya Kriter -->
+                <div class="step-box">
+                    <span class="step-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Tercih Detayı
+                    </span>
+                    <div class="custom-select">
+                        <input type="text" name="query" placeholder="Kurum adı veya anahtar kelime...">
                     </div>
                 </div>
 
-                <!-- Arama Butonları -->
-                <div class="action-buttons">
-                    <button class="btn-search" id="panelSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="btn_fetch_data">Verileri Getir</span></button>
-                    <button class="btn-ai" id="panelAiBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_ai_support">AI Analiz Desteği</span></button>
+                <!-- Arama Butonu -->
+                <div class="search-action">
+                    <button type="submit" class="search-submit">
+                        Sorgula
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
                 </div>
-
-            </div>
-
-            <!-- Yardım Alt Satırı -->
-            <div class="search-bottom-link">
-                <a href="#" id="panelAiLink"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> <span data-i18n="ai_link_text">Karmaşık kriterleriniz mi var? Karar vermekte zorlanıyor musunuz?</span> <span>Yapay Zekayı Başlatın.</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i></a>
-            </div>
+            </form>
         </div>
     </section>
 
-    <!-- MANİFESTO -->
-    <section class="manifesto-section">
-        <div class="manifesto-box">
-            <div style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; color: rgba(232, 84, 58, 0.03); pointer-events: none;">
-                <i class="fa-solid fa-gavel"></i>
-            </div>
-            <div style="max-width: 850px; position: relative; z-index: 2;">
-                <span style="color: var(--primary-red); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;" data-i18n="manifesto_badge">🛡️ Ticari Manipülasyona Karşı Koruma</span>
-                <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff;" data-i18n="manifesto_title">Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.</h2>
-                <p style="color: #EAE0D9; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;" data-i18n="manifesto_desc">
-                    Platformumuzda listelenen hiçbir K-12 okulu, üniversite veya kurs ücret karşılığında olumsuz değerlendirmeleri sildiremez, sıralamalarda yapay olarak üst sıralara taşınamaz veya algoritmayı manipüle edemez. EduScor tamamen şeffaf, bağımsız bir Eğitim İstihbaratı girişimidir.
-                </p>
-                <a href="#" style="color: var(--primary-red); font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" data-i18n="manifesto_link">
-                    Metodolojimizi ve Objektif Puanlama Kriterlerini Görün <i class="fa-solid fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- HESAPLAMA METRİKLERİ -->
+    <!-- Metodoloji ve Algoritma Alanı (Formula Section) -->
     <section class="formula-section">
-        <div style="text-align: center; margin-bottom: 2rem; padding: 0 1rem;">
-            <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem;" data-i18n="formula_title">EduScor Score Nasıl Hesaplanıyor?</h2>
-            <p style="color: var(--gray-text); font-size: 0.9rem;" data-i18n="formula_subtitle">Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.</p>
+        <div class="manifesto-box">
+            <h3>Eğitim Kararı Şansa Bırakılmaz</h3>
+            <p>EduScor, eğitim kurumlarını ticari kaygılardan uzak, tamamen şeffaf ve bilimsel ağırlıklandırma algoritmalarıyla puanlar. Velilerin ve öğrencilerin doğru veriye ulaşmasını hedefler.</p>
         </div>
-        
+
         <div class="formula-grid">
-            <div class="formula-card" style="border-top: 4px solid #3B82F6;">
-                <div style="font-size: 1.8rem; color: #3B82F6;"><i class="fa-solid fa-chart-line-up"></i></div>
-                <h3 style="font-size: 1rem; font-weight: 800;" data-i18n="card1_title">1. Resmi Başarı Metrikleri (%40)</h3>
-                <p style="color: var(--gray-text); font-size: 0.8rem; line-height: 1.5;" data-i18n="card1_desc">Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.</p>
+            <div class="formula-card">
+                <div class="icon-wrapper">1</div>
+                <h4>Akademik Gelişim</h4>
+                <p>Kurumların kitlesel başarı oranları, sınav çıktıları ve proje üretim kapasiteleri objektif metriklerle ölçülür.</p>
             </div>
-            
-            <div class="formula-card" style="border-top: 4px solid #22C55E;">
-                <div style="font-size: 1.8rem; color: #22C55E;"><i class="fa-solid fa-map-location-dot"></i></div>
-                <h3 style="font-size: 1rem; font-weight: 800;" data-i18n="card2_title">2. Canlı Google Metrikleri (%30)</h3>
-                <p style="color: var(--gray-text); font-size: 0.8rem; line-height: 1.5;" data-i18n="card2_desc">Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve memnuniyet eğilimleri.</p>
+            <div class="formula-card">
+                <div class="icon-wrapper">2</div>
+                <h4>Sosyal & Sosyo-Kültürel</h4>
+                <p>Sanat, spor ve kulüp faaliyetlerinin çeşitliliği ile öğrencilerin sosyal ekosisteme katılım endeksleri puanlanır.</p>
             </div>
-            
-            <div class="formula-card" style="border-top: 4px solid var(--primary-red);">
-                <div style="font-size: 1.8rem; color: var(--primary-red);"><i class="fa-solid fa-user-check"></i></div>
-                <h3 style="font-size: 1rem; font-weight: 800;" data-i18n="card3_title">3. Onaylı Veli/Öğrenci Analizleri (%30)</h3>
-                <p style="color: var(--gray-text); font-size: 0.8rem; line-height: 1.5;" data-i18n="card3_desc">Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.</p>
+            <div class="formula-card">
+                <div class="icon-wrapper">3</div>
+                <h4>Fiziksel Donanım</h4>
+                <p>Sınıf mevcudiyet standartları, teknolojik altyapı, laboratuvar ve yeşil alan rasyoları analiz edilir.</p>
             </div>
         </div>
     </section>
 
-    <!-- HIZLICA KEŞFEDİN VE POPÜLER ARAMALAR -->
-    <section class="discover-section">
-        
-        <!-- Sol Bölüm: Kategoriler -->
-        <div>
-            <div class="section-title" data-i18n="categories_title">Küresel Eğitim Kategorileri</div>
-            <div class="quick-grid">
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-school"></i>
-                    <h4 data-i18n="cat_schools">Okullar</h4>
-                    <p data-i18n="cat_schools_desc">Kreş - K-12 Lise</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <h4 data-i18n="cat_universities">Üniversiteler</h4>
-                    <p data-i18n="cat_universities_desc">Akademik Dereceler</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-book-open"></i>
-                    <h4 data-i18n="cat_courses">Kurslar</h4>
-                    <p data-i18n="cat_courses_desc">Gelişim & Beceri</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-umbrella-beach"></i>
-                    <h4 data-i18n="cat_camps">Yaz Okulları</h4>
-                    <p data-i18n="cat_camps_desc">Kamp ve Programlar</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-language"></i>
-                    <h4 data-i18n="cat_languages">Dil Eğitimi</h4>
-                    <p data-i18n="cat_languages_desc">Uluslararası Okullar</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-hands-holding-child"></i>
-                    <h4 data-i18n="cat_special">Özel Eğitim</h4>
-                    <p data-i18n="cat_special_desc">Özel Gereksinimler</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-briefcase"></i>
-                    <h4 data-i18n="cat_adult">Yetişkin Eğitimi</h4>
-                    <p data-i18n="cat_adult_desc">Kariyer Analitiği</p>
-                </a>
-                <a href="#" class="quick-card">
-                    <i class="fa-solid fa-wallet"></i>
-                    <h4 data-i18n="cat_scholarships">Burslar</h4>
-                    <p data-i18n="cat_scholarships_desc">Burs Fırsatları</p>
-                </a>
-            </div>
-        </div>
-
-        <!-- Sağ Bölüm: Popüler Aramalar -->
-        <div>
-            <div class="section-title">
-                <span data-i18n="trends_title">Küresel Trend Aramalar</span> 
-                <a href="#" class="all-link"><span data-i18n="trends_all">Tümünü Gör</span> <i class="fa-solid fa-chevron-right"></i></a>
-            </div>
-            <div class="popular-list">
-                <a href="#" class="popular-card">
-                    <div class="popular-info">
-                        <div class="popular-icon icon-orange"><i class="fa-solid fa-child"></i></div>
-                        <div class="popular-text">
-                            <h4 data-i18n="trend1_title">4 yaş için okul öncesi eğitimi arıyorum</h4>
-                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend1_loc">Örnek Seçim</span></p>
-                        </div>
-                    </div>
-                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-                </a>
-                <a href="#" class="popular-card">
-                    <div class="popular-info">
-                        <div class="popular-icon icon-green"><i class="fa-solid fa-book-open"></i></div>
-                        <div class="popular-text">
-                            <h4 data-i18n="trend2_title">Üstün başarı ve tam burs imkanları</h4>
-                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend2_loc">Tümü</span></p>
-                        </div>
-                    </div>
-                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-                </a>
-                <a href="#" class="popular-card">
-                    <div class="popular-info">
-                        <div class="popular-icon icon-blue"><i class="fa-solid fa-sun"></i></div>
-                        <div class="popular-text">
-                            <h4 data-i18n="trend3_title">Uluslararası yaz kampı seçenekleri</h4>
-                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend3_loc">Global</span></p>
-                        </div>
-                    </div>
-                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-                </a>
-                <a href="#" class="popular-card">
-                    <div class="popular-info">
-                        <div class="popular-icon icon-purple"><i class="fa-solid fa-graduation-cap"></i></div>
-                        <div class="popular-text">
-                            <h4 data-i18n="trend4_title">Özel gereksinim odaklı kapsayıcı eğitim</h4>
-                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend4_loc">Çevrimiçi / Online</span></p>
-                        </div>
-                    </div>
-                    <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-                </a>
-            </div>
-        </div>
-
-    </section>
-
-    <!-- ALT STATS BANDI -->
-    <section class="stats-section-container">
-        <div class="stats-band">
-            <div class="stats-info">
-                <i class="fa-solid fa-shield-halved"></i>
-                <div>
-                    <h3 data-i18n="stats_title">Güvenilir. Tarafsız. Şeffaf.</h3>
-                    <p data-i18n="stats_desc">EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için bağımsız veri metodolojisini kullanır.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
+    <!-- JavaScript - Mobil Menü Kontrolü -->
     <script>
-        // ---- DİL VE SÖZLÜK YAPISI (i18n) ----
-        const translations = {
-            tr: {
-                logo_subtitle: "Küresel Eğitim<br>İstihbarat Platformu",
-                menu_explore: "Keşfet",
-                menu_about: "Hakkımızda",
-                menu_blog: "Blog",
-                menu_favorites: "Favorilerim",
-                btn_login: "Giriş Yap",
-                badge_independent: "Bağımsız Veri",
-                badge_rankings: "Küresel Sıralama",
-                badge_transparency: "Şeffaf Metodoloji",
-                hero_title_html: "Eğitim kararı<br><span>şansa bırakılmaz.</span>",
-                hero_desc: "Binlerce çelişkili yorum ve manipüle edilmiş puanlar arasında kaybolmayın. EduScor; doğrulanmış akademik başarılar, bağımsız Google metrikleri ve gerçek veli deneyimleriyle kararlarınızı destekler.",
-                pdf_title: "Akıllı Eğitim Raporları Üretin",
-                pdf_desc: "Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.",
-                step1_title: "1. Konum",
-                step1_placeholder: "Konumumu Kullan",
-                step1_tags_label: "Örnek Keşif Bölgesi",
-                tag_baglica: "Bağlıca, Ankara",
-                tag_cayyolu: "Çayyolu, Ankara",
-                step2_title: "2. Ne arıyorsunuz?",
-                step2_placeholder: "Ne arıyorsunuz?",
-                tag_schools: "Okullar",
-                tag_courses: "Kurslar",
-                tag_universities: "Üniversiteler",
-                step3_title: "3. Yaş",
-                step3_optional: "(İsteğe bağlı)",
-                step3_placeholder: "Yaş aralığı seçin",
-                btn_fetch_data: "Verileri Getir",
-                btn_ai_support: "AI Analiz Desteği",
-                ai_link_text: "Karmaşık kriterleriniz mi var? Karar vermekte zorlanıyor musunuz?",
-                ai_link_span: "Yapay Zekayı Başlatın.",
-                manifesto_badge: "🛡️ Ticari Manipülasyona Karşı Koruma",
-                manifesto_title: "Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.",
-                manifesto_desc: "Platformumuzda listelenen hiçbir K-12 okulu, üniversite veya kurs ücret karşılığında olumsuz değerlendirmeleri sildiremez, sıralamalarda yapay olarak üst sıralara taşınamaz veya algoritmayı manipüle edemez. EduScor tamamen şeffaf, bağımsız bir Eğitim İstihbaratı girişimidir.",
-                manifesto_link: "Metodolojimizi ve Objektif Puanlama Kriterlerini Görün",
-                formula_title: "EduScor Score Nasıl Hesaplanıyor?",
-                formula_subtitle: "Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.",
-                card1_title: "1. Resmi Başarı Metrikleri (%40)",
-                card1_desc: "Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.",
-                card2_title: "2. Canlı Google Metrikleri (%30)",
-                card2_desc: "Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve memnuniyet eğilimleri.",
-                card3_title: "3. Onaylı Veli/Öğrenci Analizleri (%30)",
-                card3_desc: "Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.",
-                categories_title: "Küresel Eğitim Kategorileri",
-                cat_schools: "Okullar",
-                cat_schools_desc: "Kreş - K-12 Lise",
-                cat_universities: "Üniversiteler",
-                cat_universities_desc: "Akademik Dereceler",
-                cat_courses: "Kurslar",
-                cat_courses_desc: "Gelişim & Beceri",
-                cat_camps: "Yaz Okulları",
-                cat_camps_desc: "Kamp ve Programlar",
-                cat_languages: "Dil Eğitimi",
-                cat_languages_desc: "Uluslararası Okullar",
-                cat_special: "Özel Eğitim",
-                cat_special_desc: "Özel Gereksinimler",
-                cat_adult: "Yetişkin Eğitimi",
-                cat_adult_desc: "Kariyer Analitiği",
-                cat_scholarships: "Burslar",
-                cat_scholarships_desc: "Burs Fırsatları",
-                trends_title: "Küresel Trend Aramalar",
-                trends_all: "Tümünü Gör",
-                trend_loc: "Lokasyon",
-                trend1_title: "4 yaş için okul öncesi eğitimi arıyorum",
-                trend1_loc: "Örnek Seçim",
-                trend2_title: "Üstün başarı ve tam burs imkanları",
-                trend2_loc: "Tümü",
-                trend3_title: "Uluslararası yaz kampı seçenekleri",
-                trend3_loc: "Global",
-                trend4_title: "Özel gereksinim odaklı kapsayıcı eğitim",
-                trend4_loc: "Çevrimiçi / Online",
-                stats_title: "Güvenilir. Tarafsız. Şeffaf.",
-                stats_desc: "EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için bağımsız veri metodolojisini kullanır.",
-                js_location_unsupported: "Konum desteklenmiyor",
-                js_location_fetching: "Konum alınıyor...",
-                js_location_success: "Konumunuz alındı ✓",
-                js_location_denied: "Konum izni verilmedi",
-                js_age_suffix: " yaş"
-            },
-            en: {
-                logo_subtitle: "Global Education<br>Intelligence Platform",
-                menu_explore: "Explore",
-                menu_about: "About Us",
-                menu_blog: "Blog",
-                menu_favorites: "My Favorites",
-                btn_login: "Login / Register",
-                badge_independent: "Independent Data",
-                badge_rankings: "Global Rankings",
-                badge_transparency: "Transparent Methodology",
-                hero_title_html: "Education decisions<br><span>cannot be left to chance.</span>",
-                hero_desc: "Don't get lost in thousands of conflicting reviews and manipulated scores. EduScor supports your decisions with verified academic achievements, independent Google metrics, and real parent experiences.",
-                pdf_title: "Generate Smart Education Reports",
-                pdf_desc: "Immediately share institution comparisons as a transparent analysis report via PDF, WhatsApp, or LinkedIn after your search.",
-                step1_title: "1. Location",
-                step1_placeholder: "Use My Location",
-                step1_tags_label: "Sample Exploration Zone",
-                tag_baglica: "Baglica, Ankara",
-                tag_cayyolu: "Cayyolu, Ankara",
-                step2_title: "2. What are you looking for?",
-                step2_placeholder: "What are you looking for?",
-                tag_schools: "Schools",
-                tag_courses: "Courses",
-                tag_universities: "Universities",
-                step3_title: "3. Age",
-                step3_optional: "(Optional)",
-                step3_placeholder: "Select age range",
-                btn_fetch_data: "Fetch Data",
-                btn_ai_support: "AI Analysis Support",
-                ai_link_text: "Do you have complex criteria? Struggling to decide?",
-                ai_link_span: "Launch Artificial Intelligence.",
-                manifesto_badge: "🛡️ Protection Against Commercial Bias",
-                manifesto_title: "No educational institution can pay to boost its EduScor rating.",
-                manifesto_desc: "No K-12 school, university, or course listed on our platform can pay to remove negative feedback, rank artificially higher, or manipulate our scoring algorithms. EduScor is a fully transparent, independent Education Intelligence initiative.",
-                manifesto_link: "See Our Methodology and Objective Scoring Criteria",
-                formula_title: "How is the EduScor Score Calculated?",
-                formula_subtitle: "An institution's real strength is measured by 3 objective, verifiable pillars—not marketing budgets.",
-                card1_title: "1. Official Success Metrics (40%)",
-                card1_desc: "Ministry of Education reports, collective national exam scores, alumni placement rates, and qualifications of the full-time academic staff.",
-                card2_title: "2. Live Google Metrics (30%)",
-                card2_desc: "Completely immune to commercial manipulation, driven by organic interaction, review volume, and sentiment trends on Google Maps.",
-                card3_title: "3. Verified Parent/Student Reviews (30%)",
-                card3_desc: "Exclusive ratings from individuals whose active relationship or registration history with the school is cryptographically verified by our platform.",
-                categories_title: "Global Education Categories",
-                cat_schools: "Schools",
-                cat_schools_desc: "Preschool - K-12 High School",
-                cat_universities: "Universities",
-                cat_universities_desc: "Academic Degrees",
-                cat_courses: "Courses",
-                cat_courses_desc: "Skills & Growth",
-                cat_camps: "Summer Schools",
-                cat_camps_desc: "Camps & Programs",
-                cat_languages: "Language Education",
-                cat_languages_desc: "International Schools",
-                cat_special: "Special Education",
-                cat_special_desc: "Special Needs Support",
-                cat_adult: "Adult Education",
-                cat_adult_desc: "Career Analytics",
-                cat_scholarships: "Scholarships",
-                cat_scholarships_desc: "Scholarship Matches",
-                trends_title: "Global Trending Searches",
-                trends_all: "View All",
-                trend_loc: "Location",
-                trend1_title: "Looking for preschool education for age 4",
-                trend1_loc: "Sample Selection",
-                trend2_title: "High achievement and full scholarship matches",
-                trend2_loc: "All",
-                trend3_title: "International summer camp options",
-                trend3_loc: "Global",
-                trend4_title: "Special needs focused inclusive education",
-                trend4_loc: "Online / Remote",
-                stats_title: "Trustworthy. Unbiased. Transparent.",
-                stats_desc: "EduScor uses an independent data methodology to deliver the most accurate information on your educational journey.",
-                js_location_unsupported: "Location unsupported",
-                js_location_fetching: "Locating...",
-                js_location_success: "Location acquired ✓",
-                js_location_denied: "Location permission denied",
-                js_age_suffix: " years"
-            }
-        };
-
-        let currentLang = localStorage.getItem('eduscor_lang') || 'tr';
-
-        function applyLanguage(lang) {
-            document.documentElement.lang = lang;
-            
-            document.querySelectorAll('[data-i18n]').forEach(element => {
-                const key = element.getAttribute('data-i18n');
-                if (translations[lang][key]) {
-                    element.innerHTML = translations[lang][key];
-                }
-            });
-
-            document.getElementById('heroTitle').innerHTML = translations[lang].hero_title_html;
-
-            const aiLink = document.getElementById('panelAiLink');
-            aiLink.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> ${translations[lang].ai_link_text} <span>${translations[lang].ai_link_span}</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i>`;
-
-            updateSelectorsUI(lang);
-
-            const nextLang = lang === 'tr' ? 'EN' : 'TR';
-            document.getElementById('langLabel').textContent = nextLang;
-            
-            localStorage.setItem('eduscor_lang', lang);
-            currentLang = lang;
-        }
-
-        function updateSelectorsUI(lang) {
-            if (!panelState.locationText && !panelState.locationLat) {
-                document.getElementById('locationLabel').textContent = translations[lang].step1_placeholder;
-            }
-            if (!panelState.category && !panelState.keyword) {
-                document.getElementById('whatLabel').textContent = translations[lang].step2_placeholder;
-            }
-            if (!panelState.age) {
-                document.getElementById('ageLabel').textContent = translations[lang].step3_placeholder;
-            } else {
-                document.getElementById('ageLabel').textContent = panelState.age + translations[lang].js_age_suffix;
-            }
-
-            document.getElementById('whatTags').querySelectorAll('.tag-item').forEach(tag => {
-                if (tag.classList.contains('tag-active')) {
-                    const labelKey = lang === 'tr' ? tag.dataset.label : tag.dataset.labelEn;
-                    document.getElementById('whatLabel').textContent = labelKey;
-                }
-            });
-        }
-
-        document.getElementById('langBtn').addEventListener('click', () => {
-            const targetLang = currentLang === 'tr' ? 'en' : 'tr';
-            applyLanguage(targetLang);
-        });
-
-        // ---- Hamburger Menü Tetikleyicisi ----
         const menuToggle = document.getElementById('menuToggle');
         const navMenu = document.getElementById('navMenu');
 
         menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
             navMenu.classList.toggle('active');
-            const icon = menuToggle.querySelector('i');
-            if (navMenu.classList.contains('active')) {
-                icon.className = 'fa-solid fa-xmark';
-            } else {
-                icon.className = 'fa-solid fa-bars';
+        });
+
+        // Menü açıkken dışarı tıklanırsa kapatma mekanizması
+        document.addEventListener('click', (e) => {
+            if (!navMenu.contains(e.target) && !menuToggle.contains(e.target) && navMenu.classList.contains('active')) {
+                menuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
             }
-        });
-
-
-        // ---- 3 Adımlı Arama Paneli Mantığı ----
-        let panelState = { locationText: null, locationLat: null, locationLng: null, category: null, keyword: null, age: null };
-
-        function setActiveTag(container, clickedEl) {
-            container.querySelectorAll('.tag-item').forEach(el => el.classList.remove('tag-active'));
-            clickedEl.classList.add('tag-active');
-        }
-
-        // Adım 1: Konum etiketleri
-        document.getElementById('locationTags').querySelectorAll('.tag-item').forEach(tag => {
-            tag.addEventListener('click', function (e) {
-                e.preventDefault();
-                panelState.locationText = this.dataset.location;
-                panelState.locationLat = null;
-                panelState.locationLng = null;
-                document.getElementById('locationLabel').textContent = this.textContent;
-                setActiveTag(document.getElementById('locationTags'), this);
-            });
-        });
-
-        // Adım 1: "Konumumu Kullan"
-        document.getElementById('useMyLocationBtn').addEventListener('click', function () {
-            const label = document.getElementById('locationLabel');
-            if (!navigator.geolocation) { 
-                label.textContent = translations[currentLang].js_location_unsupported; 
-                return; 
-            }
-            label.textContent = translations[currentLang].js_location_fetching;
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    panelState.locationLat = pos.coords.latitude;
-                    panelState.locationLng = pos.coords.longitude;
-                    panelState.locationText = null;
-                    label.textContent = translations[currentLang].js_location_success;
-                    document.getElementById('locationTags').querySelectorAll('.tag-item').forEach(el => el.classList.remove('tag-active'));
-                },
-                () => { 
-                    label.textContent = translations[currentLang].js_location_denied; 
-                }
-            );
-        });
-
-        // Adım 2: Ne arıyorsunuz etiketleri
-        document.getElementById('whatTags').querySelectorAll('.tag-item').forEach(tag => {
-            tag.addEventListener('click', function (e) {
-                e.preventDefault();
-                panelState.category = this.dataset.category || null;
-                panelState.keyword = this.dataset.keyword || null;
-                
-                const chosenLabel = currentLang === 'tr' ? this.dataset.label : this.dataset.labelEn;
-                document.getElementById('whatLabel').textContent = chosenLabel;
-                setActiveTag(document.getElementById('whatTags'), this);
-            });
-        });
-
-        // Adım 3: Yaş etiketleri
-        document.getElementById('ageTags').querySelectorAll('.tag-item').forEach(tag => {
-            tag.addEventListener('click', function (e) {
-                e.preventDefault();
-                panelState.age = this.dataset.age;
-                document.getElementById('ageLabel').textContent = this.textContent + translations[currentLang].js_age_suffix;
-                setActiveTag(document.getElementById('ageTags'), this);
-            });
-        });
-
-        function buildExplorerUrl(withAI) {
-            const p = new URLSearchParams();
-            const qParts = [];
-            if (panelState.locationText) qParts.push(panelState.locationText);
-            if (panelState.keyword) qParts.push(panelState.keyword);
-            if (qParts.length) p.set('q', qParts.join(' '));
-            if (panelState.category) p.set('category', panelState.category);
-            if (panelState.age) p.set('age', panelState.age);
-            if (panelState.locationLat && panelState.locationLng) {
-                p.set('lat', panelState.locationLat);
-                p.set('lng', panelState.locationLng);
-            }
-            if (withAI) p.set('ai', '1');
-            p.set('lang', currentLang);
-            const qs = p.toString();
-            return 'explorer.html' + (qs ? '?' + qs : '');
-        }
-
-        document.getElementById('panelSearchBtn').addEventListener('click', () => {
-            window.location.href = buildExplorerUrl(false);
-        });
-        document.getElementById('panelAiBtn').addEventListener('click', () => {
-            window.location.href = buildExplorerUrl(true);
-        });
-        document.getElementById('panelAiLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = buildExplorerUrl(true);
-        });
-
-        // Sayfa yüklendiğinde dili uygula
-        document.addEventListener('DOMContentLoaded', () => {
-            applyLanguage(currentLang);
         });
     </script>
 </body>
