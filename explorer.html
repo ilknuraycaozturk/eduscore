@@ -15,11 +15,11 @@
 </head>
 <body class="bg-[#FDF8F5] text-[#241A16] min-h-screen flex flex-col overflow-hidden">
 
-    <!-- Üst Menü: Dil butonu ve giriş alanını iyice sağa yaslamak için sağ taraftan (pr-4 sm:pr-12) ekstra boşluk açıldı -->
-    <header class="w-full bg-white border-b border-slate-200 pl-4 pr-4 sm:pl-8 sm:pr-12 py-4 flex justify-between items-center shrink-0 z-10">
+    <!-- Üst Menü: Dil ve giriş alanını en sağa yaslamak için padding sıfırlandı ve justify kullanıldı -->
+    <header class="w-full bg-white border-b border-slate-200 px-6 sm:px-10 py-4 flex justify-between items-center shrink-0 z-10">
         <span class="text-xl font-bold text-[#E8543A]">EduScor</span>
-        <!-- Sağ taraftaki menü elemanları arasına boşluk (gap-8) verilerek dil değişimi için pay açıldı -->
-        <div class="flex items-center gap-8 text-sm font-semibold">
+        <!-- gap-8 ve pr-0 ile sağdaki buton alanının sağ kenara tam oturması sağlandı -->
+        <div class="flex items-center gap-8 text-sm font-semibold pr-0">
             <a href="index.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors">🏠 Ana Sayfa</a>
             <button class="px-4 py-1.5 bg-[#241A16] text-white hover:bg-[#E8543A] rounded-full transition-all text-xs">Giriş Yap</button>
         </div>
@@ -91,13 +91,13 @@
             }
         }
 
-        // Görselin mobilde sağdan soldan kırpılmasını önleyen dinamik fonksiyon
+        // Kırpılmayı tamamen önleyen esnek kart tasarımı
         function renderCardHTML(r) {
             return `
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4">
-                    <!-- Görsel Alanı: Mobilde h-auto ve aspect-video ile object-contain getirilerek kırpılma tamamen engellendi -->
-                    <div class="w-full sm:w-32 h-auto aspect-video sm:aspect-auto sm:h-24 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60 overflow-hidden">
-                        <img src="students.jpg" alt="${r.name}" class="w-full h-full object-contain sm:object-cover object-center" onerror="this.outerHTML='<span class="text-2xl">🏫</span>'">
+                    <!-- Görsel Alanı: Mobilde genişlik tam, yükseklik resme göre otomatik (Kırpılma İmkansız). Masaüstünde standart kutu düzeni. -->
+                    <div class="w-full sm:w-32 h-auto sm:h-24 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60 overflow-hidden">
+                        <img src="students.jpg" alt="${r.name}" class="w-full h-auto sm:h-full sm:object-cover object-center" onerror="this.outerHTML='<span class="text-2xl">🏫</span>'">
                     </div>
                     <div class="flex-grow flex flex-col justify-between">
                         <div>
