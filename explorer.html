@@ -268,82 +268,89 @@
         }
 
         async function loadResults() {
-            const { data, error } = await sb.from('institutions').select(`
-                id, name, is_public, is_verified, address, website, google_maps_url, lat, lng,
-                age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
-                institution_types ( name_tr ),
-                categories ( slug, name_tr ),
-                locations ( name )
-            `);
+    // 1. Sorguyu Başlat
+    let query = sb.from('institutions').select(`
+        id, name, is_public, is_verified, address, website, google_maps_url, lat, lng,
+        age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
+        institution_types ( name_tr ),
+        categories ( slug, name_tr ),
+        locations ( name )
+    `);
 
-            if (error) {
-                document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
-                console.error(error);
-                return;
-            }
+    // 2. Yaş Filtresi (Sunucu Taraflı Optimizasyon)
+    // Yaş parametresi girildiyse, sadece o yaş aralığına uyan veya yaş sınırı belirtilmemiş kurumları getirir.
+    if (ageParam !== null) {
+        query = query.or(`and(age_min.lte.${ageParam},age_max.gte.${ageParam}),and(age_min.is.null,age_max.is.null)`);
+    }
 
-            let results = data || [];
+    const { data, error } = await query;
 
-            if (categoryParam) {
-                results = results.filter(r => r.categories && r.categories.slug === categoryParam);
-            }
+    if (error) {
+        document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
+        console.error(error);
+        return;
+    }
 
-            if (ageParam !== null) {
-                results = results.filter(r =>
-                    (r.age_min == null && r.age_max == null) ||
-                    (r.age_min <= ageParam && ageParam <= r.age_max)
-                );
-            }
+    let results = data || [];
 
-            if (qParam) {
-                const needle = qParam.toLocaleLowerCase('tr');
-                results = results.filter(r => {
-                    const haystack = [
-                        r.name, r.address,
-                        r.institution_types && r.institution_types.name_tr,
-                        r.categories && r.categories.name_tr,
-                        r.locations && r.locations.name,
-                    ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
-                    return haystack.includes(needle);
-                });
-            }
+    // 3. Kategori Filtresi (İstemci Taraflı Kontrol)
+    if (categoryParam) {
+        results = results.filter(r => r.categories && r.categories.slug === categoryParam);
+    }
 
-            if (userLat && userLng) {
-                results = results
-                    .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
-                    .sort((a, b) => a._dist - b._dist);
-                document.getElementById('nearMeStatus').classList.remove('hidden');
-                document.getElementById('nearMeStatus').textContent = '📍 Sonuçlar konumunuza yakınlığa göre sıralandı.';
-            }
+    // 4. Metin Araması (İstemci Taraflı Kontrol)
+    if (qParam) {
+        const needle = qParam.toLocaleLowerCase('tr');
+        results = results.filter(r => {
+            const haystack = [
+                r.name, r.address,
+                r.institution_types && r.institution_types.name_tr,
+                r.categories && r.categories.name_tr,
+                r.locations && r.locations.name,
+            ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
+            return haystack.includes(needle);
+        });
+    }
 
-            document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
+    // 5. Konum Sıralaması
+    if (userLat && userLng) {
+        results = results
+            .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
+            .sort((a, b) => a._dist - b._dist);
+        document.getElementById('nearMeStatus').classList.remove('hidden');
+        document.getElementById('nearMeStatus').textContent = '📍 Sonuçlar konumunuza yakınlığa göre sıralandı.';
+    }
 
-            const listEl = document.getElementById('resultsList');
-            const emptyEl = document.getElementById('emptyState');
+    // 6. DOM Elementlerini Güncelleme ve Render
+    document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
 
-            if (results.length === 0) {
-                listEl.innerHTML = '';
-                emptyEl.classList.remove('hidden');
-            } else {
-                emptyEl.classList.add('hidden');
-                listEl.innerHTML = results.map(renderCard).join('');
-            }
+    const listEl = document.getElementById('resultsList');
+    const emptyEl = document.getElementById('emptyState');
 
-            markersLayer.clearLayers();
-            const withCoords = results.filter(r => r.lat && r.lng);
-            withCoords.forEach(r => {
-                L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`);
-            });
-            if (userLat && userLng) {
-                L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 })
-                    .addTo(markersLayer).bindPopup('Konumunuz');
-            }
-            if (withCoords.length > 0) {
-                const boundsPoints = withCoords.map(r => [r.lat, r.lng]);
-                if (userLat && userLng) boundsPoints.push([userLat, userLng]);
-                map.fitBounds(L.latLngBounds(boundsPoints), { padding: [40, 40], maxZoom: 15 });
-            }
-        }
+    if (results.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+    } else {
+        emptyEl.classList.add('hidden');
+        listEl.innerHTML = results.map(renderCard).join('');
+    }
+
+    // 7. Harita İşaretçilerini Güncelleme
+    markersLayer.clearLayers();
+    const withCoords = results.filter(r => r.lat && r.lng);
+    withCoords.forEach(r => {
+        L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`);
+    });
+    if (userLat && userLng) {
+        L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 })
+            .addTo(markersLayer).bindPopup('Konumunuz');
+    }
+    if (withCoords.length > 0) {
+        const boundsPoints = withCoords.map(r => [r.lat, r.lng]);
+        if (userLat && userLng) boundsPoints.push([userLat, userLng]);
+        map.fitBounds(L.latLngBounds(boundsPoints), { padding: [40, 40], maxZoom: 15 });
+    }
+}
 
         initMap();
         loadResults();
