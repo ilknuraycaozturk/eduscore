@@ -48,11 +48,11 @@
     <div class="search-row">
 
       <div class="dropdown" data-dropdown="konum">
-        <button type="button" class="dropdown-trigger">
+        <div class="dropdown-trigger">
           <i class="ti ti-map-pin"></i>
-          <span class="dt-label">Konum</span>
+          <input type="text" class="dt-input" placeholder="Konum" autocomplete="off">
           <i class="ti ti-chevron-down chev"></i>
-        </button>
+        </div>
         <div class="dropdown-panel">
           <button type="button" class="dropdown-option" data-value="Konumumu Kullan"><i class="ti ti-current-location"></i> Konumumu Kullan</button>
           <button type="button" class="dropdown-option" data-value="Bağlıca, Ankara">Bağlıca, Ankara</button>
@@ -62,33 +62,44 @@
       </div>
 
       <div class="dropdown dropdown-wide" data-dropdown="kategori">
-        <button type="button" class="dropdown-trigger">
+        <div class="dropdown-trigger">
           <i class="ti ti-target-arrow"></i>
-          <span class="dt-label">Ne Arıyorsunuz</span>
+          <input type="text" class="dt-input" placeholder="Ne Arıyorsunuz" autocomplete="off">
           <i class="ti ti-chevron-down chev"></i>
-        </button>
+        </div>
         <div class="dropdown-panel">
-          <button type="button" class="dropdown-option" data-value="Okullar">Okullar</button>
+          <button type="button" class="dropdown-option" data-value="Özel Okullar">Özel Okullar</button>
+          <button type="button" class="dropdown-option" data-value="Devlet Okulları">Devlet Okulları</button>
+          <button type="button" class="dropdown-option" data-value="Anaokulları">Anaokulları</button>
+          <button type="button" class="dropdown-option" data-value="İlkokullar">İlkokullar</button>
+          <button type="button" class="dropdown-option" data-value="Ortaokullar">Ortaokullar</button>
+          <button type="button" class="dropdown-option" data-value="Liseler">Liseler</button>
           <button type="button" class="dropdown-option" data-value="Üniversiteler">Üniversiteler</button>
           <button type="button" class="dropdown-option" data-value="Kurslar">Kurslar</button>
+          <button type="button" class="dropdown-option" data-value="Dil Kursları">Dil Kursları</button>
           <button type="button" class="dropdown-option" data-value="Yaz Okulları">Yaz Okulları</button>
+          <button type="button" class="dropdown-option" data-value="Özel Eğitim">Özel Eğitim</button>
+          <button type="button" class="dropdown-option" data-value="Yetişkin Eğitimi">Yetişkin Eğitimi</button>
           <button type="button" class="dropdown-option" data-value="Burslar">Burslar</button>
         </div>
       </div>
 
       <div class="dropdown" data-dropdown="yas">
-        <button type="button" class="dropdown-trigger">
+        <div class="dropdown-trigger">
           <i class="ti ti-baby-carriage"></i>
-          <span class="dt-label">Yaş</span>
+          <input type="text" class="dt-input" placeholder="Yaş" autocomplete="off">
           <i class="ti ti-chevron-down chev"></i>
-        </button>
+        </div>
         <div class="dropdown-panel">
           <button type="button" class="dropdown-option" data-value="0-2 yaş">0-2 yaş</button>
           <button type="button" class="dropdown-option" data-value="3-5 yaş">3-5 yaş</button>
           <button type="button" class="dropdown-option" data-value="6-10 yaş">6-10 yaş</button>
           <button type="button" class="dropdown-option" data-value="11-14 yaş">11-14 yaş</button>
           <button type="button" class="dropdown-option" data-value="15-18 yaş">15-18 yaş</button>
-          <button type="button" class="dropdown-option" data-value="18+ yaş / Yetişkin">18+ yaş / Yetişkin</button>
+          <button type="button" class="dropdown-option" data-value="19-25 yaş">19-25 yaş</button>
+          <button type="button" class="dropdown-option" data-value="26-40 yaş">26-40 yaş</button>
+          <button type="button" class="dropdown-option" data-value="41-60 yaş">41-60 yaş</button>
+          <button type="button" class="dropdown-option" data-value="60+ yaş">60+ yaş</button>
         </div>
       </div>
 
