@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduScor | Küresel Eğitim İstihbaratı Platformu</title>
+    <title>EduScor | Global Education Intelligence Platform</title>
     
     <!-- Google Fonts & FontAwesome Simgeleri -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -80,6 +80,12 @@
             padding-left: 1rem;
         }
 
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
         .nav-menu {
             display: flex;
             list-style: none;
@@ -102,6 +108,27 @@
         .nav-menu a i {
             color: var(--primary-red);
             margin-right: 0.3rem;
+        }
+
+        /* Dil Seçici Buton */
+        .lang-selector {
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--dark-blue);
+            transition: all 0.2s;
+        }
+
+        .lang-selector:hover {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
         }
 
         .btn-login {
@@ -503,7 +530,7 @@
         }
 
 
-        /* ==================== MOBİL UYUMLULUK (MEDIA QUERIES) ==================== */
+        /* ==================== MOBİL UYUMLULUK ==================== */
         
         @media (max-width: 1100px) {
             .search-grid {
@@ -575,16 +602,25 @@
         <div class="nav-container">
             <div class="logo-group">
                 <a href="#" class="logo">Edu<span>Scor</span></a>
-                <div class="logo-subtitle">Küresel Eğitim<br>İstihbarat Platformu</div>
+                <div class="logo-subtitle" data-i18n="logo_subtitle">Küresel Eğitim<br>İstihbarat Platformu</div>
             </div>
-            <ul class="nav-menu">
-                <li><a href="#" class="active">Keşfet</a></li>
-                <li><a href="#">Hakkımızda</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#"><i class="fa-regular fa-heart"></i>Favorilerim</a></li>
-            </ul>
-            <a href="#" class="btn-login">Giriş Yap</a>
-            <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+            <div class="nav-right">
+                <ul class="nav-menu">
+                    <li><a href="#" class="active" data-i18n="menu_explore">Keşfet</a></li>
+                    <li><a href="#" data-i18n="menu_about">Hakkımızda</a></li>
+                    <li><a href="#" data-i18n="menu_blog">Blog</a></li>
+                    <li><a href="#"><i class="fa-regular fa-heart"></i><span data-i18n="menu_favorites">Favorilerim</span></a></li>
+                </ul>
+                
+                <!-- Dil Değiştirici Buton -->
+                <button class="lang-selector" id="langBtn">
+                    <i class="fa-solid fa-globe"></i>
+                    <span id="langLabel">EN</span>
+                </button>
+
+                <a href="#" class="btn-login" data-i18n="btn_login">Giriş Yap</a>
+                <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+            </div>
         </div>
     </header>
 
@@ -593,20 +629,20 @@
         <div class="hero-content">
             <!-- Global İstihbarat Rozetleri -->
             <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap;">
-                <span style="background: #FFF5F5; color: var(--primary-red); border: 1px solid var(--border-color); padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-shield-check"></i> Bağımsız Veri</span>
-                <span style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-chart-network"></i> Küresel Sıralama</span>
-                <span style="background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-eye"></i> Şeffaf Metodoloji</span>
+                <span style="background: #FFF5F5; color: var(--primary-red); border: 1px solid var(--border-color); padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-shield-check"></i> <span data-i18n="badge_independent">Bağımsız Veri</span></span>
+                <span style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-chart-network"></i> <span data-i18n="badge_rankings">Küresel Sıralama</span></span>
+                <span style="background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-eye"></i> <span data-i18n="badge_transparency">Şeffaf Metodoloji</span></span>
             </div>
 
-            <h1 class="hero-title">Eğitim kararı<br><span>şansa bırakılmaz.</span></h1>
-            <p class="hero-desc">Binlerce çelişkili yorum ve manipüle edilmiş puanlar arasında kaybolmayın. EduScor; doğrulanmış akademik başarılar, bağımsız Google metrikleri ve gerçek veli deneyimleriyle kararlarınızı destekler.</p>
+            <h1 class="hero-title" id="heroTitle">Eğitim kararı<br><span>şansa bırakılmaz.</span></h1>
+            <p class="hero-desc" data-i18n="hero_desc">Binlerce çelişkili yorum ve manipüle edilmiş puanlar arasında kaybolmayın. EduScor; doğrulanmış akademik başarılar, bağımsız Google metrikleri ve gerçek veli deneyimleriyle kararlarınızı destekler.</p>
             
             <!-- Rapor Oluşturma Kartı -->
             <div style="background: #ffffff; border: 1px dashed var(--primary-red); padding: 1.25rem; border-radius: 1.25rem; display: flex; align-items: center; gap: 1.25rem; max-width: 580px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                 <i class="fa-solid fa-file-pdf" style="font-size: 2.2rem; color: var(--primary-red);"></i>
                 <div>
-                    <h5 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;">Akıllı Eğitim Raporları Üretin</h5>
-                    <p style="font-size: 0.78rem; color: var(--gray-text); margin: 0; line-height: 1.4;">Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.</p>
+                    <h5 data-i18n="pdf_title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;">Akıllı Eğitim Raporları Üretin</h5>
+                    <p data-i18n="pdf_desc" style="font-size: 0.78rem; color: var(--gray-text); margin: 0; line-height: 1.4;">Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.</p>
                 </div>
             </div>
         </div>
@@ -623,37 +659,37 @@
                 
                 <!-- Adım 1 -->
                 <div class="search-step">
-                    <div class="step-title"><i class="fa-solid fa-location-dot"></i> 1. Konum</div>
+                    <div class="step-title"><i class="fa-solid fa-location-dot"></i> <span data-i18n="step1_title">1. Konum</span></div>
                     <div class="custom-select" id="useMyLocationBtn" style="cursor:pointer;">
-                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.5rem;"></i> <span id="locationLabel">Konumumu Kullan</span></span>
+                        <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary-red); margin-right:0.5rem;"></i> <span id="locationLabel" data-i18n="step1_placeholder">Konumumu Kullan</span></span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div class="tag-label">Örnek Keşif Bölgesi</div>
+                    <div class="tag-label" data-i18n="step1_tags_label">Örnek Keşif Bölgesi</div>
                     <div class="tag-list" id="locationTags">
-                        <a href="#" class="tag-item" data-location="Bağlıca">Bağlıca, Ankara</a>
-                        <a href="#" class="tag-item" data-location="Çayyolu">Çayyolu, Ankara</a>
+                        <a href="#" class="tag-item" data-location="Bağlıca"><span data-i18n="tag_baglica">Bağlıca, Ankara</span></a>
+                        <a href="#" class="tag-item" data-location="Çayyolu"><span data-i18n="tag_cayyolu">Çayyolu, Ankara</span></a>
                     </div>
                 </div>
 
                 <!-- Adım 2 -->
                 <div class="search-step">
-                    <div class="step-title"><i class="fa-solid fa-magnifying-glass"></i> 2. Ne arıyorsunuz?</div>
+                    <div class="step-title"><i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="step2_title">2. Ne arıyorsunuz?</span></div>
                     <div class="custom-select">
-                        <span id="whatLabel">Ne arıyorsunuz?</span>
+                        <span id="whatLabel" data-i18n="step2_placeholder">Ne arıyorsunuz?</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="tag-list" style="margin-top: 1.8rem;" id="whatTags">
-                        <a href="#" class="tag-item" data-category="okul-oncesi-k12" data-label="Okullar"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> Okullar</a>
-                        <a href="#" class="tag-item" data-keyword="kurs" data-label="Kurslar"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> Kurslar</a>
-                        <a href="#" class="tag-item" data-category="yuksekogretim" data-label="Üniversiteler"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> Üniversiteler</a>
+                        <a href="#" class="tag-item" data-category="okul-oncesi-k12" data-label="Okullar" data-label-en="Schools"><i class="fa-solid fa-school" style="color:var(--primary-red)"></i> <span data-i18n="tag_schools">Okullar</span></a>
+                        <a href="#" class="tag-item" data-keyword="kurs" data-label="Kurslar" data-label-en="Courses"><i class="fa-solid fa-book-open" style="color:var(--primary-red)"></i> <span data-i18n="tag_courses">Kurslar</span></a>
+                        <a href="#" class="tag-item" data-category="yuksekogretim" data-label="Üniversiteler" data-label-en="Universities"><i class="fa-solid fa-graduation-cap" style="color:var(--primary-red)"></i> <span data-i18n="tag_universities">Üniversiteler</span></a>
                     </div>
                 </div>
 
                 <!-- Adım 3 -->
                 <div class="search-step">
-                    <div class="step-title"><i class="fa-solid fa-user"></i> 3. Yaş <span style="font-weight:400; color:var(--gray-text);">(İsteğe bağlı)</span></div>
+                    <div class="step-title"><i class="fa-solid fa-user"></i> <span data-i18n="step3_title">3. Yaş</span> <span style="font-weight:400; color:var(--gray-text);" data-i18n="step3_optional">(İsteğe bağlı)</span></div>
                     <div class="custom-select">
-                        <span id="ageLabel">Yaş aralığı seçin veya doğum yılı girin</span>
+                        <span id="ageLabel" data-i18n="step3_placeholder">Yaş aralığı seçin</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="tag-list" style="margin-top: 1.8rem;" id="ageTags">
@@ -667,15 +703,15 @@
 
                 <!-- Arama Butonları -->
                 <div class="action-buttons">
-                    <button class="btn-search" id="panelSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> Verileri Getir</button>
-                    <button class="btn-ai" id="panelAiBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Analiz Desteği</button>
+                    <button class="btn-search" id="panelSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="btn_fetch_data">Verileri Getir</span></button>
+                    <button class="btn-ai" id="panelAiBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_ai_support">AI Analiz Desteği</span></button>
                 </div>
 
             </div>
 
             <!-- Yardım Alt Satırı -->
             <div class="search-bottom-link">
-                <a href="#" id="panelAiLink"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> Karmaşık kriterleriniz mi var? Karar vermekte zorlanıyor musunuz? <span>Yapay Zekayı Başlatın.</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i></a>
+                <a href="#" id="panelAiLink"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> <span data-i18n="ai_link_text">Karmaşık kriterleriniz mi var? Karar vermekte zorlanıyor musunuz?</span> <span>Yapay Zekayı Başlatın.</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i></a>
             </div>
         </div>
     </section>
@@ -687,12 +723,12 @@
                 <i class="fa-solid fa-gavel"></i>
             </div>
             <div style="max-width: 850px; position: relative; z-index: 2;">
-                <span style="color: var(--primary-red); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 0.5rem;">🛡️ Ticari Manipülasyona Karşı Koruma</span>
-                <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff;">Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.</h2>
-                <p style="color: #EAE0D9; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                <span style="color: var(--primary-red); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 0.5rem;" data-i18n="manifesto_badge">🛡️ Ticari Manipülasyona Karşı Koruma</span>
+                <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; color: #ffffff;" data-i18n="manifesto_title">Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.</h2>
+                <p style="color: #EAE0D9; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;" data-i18n="manifesto_desc">
                     Platformumuzda listelenen hiçbir K-12 okulu, üniversite veya kurs ücret karşılığında olumsuz değerlendirmeleri sildiremez, sıralamalarda yapay olarak üst sıralara taşınamaz veya algoritmayı manipüle edemez. EduScor tamamen şeffaf, bağımsız bir <strong>Eğitim İstihbaratı</strong> girişimidir.
                 </p>
-                <a href="#" style="color: var(--primary-red); font-weight: 700; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;">
+                <a href="#" style="color: var(--primary-red); font-weight: 700; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" data-i18n="manifesto_link">
                     Metodolojimizi ve Objektif Puanlama Kriterlerini Görün <i class="fa-solid fa-arrow-right"></i>
                 </a>
             </div>
@@ -702,30 +738,30 @@
     <!-- EDUSCOR SCORE ALGORİTMA ALANI -->
     <section style="max-width: 1300px; margin: 0 auto 4rem auto; padding: 0 2rem;">
         <div style="text-align: center; margin-bottom: 2.5rem;">
-            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">EduScor Score Nasıl Hesaplanıyor?</h2>
-            <p style="color: var(--gray-text); font-size: 0.95rem;">Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;" data-i18n="formula_title">EduScor Score Nasıl Hesaplanıyor?</h2>
+            <p style="color: var(--gray-text); font-size: 0.95rem;" data-i18n="formula_subtitle">Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.</p>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
             <!-- Kart 1: Akademik Veriler -->
             <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 2rem; border-radius: 1.25rem; border-top: 4px solid #3B82F6; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                 <div style="font-size: 2rem; color: #3B82F6; margin-bottom: 1rem;"><i class="fa-solid fa-chart-line-up"></i></div>
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;">1. Resmi Başarı Metrikleri (%40)</h3>
-                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;">Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.</p>
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;" data-i18n="card1_title">1. Resmi Başarı Metrikleri (%40)</h3>
+                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;" data-i18n="card1_desc">Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.</p>
             </div>
             
             <!-- Kart 2: Canlı Google Metrikleri -->
             <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 2rem; border-radius: 1.25rem; border-top: 4px solid #22C55E; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                 <div style="font-size: 2rem; color: #22C55E; margin-bottom: 1rem;"><i class="fa-solid fa-map-location-dot"></i></div>
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;">2. Canlı Google Metrikleri (%30)</h3>
-                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;">Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve dönemsel memnuniyet eğilimleri.</p>
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;" data-i18n="card2_title">2. Canlı Google Metrikleri (%30)</h3>
+                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;" data-i18n="card2_desc">Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve dönemsel memnuniyet eğilimleri.</p>
             </div>
             
             <!-- Kart 3: Doğrulanmış Veli Analizleri -->
             <div style="background: #ffffff; border: 1px solid var(--border-color); padding: 2rem; border-radius: 1.25rem; border-top: 4px solid var(--primary-red); box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                 <div style="font-size: 2rem; color: var(--primary-red); margin-bottom: 1rem;"><i class="fa-solid fa-user-check"></i></div>
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;">3. Onaylı Veli/Öğrenci Analizleri (%30)</h3>
-                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;">Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.</p>
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem;" data-i18n="card3_title">3. Onaylı Veli/Öğrenci Analizleri (%30)</h3>
+                <p style="color: var(--gray-text); font-size: 0.88rem; line-height: 1.55;" data-i18n="card3_desc">Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.</p>
             </div>
         </div>
     </section>
@@ -735,47 +771,47 @@
         
         <!-- Sol Bölüm: Kategoriler -->
         <div>
-            <div class="section-title">Küresel Eğitim Kategorileri</div>
+            <div class="section-title" data-i18n="categories_title">Küresel Eğitim Kategorileri</div>
             <div class="quick-grid">
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-school"></i>
-                    <h4>Okullar</h4>
-                    <p>Kreş - K-12 Lise</p>
+                    <h4 data-i18n="cat_schools">Okullar</h4>
+                    <p data-i18n="cat_schools_desc">Kreş - K-12 Lise</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-graduation-cap"></i>
-                    <h4>Üniversiteler</h4>
-                    <p>Akademik Dereceler</p>
+                    <h4 data-i18n="cat_universities">Üniversiteler</h4>
+                    <p data-i18n="cat_universities_desc">Akademik Dereceler</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-book-open"></i>
-                    <h4>Kurslar</h4>
-                    <p>Gelişim & Beceri</p>
+                    <h4 data-i18n="cat_courses">Kurslar</h4>
+                    <p data-i18n="cat_courses_desc">Gelişim & Beceri</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-umbrella-beach"></i>
-                    <h4>Yaz Okulları</h4>
-                    <p>Kamp ve Programlar</p>
+                    <h4 data-i18n="cat_camps">Yaz Okulları</h4>
+                    <p data-i18n="cat_camps_desc">Kamp ve Programlar</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-language"></i>
-                    <h4>Dil Eğitimi</h4>
-                    <p>Uluslararası Okullar</p>
+                    <h4 data-i18n="cat_languages">Dil Eğitimi</h4>
+                    <p data-i18n="cat_languages_desc">Uluslararası Okullar</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-hands-holding-child"></i>
-                    <h4>Özel Eğitim</h4>
-                    <p>Özel Gereksinimler</p>
+                    <h4 data-i18n="cat_special">Özel Eğitim</h4>
+                    <p data-i18n="cat_special_desc">Özel Gereksinimler</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-briefcase"></i>
-                    <h4>Yetişkin Eğitimi</h4>
-                    <p>Kariyer Analitiği</p>
+                    <h4 data-i18n="cat_adult">Yetişkin Eğitimi</h4>
+                    <p data-i18n="cat_adult_desc">Kariyer Analitiği</p>
                 </a>
                 <a href="#" class="quick-card">
                     <i class="fa-solid fa-wallet"></i>
-                    <h4>Burslar</h4>
-                    <p>Burs Fırsatları</p>
+                    <h4 data-i18n="cat_scholarships">Burslar</h4>
+                    <p data-i18n="cat_scholarships_desc">Burs Fırsatları</p>
                 </a>
             </div>
         </div>
@@ -783,16 +819,16 @@
         <!-- Sağ Bölüm: Popüler Aramalar -->
         <div>
             <div class="section-title">
-                Küresel Trend Aramalar 
-                <a href="#" class="all-link">Tümünü Gör <i class="fa-solid fa-chevron-right"></i></a>
+                <span data-i18n="trends_title">Küresel Trend Aramalar</span> 
+                <a href="#" class="all-link"><span data-i18n="trends_all">Tümünü Gör</span> <i class="fa-solid fa-chevron-right"></i></a>
             </div>
             <div class="popular-list">
                 <a href="#" class="popular-card">
                     <div class="popular-info">
                         <div class="popular-icon icon-orange"><i class="fa-solid fa-child"></i></div>
                         <div class="popular-text">
-                            <h4>4 yaş için okul öncesi eğitimi arıyorum</h4>
-                            <p>Lokasyon: Örnek Seçim</p>
+                            <h4 data-i18n="trend1_title">4 yaş için okul öncesi eğitimi arıyorum</h4>
+                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend1_loc">Örnek Seçim</span></p>
                         </div>
                     </div>
                     <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
@@ -801,8 +837,8 @@
                     <div class="popular-info">
                         <div class="popular-icon icon-green"><i class="fa-solid fa-book-open"></i></div>
                         <div class="popular-text">
-                            <h4>Üstün başarı ve tam burs imkanları</h4>
-                            <p>Lokasyon: Tümü</p>
+                            <h4 data-i18n="trend2_title">Üstün başarı ve tam burs imkanları</h4>
+                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend2_loc">Tümü</span></p>
                         </div>
                     </div>
                     <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
@@ -811,8 +847,8 @@
                     <div class="popular-info">
                         <div class="popular-icon icon-blue"><i class="fa-solid fa-sun"></i></div>
                         <div class="popular-text">
-                            <h4>Uluslararası yaz kampı seçenekleri</h4>
-                            <p>Lokasyon: Global</p>
+                            <h4 data-i18n="trend3_title">Uluslararası yaz kampı seçenekleri</h4>
+                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend3_loc">Global</span></p>
                         </div>
                     </div>
                     <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
@@ -821,8 +857,8 @@
                     <div class="popular-info">
                         <div class="popular-icon icon-purple"><i class="fa-solid fa-graduation-cap"></i></div>
                         <div class="popular-text">
-                            <h4>Özel gereksinim odaklı kapsayıcı eğitim</h4>
-                            <p>Lokasyon: Çevrimiçi / Online</p>
+                            <h4 data-i18n="trend4_title">Özel gereksinim odaklı kapsayıcı eğitim</h4>
+                            <p><span data-i18n="trend_loc">Lokasyon</span>: <span data-i18n="trend4_loc">Çevrimiçi / Online</span></p>
                         </div>
                     </div>
                     <div class="popular-arrow"><i class="fa-solid fa-chevron-right"></i></div>
@@ -838,14 +874,246 @@
             <div class="stats-info">
                 <i class="fa-solid fa-shield-halved"></i>
                 <div>
-                    <h3>Güvenilir. Tarafsız. Şeffaf.</h3>
-                    <p>EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için bağımsız veri metodolojisini kullanır.</p>
+                    <h3 data-i18n="stats_title">Güvenilir. Tarafsız. Şeffaf.</h3>
+                    <p data-i18n="stats_desc">EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için bağımsız veri metodolojisini kullanır.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <script>
+        // ---- DİL VE SÖZLÜK YAPISI (i18n) ----
+        const translations = {
+            tr: {
+                logo_subtitle: "Küresel Eğitim<br>İstihbarat Platformu",
+                menu_explore: "Keşfet",
+                menu_about: "Hakkımızda",
+                menu_blog: "Blog",
+                menu_favorites: "Favorilerim",
+                btn_login: "Giriş Yap",
+                badge_independent: "Bağımsız Veri",
+                badge_rankings: "Küresel Sıralama",
+                badge_transparency: "Şeffaf Metodoloji",
+                hero_title_html: "Eğitim kararı<br><span>şansa bırakılmaz.</span>",
+                hero_desc: "Binlerce çelişkili yorum ve manipüle edilmiş puanlar arasında kaybolmayın. EduScor; doğrulanmış akademik başarılar, bağımsız Google metrikleri ve gerçek veli deneyimleriyle kararlarınızı destekler.",
+                pdf_title: "Akıllı Eğitim Raporları Üretin",
+                pdf_desc: "Aramanızın ardından kurum karşılaştırmalarını anında PDF, WhatsApp veya LinkedIn üzerinden şeffaf birer analiz raporu olarak paylaşın.",
+                step1_title: "1. Konum",
+                step1_placeholder: "Konumumu Kullan",
+                step1_tags_label: "Örnek Keşif Bölgesi",
+                tag_baglica: "Bağlıca, Ankara",
+                tag_cayyolu: "Çayyolu, Ankara",
+                step2_title: "2. Ne arıyorsunuz?",
+                step2_placeholder: "Ne arıyorsunuz?",
+                tag_schools: "Okullar",
+                tag_courses: "Kurslar",
+                tag_universities: "Üniversiteler",
+                step3_title: "3. Yaş",
+                step3_optional: "(İsteğe bağlı)",
+                step3_placeholder: "Yaş aralığı seçin",
+                btn_fetch_data: "Verileri Getir",
+                btn_ai_support: "AI Analiz Desteği",
+                ai_link_text: "Karmaşık kriterleriniz mi var? Karar vermekte zorlanıyor musunuz?",
+                ai_link_span: "Yapay Zekayı Başlatın.",
+                manifesto_badge: "🛡️ Ticari Manipülasyona Karşı Koruma",
+                manifesto_title: "Hiçbir eğitim kurumu, ödeme yaparak EduScor puanını yükseltemez.",
+                manifesto_desc: "Platformumuzda listelenen hiçbir K-12 okulu, üniversite veya kurs ücret karşılığında olumsuz değerlendirmeleri sildiremez, sıralamalarda yapay olarak üst sıralara taşınamaz veya algoritmayı manipüle edemez. EduScor tamamen şeffaf, bağımsız bir Eğitim İstihbaratı girişimidir.",
+                manifesto_link: "Metodolojimizi ve Objektif Puanlama Kriterlerini Görün",
+                formula_title: "EduScor Score Nasıl Hesaplanıyor?",
+                formula_subtitle: "Kurumların gerçek gücü pazarlama bütçeleriyle değil, doğrulanabilir 3 nesnel temel alanla ölçülür.",
+                card1_title: "1. Resmi Başarı Metrikleri (%40)",
+                card1_desc: "Milli Eğitim Bakanlığı kurumsal teftiş raporları, LGS/YKS kitlesel başarı ortalamaları, mezun yerleştirme oranları ve tam zamanlı akademik kadro yeterliliği.",
+                card2_title: "2. Canlı Google Metrikleri (%30)",
+                card2_desc: "Manipülasyona ve toplu müdahalelere tamamen kapalı, Google Haritalar üzerindeki gerçek kullanıcı etkileşimi, yıldız hacmi ve memnuniyet eğilimleri.",
+                card3_title: "3. Onaylı Veli/Öğrenci Analizleri (%30)",
+                card3_desc: "Yalnızca ilgili eğitim kurumuyla resmi eğitim bağı veya fatura/kayıt geçmişi sistemimiz tarafından kriptografik olarak doğrulanmış kişilerin derinlemesine puanlamaları.",
+                categories_title: "Küresel Eğitim Kategorileri",
+                cat_schools: "Okullar",
+                cat_schools_desc: "Kreş - K-12 Lise",
+                cat_universities: "Üniversiteler",
+                cat_universities_desc: "Akademik Dereceler",
+                cat_courses: "Kurslar",
+                cat_courses_desc: "Gelişim & Beceri",
+                cat_camps: "Yaz Okulları",
+                cat_camps_desc: "Kamp ve Programlar",
+                cat_languages: "Dil Eğitimi",
+                cat_languages_desc: "Uluslararası Okullar",
+                cat_special: "Özel Eğitim",
+                cat_special_desc: "Özel Gereksinimler",
+                cat_adult: "Yetişkin Eğitimi",
+                cat_adult_desc: "Kariyer Analitiği",
+                cat_scholarships: "Burslar",
+                cat_scholarships_desc: "Burs Fırsatları",
+                trends_title: "Küresel Trend Aramalar",
+                trends_all: "Tümünü Gör",
+                trend_loc: "Lokasyon",
+                trend1_title: "4 yaş için okul öncesi eğitimi arıyorum",
+                trend1_loc: "Örnek Seçim",
+                trend2_title: "Üstün başarı ve tam burs imkanları",
+                trend2_loc: "Tümü",
+                trend3_title: "Uluslararası yaz kampı seçenekleri",
+                trend3_loc: "Global",
+                trend4_title: "Özel gereksinim odaklı kapsayıcı eğitim",
+                trend4_loc: "Çevrimiçi / Online",
+                stats_title: "Güvenilir. Tarafsız. Şeffaf.",
+                stats_desc: "EduScor, eğitim yolculuğunuzda size en doğru bilgiyi sunmak için bağımsız veri metodolojisini kullanır.",
+                js_location_unsupported: "Konum desteklenmiyor",
+                js_location_fetching: "Konum alınıyor...",
+                js_location_success: "Konumunuz alındı ✓",
+                js_location_denied: "Konum izni verilmedi",
+                js_age_suffix: " yaş"
+            },
+            en: {
+                logo_subtitle: "Global Education<br>Intelligence Platform",
+                menu_explore: "Explore",
+                menu_about: "About Us",
+                menu_blog: "Blog",
+                menu_favorites: "My Favorites",
+                btn_login: "Login / Register",
+                badge_independent: "Independent Data",
+                badge_rankings: "Global Rankings",
+                badge_transparency: "Transparent Methodology",
+                hero_title_html: "Education decisions<br><span>cannot be left to chance.</span>",
+                hero_desc: "Don't get lost in thousands of conflicting reviews and manipulated scores. EduScor supports your decisions with verified academic achievements, independent Google metrics, and real parent experiences.",
+                pdf_title: "Generate Smart Education Reports",
+                pdf_desc: "Immediately share institution comparisons as a transparent analysis report via PDF, WhatsApp, or LinkedIn after your search.",
+                step1_title: "1. Location",
+                step1_placeholder: "Use My Location",
+                step1_tags_label: "Sample Exploration Zone",
+                tag_baglica: "Baglica, Ankara",
+                tag_cayyolu: "Cayyolu, Ankara",
+                step2_title: "2. What are you looking for?",
+                step2_placeholder: "What are you looking for?",
+                tag_schools: "Schools",
+                tag_courses: "Courses",
+                tag_universities: "Universities",
+                step3_title: "3. Age",
+                step3_optional: "(Optional)",
+                step3_placeholder: "Select age range",
+                btn_fetch_data: "Fetch Data",
+                btn_ai_support: "AI Analysis Support",
+                ai_link_text: "Do you have complex criteria? Struggling to decide?",
+                ai_link_span: "Launch Artificial Intelligence.",
+                manifesto_badge: "🛡️ Protection Against Commercial Bias",
+                manifesto_title: "No educational institution can pay to boost its EduScor rating.",
+                manifesto_desc: "No K-12 school, university, or course listed on our platform can pay to remove negative feedback, rank artificially higher, or manipulate our scoring algorithms. EduScor is a fully transparent, independent Education Intelligence initiative.",
+                manifesto_link: "See Our Methodology and Objective Scoring Criteria",
+                formula_title: "How is the EduScor Score Calculated?",
+                formula_subtitle: "An institution's real strength is measured by 3 objective, verifiable pillars—not marketing budgets.",
+                card1_title: "1. Official Success Metrics (40%)",
+                card1_desc: "Ministry of Education reports, collective national exam scores, alumni placement rates, and qualifications of the full-time academic staff.",
+                card2_title: "2. Live Google Metrics (30%)",
+                card2_desc: "Completely immune to commercial manipulation, driven by organic interaction, review volume, and sentiment trends on Google Maps.",
+                card3_title: "3. Verified Parent/Student Reviews (30%)",
+                card3_desc: "Exclusive ratings from individuals whose active relationship or registration history with the school is cryptographically verified by our platform.",
+                categories_title: "Global Education Categories",
+                cat_schools: "Schools",
+                cat_schools_desc: "Preschool - K-12 High School",
+                cat_universities: "Universities",
+                cat_universities_desc: "Academic Degrees",
+                cat_courses: "Courses",
+                cat_courses_desc: "Skills & Growth",
+                cat_camps: "Summer Schools",
+                cat_camps_desc: "Camps & Programs",
+                cat_languages: "Language Education",
+                cat_languages_desc: "International Schools",
+                cat_special: "Special Education",
+                cat_special_desc: "Special Needs Support",
+                cat_adult: "Adult Education",
+                cat_adult_desc: "Career Analytics",
+                cat_scholarships: "Scholarships",
+                cat_scholarships_desc: "Scholarship Matches",
+                trends_title: "Global Trending Searches",
+                trends_all: "View All",
+                trend_loc: "Location",
+                trend1_title: "Looking for preschool education for age 4",
+                trend1_loc: "Sample Selection",
+                trend2_title: "High achievement and full scholarship matches",
+                trend2_loc: "All",
+                trend3_title: "International summer camp options",
+                trend3_loc: "Global",
+                trend4_title: "Special needs focused inclusive education",
+                trend4_loc: "Online / Remote",
+                stats_title: "Trustworthy. Unbiased. Transparent.",
+                stats_desc: "EduScor uses an independent data methodology to deliver the most accurate information on your educational journey.",
+                js_location_unsupported: "Location unsupported",
+                js_location_fetching: "Locating...",
+                js_location_success: "Location acquired ✓",
+                js_location_denied: "Location permission denied",
+                js_age_suffix: " years"
+            }
+        };
+
+        let currentLang = localStorage.getItem('eduscor_lang') || 'tr';
+
+        function applyLanguage(lang) {
+            // HTML lang özelliğini güncelle
+            document.documentElement.lang = lang;
+            
+            // Tüm data-i18n elementlerini tarayarak metinleri güncelle
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+
+            // HTML içeren özel alanlar
+            document.getElementById('logo_subtitle'); // data-i18n bunu halleder ama HTML formatında:
+            document.querySelector('[data-i18n="logo_subtitle"]').innerHTML = translations[lang].logo_subtitle;
+            document.getElementById('heroTitle').innerHTML = translations[lang].hero_title_html;
+
+            // Yardım Alt Satırı özel span birleşimi
+            const aiLink = document.getElementById('panelAiLink');
+            aiLink.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-red)"></i> ${translations[lang].ai_link_text} <span>${translations[lang].ai_link_span}</span> <i class="fa-solid fa-chevron-right" style="color:var(--primary-red)"></i>`;
+
+            // Seçici ve Butonların dillerini güncelle
+            updateSelectorsUI(lang);
+
+            // Dil Değiştirici Buton Etiketini Güncelle
+            const nextLang = lang === 'tr' ? 'EN' : 'TR';
+            document.getElementById('langLabel').textContent = nextLang;
+            
+            // Seçimi kaydet
+            localStorage.setItem('eduscor_lang', lang);
+            currentLang = lang;
+        }
+
+        function updateSelectorsUI(lang) {
+            // Arama Adımlarındaki Placeholder metinlerini dinamik güncelle
+            if (!panelState.locationText && !panelState.locationLat) {
+                document.getElementById('locationLabel').textContent = translations[lang].step1_placeholder;
+            }
+            if (!panelState.category && !panelState.keyword) {
+                document.getElementById('whatLabel').textContent = translations[lang].step2_placeholder;
+            }
+            if (!panelState.age) {
+                document.getElementById('ageLabel').textContent = translations[lang].step3_placeholder;
+            } else {
+                document.getElementById('ageLabel').textContent = panelState.age + translations[lang].js_age_suffix;
+            }
+
+            // Ne arıyorsunuz aktif etiketlerinin label eşleşmesini güncelle
+            document.getElementById('whatTags').querySelectorAll('.tag-item').forEach(tag => {
+                if (tag.classList.contains('tag-active')) {
+                    const labelKey = lang === 'tr' ? tag.dataset.label : tag.dataset.labelEn;
+                    document.getElementById('whatLabel').textContent = labelKey;
+                }
+            });
+        }
+
+        // Dil Değiştirme Buton Tetikleyicisi
+        document.getElementById('langBtn').addEventListener('click', () => {
+            const targetLang = currentLang === 'tr' ? 'en' : 'tr';
+            applyLanguage(targetLang);
+        });
+
+        // Sayfa yüklendiğinde dili uygula
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLanguage(currentLang);
+        });
+
+
         // ---- 3 Adımlı Arama Paneli Mantığı ----
         let panelState = { locationText: null, locationLat: null, locationLng: null, category: null, keyword: null, age: null };
 
@@ -869,17 +1137,22 @@
         // Adım 1: "Konumumu Kullan"
         document.getElementById('useMyLocationBtn').addEventListener('click', function () {
             const label = document.getElementById('locationLabel');
-            if (!navigator.geolocation) { label.textContent = 'Konum desteklenmiyor'; return; }
-            label.textContent = 'Konum alınıyor...';
+            if (!navigator.geolocation) { 
+                label.textContent = translations[currentLang].js_location_unsupported; 
+                return; 
+            }
+            label.textContent = translations[currentLang].js_location_fetching;
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     panelState.locationLat = pos.coords.latitude;
                     panelState.locationLng = pos.coords.longitude;
                     panelState.locationText = null;
-                    label.textContent = 'Konumunuz alındı ✓';
+                    label.textContent = translations[currentLang].js_location_success;
                     document.getElementById('locationTags').querySelectorAll('.tag-item').forEach(el => el.classList.remove('tag-active'));
                 },
-                () => { label.textContent = 'Konum izni verilmedi'; }
+                () => { 
+                    label.textContent = translations[currentLang].js_location_denied; 
+                }
             );
         });
 
@@ -889,7 +1162,9 @@
                 e.preventDefault();
                 panelState.category = this.dataset.category || null;
                 panelState.keyword = this.dataset.keyword || null;
-                document.getElementById('whatLabel').textContent = this.dataset.label;
+                
+                const chosenLabel = currentLang === 'tr' ? this.dataset.label : this.dataset.labelEn;
+                document.getElementById('whatLabel').textContent = chosenLabel;
                 setActiveTag(document.getElementById('whatTags'), this);
             });
         });
@@ -899,7 +1174,7 @@
             tag.addEventListener('click', function (e) {
                 e.preventDefault();
                 panelState.age = this.dataset.age;
-                document.getElementById('ageLabel').textContent = this.textContent + ' yaş';
+                document.getElementById('ageLabel').textContent = this.textContent + translations[currentLang].js_age_suffix;
                 setActiveTag(document.getElementById('ageTags'), this);
             });
         });
@@ -917,6 +1192,7 @@
                 p.set('lng', panelState.locationLng);
             }
             if (withAI) p.set('ai', '1');
+            p.set('lang', currentLang); // Explorer sayfasının da doğru dille açılabilmesi için parametre gönderiyoruz
             const qs = p.toString();
             return 'explorer.html' + (qs ? '?' + qs : '');
         }
