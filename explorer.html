@@ -95,7 +95,7 @@
         // Kırpılmayı tamamen önleyen esnek kart tasarımı
         function renderCardHTML(r) {
             return `
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4">
+                <a href="okul-detay.html?id=${r.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
                     <!-- Görsel Alanı: Mobilde genişlik tam, yükseklik resme göre otomatik (Kırpılma İmkansız). Masaüstünde standart kutu düzeni. -->
                     <div class="w-full sm:w-32 h-auto sm:h-24 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60 overflow-hidden">
                         <img src="students.jpg" alt="${r.name}" class="w-full h-auto sm:h-full sm:object-cover object-center" onerror="this.outerHTML='<span class="text-2xl">🏫</span>'">
@@ -106,7 +106,7 @@
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || 'Ankara'}</p>
                         </div>
                     </div>
-                </div>
+                </a>
             `;
         }
 
