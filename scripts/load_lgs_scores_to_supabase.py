@@ -109,11 +109,13 @@ def main():
     schools = []
     for name, rows in grouped.items():
         avg_yuzde = sum(r["taban_yuzde"] for r in rows) / len(rows)
+        hazirlik_var = any(r.get("hazirlik_var") for r in rows)
         schools.append({
             "name": rows[0]["il"] + " - " + rows[0]["ilce"] + " - " + name,
             "ilce": rows[0]["ilce"],
             "institution_type_slug": rows[0]["institution_type_slug"],
             "avg_taban_yuzde": round(avg_yuzde, 2),
+            "hazirlik_var": hazirlik_var,
             "program_count": len(rows),
         })
 
@@ -213,6 +215,32 @@ def main():
             inserted_scores += 1
         else:
             print(f"UYARI: '{school['name']}' skoru yazılamadı -> {resp.status_code} {resp.text[:200]}")
+
+        # Yabancı Dil Eğitimi kriteri: PDF'te "Hazırlık Sınıfı Bulunan" türü ayrıca
+        # belirtiliyor - hazırlık sınıfı olan okullar yoğunlaştırılmış yabancı dil
+        # eğitimi veriyor demektir. Bu basit ama gerçek/kaynaklı bir proxy'dir;
+        # IB/ikinci yabancı dil gibi zenginleştirilmiş programları KAPSAMAZ
+        # (bu bilgi bu PDF'te yok, source_note'ta açıkça belirtiliyor).
+        yabanci_dil_score = 100 if school["hazirlik_var"] else 40
+        yabanci_dil_note = (
+            f"Kaynak: MEB resmi LGS yerleştirme kılavuzu PDF'i ({args.pdf_url}). "
+            f"{'Okulda Hazırlık Sınıfı bulunuyor (yoğunlaştırılmış yabancı dil eğitimi).' if school['hazirlik_var'] else 'Okulda Hazırlık Sınıfı bulunmuyor, standart müfredat yabancı dil dersi var.'} "
+            "NOT: Bu skor sadece 'hazırlık sınıfı var mı' bilgisine dayanır; IB, ikinci yabancı dil "
+            "gibi zenginleştirilmiş programlar hakkında bilgi içermez (ayrı kaynak gerekir)."
+        )
+        resp2 = requests.post(
+            f"{supabase_url}/rest/v1/institution_criteria_scores",
+            headers={**headers, "Prefer": "resolution=merge-duplicates"},
+            json={
+                "institution_id": institution_id,
+                "criteria_id": criteria_lookup.get("yabanci_dil"),
+                "score": yabanci_dil_score,
+                "source_note": yabanci_dil_note,
+                "is_verified": False,
+            },
+        )
+        if resp2.status_code not in (200, 201, 204):
+            print(f"UYARI: '{school['name']}' yabancı dil skoru yazılamadı -> {resp2.status_code} {resp2.text[:200]}")
 
     print(f"Tamamlandı: {inserted_inst} yeni kurum, {enriched_inst} mevcut kurumla eşleşti, {inserted_scores} akademik başarı skoru yazıldı.")
 
