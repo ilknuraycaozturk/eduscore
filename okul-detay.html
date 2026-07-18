@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Kurum Detayı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        #miniMap { height: 220px; width: 100%; border-radius: 1rem; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
+        <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+            <a href="lise-skoru.html" class="text-brandGray hover:text-brandDark transition-colors">🎓 Lise Skoru</a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+
+        <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-xs text-brandGray hover:text-brandRed mb-4 font-semibold">← Geri dön</a>
+
+        <div id="loadingState" class="text-center py-20 text-brandGray text-sm">Kurum bilgileri yükleniyor...</div>
+        <div id="notFoundState" class="hidden text-center py-20">
+            <p class="text-brandDark font-semibold mb-1">Kurum bulunamadı</p>
+            <p class="text-xs text-brandGray">Bağlantı geçersiz olabilir. <a href="explorer.html" class="text-brandRed underline">Genel aramaya</a> dönebilirsiniz.</p>
+        </div>
+
+        <div id="content" class="hidden">
+
+            <!-- Üst Kart -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span id="typeBadge" class="bg-red-50 text-brandRed text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                    <span id="publicBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                    <span id="verifiedBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                </div>
+                <h1 id="instName" class="text-xl sm:text-2xl font-bold text-brandDark mb-2"></h1>
+                <p id="instLocation" class="text-sm text-brandGray mb-1">📍 <span></span></p>
+                <p id="instAddress" class="text-xs text-brandGray"></p>
+
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <a id="mapsLink" href="#" target="_blank" rel="noopener" class="text-xs font-semibold text-brandGray hover:text-brandRed hover:underline">Google'da görüntüle →</a>
+                    <a id="websiteLink" href="#" target="_blank" rel="noopener" class="hidden text-xs font-semibold text-brandRed hover:underline">Web sitesi →</a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Kriter Puanları -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Kriter Puanları</h2>
+                    <div id="criteriaScores" class="space-y-3"></div>
+                    <p id="noCriteriaMsg" class="hidden text-xs text-brandGray italic">Bu kurum için henüz kriter bazlı puan verisi yok.</p>
+                </div>
+
+                <!-- Harita + Yorumlar -->
+                <div class="space-y-6">
+                    <div id="mapCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Konum</h2>
+                        <div id="miniMap"></div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Kullanıcı Değerlendirmeleri</h2>
+                        <p class="text-xs text-brandGray italic">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Açıklama / Kaynak notu -->
+            <div id="descCard" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-6">
+                <p id="descText" class="text-xs text-amber-800 leading-relaxed"></p>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const params = new URLSearchParams(window.location.search);
+        const instId = params.get('id');
+
+        async function load() {
+            if (!instId) { showNotFound(); return; }
+
+            const { data: inst, error } = await sb.from('institutions')
+                .select(`
+                    id, name, address, website, google_maps_url, lat, lng,
+                    is_public, is_verified, description,
+                    institution_types ( name_tr ),
+                    locations ( name )
+                `)
+                .eq('id', instId)
+                .single();
+
+            if (error || !inst) { showNotFound(); return; }
+
+            const { data: scores } = await sb.from('institution_criteria_scores')
+                .select('score, source_note, scoring_criteria ( name_tr, default_weight, display_order )')
+                .eq('institution_id', instId);
+
+            renderInstitution(inst, scores || []);
+        }
+
+        function showNotFound() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('notFoundState').classList.remove('hidden');
+        }
+
+        function renderInstitution(inst, scores) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+
+            document.getElementById('typeBadge').textContent = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
+            document.getElementById('instName').textContent = inst.name;
+            document.querySelector('#instLocation span').textContent = (inst.locations ? inst.locations.name : '') + ', Ankara';
+            document.getElementById('instAddress').textContent = inst.address || '';
+
+            const publicBadge = document.getElementById('publicBadge');
+            if (inst.is_public) {
+                publicBadge.textContent = '🏛️ Kamu';
+                publicBadge.className = 'bg-slate-100 text-brandGray text-[11px] font-bold px-2.5 py-1 rounded';
+            } else {
+                publicBadge.textContent = '🎓 Özel';
+                publicBadge.className = 'bg-red-50 text-brandRedDark text-[11px] font-bold px-2.5 py-1 rounded';
+            }
+
+            const verifiedBadge = document.getElementById('verifiedBadge');
+            if (inst.is_verified) {
+                verifiedBadge.textContent = '✓ Doğrulanmış';
+                verifiedBadge.className = 'bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded';
+            } else {
+                verifiedBadge.textContent = '🔍 Taslak Veri';
+                verifiedBadge.className = 'bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded';
+            }
+
+            const mapsUrl = inst.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(inst.name + ' ' + (inst.address || 'Ankara'))}`;
+            document.getElementById('mapsLink').href = mapsUrl;
+
+            if (inst.website) {
+                const wl = document.getElementById('websiteLink');
+                wl.href = inst.website;
+                wl.classList.remove('hidden');
+            }
+
+            if (inst.description) {
+                document.getElementById('descCard').classList.remove('hidden');
+                document.getElementById('descText').textContent = inst.description;
+            }
+
+            // Kriter puanları
+            const criteriaEl = document.getElementById('criteriaScores');
+            if (!scores.length) {
+                document.getElementById('noCriteriaMsg').classList.remove('hidden');
+            } else {
+                const sorted = scores.slice().sort((a, b) => {
+                    const oa = a.scoring_criteria ? a.scoring_criteria.display_order : 99;
+                    const ob = b.scoring_criteria ? b.scoring_criteria.display_order : 99;
+                    return oa - ob;
+                });
+                criteriaEl.innerHTML = sorted.map(s => {
+                    const name = s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter';
+                    const weight = s.scoring_criteria ? s.scoring_criteria.default_weight : '';
+                    const pct = Math.max(0, Math.min(100, s.score));
+                    return `
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-brandDark">${name} <span class="text-brandGray font-normal">(${weight}%)</span></span>
+                                <span class="text-brandRed">${s.score}</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-brandRed rounded-full" style="width:${pct}%"></div>
+                            </div>
+                            ${s.source_note ? `<p class="text-[10px] text-brandGray mt-1">${s.source_note}</p>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Mini harita
+            if (inst.lat && inst.lng) {
+                document.getElementById('mapCard').classList.remove('hidden');
+                const map = L.map('miniMap', { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([inst.lat, inst.lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(map);
+                L.marker([inst.lat, inst.lng]).addTo(map);
+            }
+        }
+
+        load();
+    </script>
+</body>
+</html>
