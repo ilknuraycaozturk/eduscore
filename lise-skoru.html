@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Lise Skoru Hesaplayıcı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        input[type=range] { accent-color: #E8543A; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
+        <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8">
+
+        <div class="text-center mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-brandDark mb-2">🎓 Lise Skoru Hesaplayıcı</h1>
+            <p class="text-sm text-brandGray max-w-2xl mx-auto">
+                Ankara'daki liseleri, sizin için önemli olan kriterlere göre ağırlıklandırıp kişiselleştirilmiş bir sıralama oluşturuyoruz.
+                Her kritere 1 (önemsiz) ile 5 (çok önemli) arası bir puan verin.
+            </p>
+        </div>
+
+        <!-- Şeffaflık Uyarısı -->
+        <div id="dataNotice" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl px-4 py-3 mb-6"></div>
+
+        <!-- Anket -->
+        <div id="surveyContainer" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-6">
+            <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Öncelikleriniz</h2>
+            <div id="criteriaList" class="space-y-5"></div>
+            <button id="calculateBtn" class="mt-6 w-full sm:w-auto bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm px-6 py-3 rounded-full transition-all">
+                🎯 Kişiselleştirilmiş Sıralamayı Hesapla
+            </button>
+        </div>
+
+        <!-- Sonuçlar -->
+        <div id="resultsSection" class="hidden">
+            <h2 id="resultsTitle" class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Sonuçlar</h2>
+            <div id="resultsList" class="space-y-3"></div>
+        </div>
+
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Aile önem derecesi -> çarpan (belirlenen metodoloji)
+        const MULTIPLIER = { 5: 1.5, 4: 1.25, 3: 1, 2: 0.75, 1: 0.50 };
+
+        let criteria = [];
+        let institutions = [];
+        let scoresByInstitution = {}; // institution_id -> { criteria_key: score }
+
+        async function loadData() {
+            const { data: catRows } = await sb.from('categories').select('id').eq('slug', 'okul-oncesi-k12').single();
+            const categoryId = catRows.id;
+
+            const { data: criteriaRows } = await sb.from('scoring_criteria')
+                .select('id, key, name_tr, description, default_weight, display_order')
+                .eq('category_id', categoryId)
+                .order('display_order');
+            criteria = criteriaRows || [];
+
+            // Lise türlerindeki kurumları çek
+            const liseSlugs = ['lise', 'fen-lisesi', 'sosyal-bilimler-lisesi', 'anadolu-lisesi', 'anadolu-imam-hatip-lisesi', 'mesleki-teknik-anadolu-lisesi'];
+            const { data: typeRows } = await sb.from('institution_types').select('id, slug').in('slug', liseSlugs);
+            const typeIds = (typeRows || []).map(t => t.id);
+
+            const { data: instRows } = await sb.from('institutions')
+                .select('id, name, is_public, is_verified, locations ( name )')
+                .in('institution_type_id', typeIds);
+            institutions = instRows || [];
+
+            const { data: scoreRows } = await sb.from('institution_criteria_scores')
+                .select('institution_id, score, criteria_id, scoring_criteria ( key )')
+                .in('institution_id', institutions.map(i => i.id));
+
+            scoresByInstitution = {};
+            (scoreRows || []).forEach(r => {
+                const key = r.scoring_criteria ? r.scoring_criteria.key : null;
+                if (!key) return;
+                if (!scoresByInstitution[r.institution_id]) scoresByInstitution[r.institution_id] = {};
+                scoresByInstitution[r.institution_id][key] = r.score;
+            });
+
+            renderSurvey();
+        }
+
+        function criteriaWithData() {
+            const keysWithData = new Set();
+            Object.values(scoresByInstitution).forEach(scores => {
+                Object.keys(scores).forEach(k => keysWithData.add(k));
+            });
+            return criteria.filter(c => keysWithData.has(c.key));
+        }
+
+        function renderSurvey() {
+            const withData = criteriaWithData();
+            const withoutData = criteria.filter(c => !withData.includes(c));
+
+            const notice = document.getElementById('dataNotice');
+            if (withoutData.length) {
+                notice.classList.remove('hidden');
+                notice.innerHTML = `⚠️ Şu an sadece <b>${withData.length}/${criteria.length}</b> kriter için gerçek veri var: ` +
+                    `<b>${withData.map(c => c.name_tr).join(', ')}</b>. ` +
+                    `Veri olmayan kriterler (${withoutData.map(c => c.name_tr).join(', ')}) hesaplamaya dahil edilmiyor — ağırlıklar sadece veri olan kriterler arasında orantılı dağıtılıyor.`;
+            }
+
+            const listEl = document.getElementById('criteriaList');
+            listEl.innerHTML = criteria.map(c => {
+                const hasData = withData.includes(c);
+                return `
+                    <div class="${hasData ? '' : 'opacity-40'}">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-sm font-semibold text-brandDark">${c.name_tr} <span class="text-xs text-brandGray font-normal">(${c.default_weight}%)</span></label>
+                            <span id="val-${c.key}" class="text-xs font-bold text-brandRed">3 - Normal</span>
+                        </div>
+                        <input type="range" min="1" max="5" value="3" step="1" data-key="${c.key}"
+                            ${hasData ? '' : 'disabled'}
+                            class="w-full h-2 rounded-full appearance-none bg-slate-200 cursor-pointer"
+                            oninput="updateLabel('${c.key}', this.value)">
+                        ${hasData ? '' : '<p class="text-[11px] text-brandGray mt-1">Veri yok — bu kriter şu an hesaplamaya dahil edilemiyor.</p>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateLabel(key, value) {
+            const labels = { 1: '1 - Önemsiz', 2: '2 - Az Önemli', 3: '3 - Normal', 4: '4 - Önemli', 5: '5 - Çok Önemli' };
+            document.getElementById(`val-${key}`).textContent = labels[value];
+        }
+
+        function calculate() {
+            const withData = criteriaWithData();
+            const importance = {};
+            withData.forEach(c => {
+                const input = document.querySelector(`input[data-key="${c.key}"]`);
+                importance[c.key] = parseInt(input.value);
+            });
+
+            // Etkin ağırlık = temel ağırlık * çarpan, sadece veri olan kriterler arasında
+            const effectiveWeights = {};
+            let totalWeight = 0;
+            withData.forEach(c => {
+                const w = c.default_weight * MULTIPLIER[importance[c.key]];
+                effectiveWeights[c.key] = w;
+                totalWeight += w;
+            });
+
+            const ranked = institutions.map(inst => {
+                const scores = scoresByInstitution[inst.id] || {};
+                let weightedSum = 0, usedWeight = 0;
+                withData.forEach(c => {
+                    if (scores[c.key] != null) {
+                        weightedSum += scores[c.key] * effectiveWeights[c.key];
+                        usedWeight += effectiveWeights[c.key];
+                    }
+                });
+                const personalScore = usedWeight > 0 ? (weightedSum / usedWeight) : null;
+                return { inst, personalScore, scores };
+            })
+            .filter(r => r.personalScore !== null)
+            .sort((a, b) => b.personalScore - a.personalScore);
+
+            renderResults(ranked, withData);
+        }
+
+        function renderResults(ranked, withData) {
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('resultsTitle').textContent = `Kişiselleştirilmiş Sıralama (${ranked.length} lise)`;
+
+            const listEl = document.getElementById('resultsList');
+            listEl.innerHTML = ranked.map((r, idx) => {
+                const loc = r.inst.locations ? r.inst.locations.name : 'Ankara';
+                const breakdown = withData.map(c => {
+                    const s = r.scores[c.key];
+                    return s != null ? `<span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded">${c.name_tr.split(' ')[0]}: ${s}</span>` : '';
+                }).join(' ');
+                const verifiedBadge = r.inst.is_verified
+                    ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                    : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
+                        <div class="flex-grow">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <h3 class="font-bold text-sm text-brandDark">${r.inst.name}</h3>
+                                ${verifiedBadge}
+                            </div>
+                            <p class="text-xs text-brandGray mb-1">📍 ${loc}, Ankara</p>
+                            <div class="flex flex-wrap gap-1">${breakdown}</div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="text-xl font-bold text-brandRed">${r.personalScore.toFixed(1)}</div>
+                            <div class="text-[10px] text-brandGray uppercase tracking-wide">Kişisel Skor</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('calculateBtn').addEventListener('click', calculate);
+        loadData();
+    </script>
+</body>
+</html>
