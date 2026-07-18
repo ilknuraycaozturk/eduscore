@@ -1,0 +1,54 @@
+name: Ankara Lise Taban Puanları (Lise Modülü)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pdf_url:
+        description: "MEB'in o yılki resmi taban/tavan puan PDF linki (elle bulunmalı)"
+        required: true
+        default: "https://www.meb.gov.tr/meb_iys_dosyalar/2022_07/25103752_2022_ilk_yerlestirme_taban_tavan_yerlesme_bilgileri.pdf"
+      il:
+        description: "İl adı (BÜYÜK HARF)"
+        required: true
+        default: "ANKARA"
+      dry_run:
+        description: "true ise Supabase'e yazmaz, sadece önizler"
+        required: true
+        default: "true"
+
+jobs:
+  scrape-and-load:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install -r scripts/requirements.txt
+
+      - name: LGS taban puan PDF'ini çek ve ayrıştır
+        run: |
+          python scripts/scrape_lgs_taban_puanlari.py \
+            --pdf-url "${{ inputs.pdf_url }}" \
+            --il "${{ inputs.il }}" \
+            --output data/lgs_taban_puanlari.json
+
+      - name: Supabase'e yükle
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ARGS="--input data/lgs_taban_puanlari.json --pdf-url \"${{ inputs.pdf_url }}\""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          eval python scripts/load_lgs_scores_to_supabase.py $ARGS
+
+      - name: Ham veriyi artifact olarak kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: lgs-taban-puanlari-data
+          path: data/lgs_taban_puanlari.json
