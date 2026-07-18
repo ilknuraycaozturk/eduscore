@@ -147,18 +147,23 @@ def main():
     location_cache: dict[str, str] = {}
     inserted_inst, enriched_inst, updated_scores, inserted_scores = 0, 0, 0, 0
 
+    # ÖNEMLİ: Dedup kontrolü ilçe bazlı değil, TÜM Ankara kurumları arasında
+    # GLOBAL yapılır. Aksi halde farklı konum granülerliğinde (mahalle vs ilçe)
+    # kaydedilmiş aynı okul, farklı location_id'lere sahip olduğu için
+    # eşleşmeyip mükerrer kayıt olarak eklenebilir (bu bug'ı canlı ortamda
+    # yaşadık: Bağlıca'da mahalle düzeyinde kayıtlı bir okul, ilçe düzeyinde
+    # arama yapan bu script tarafından bulunamayıp tekrar eklenmişti).
+    all_institutions = requests.get(
+        f"{supabase_url}/rest/v1/institutions?select=id,name", headers=headers,
+    ).json()
+    print(f"Global dedup kontrolü için {len(all_institutions)} mevcut kurum yüklendi.")
+
     for school in schools:
         location_id = get_or_create_location(supabase_url, headers, school["ilce"], ankara_id, location_cache, args.dry_run)
         if not location_id:
             continue
 
-        # Bu ilçedeki mevcut kurumları çek (her okul için tekrar tekrar çekmemek adına basit cache)
-        existing = requests.get(
-            f"{supabase_url}/rest/v1/institutions?select=id,name&location_id=eq.{location_id}",
-            headers=headers,
-        ).json()
-
-        match = find_existing_match(school["name"], existing)
+        match = find_existing_match(school["name"], all_institutions)
         academic_score = round(100 - school["avg_taban_yuzde"], 2)
         source_note = (
             f"Kaynak: MEB resmi LGS yerleştirme kılavuzu PDF'i ({args.pdf_url}). "
@@ -189,6 +194,7 @@ def main():
                 continue
             institution_id = resp.json()[0]["id"]
             inserted_inst += 1
+            all_institutions.append({"id": institution_id, "name": school["name"]})
 
         criteria_id = criteria_lookup.get("akademik_basari")
         score_payload = {
