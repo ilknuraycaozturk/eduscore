@@ -1,0 +1,165 @@
+"""
+scrape_lgs_taban_puanlari.py
+=============================
+EduScor — Lise Modülü: MEB'in resmi "Taban/Tavan Puanlar ve Yüzdelik
+Dilimler" PDF kılavuzundan (LGS ile öğrenci alan liseler) belirli bir
+ilin (varsayılan: Ankara) tüm liselerinin akademik başarı verisini çeker.
+
+Birincil kaynak: MEB'in kendi web sitesinde her yıl yayınladığı resmi PDF.
+Örnek (2022): https://www.meb.gov.tr/meb_iys_dosyalar/2022_07/25103752_2022_ilk_yerlestirme_taban_tavan_yerlesme_bilgileri.pdf
+
+ÖNEMLİ: MEB bu PDF'i her yıl YENİ ve TAHMİN EDİLEMEYEN bir dosya adıyla
+yayınlıyor (rastgele sayısal önek + yıl). Bu yüzden --pdf-url parametresi
+ZORUNLU ve elle güncellenmesi gerekiyor. Güncel yılın linkini bulmak için:
+  1. meb.gov.tr'de "taban puanlar" ya da "yerleştirme sonuçları" araması yapın
+  2. Ya da meb.gov.tr/liselerin-bos-kontenjanlari... haberini takip edin
+
+Kullanım:
+    python scrape_lgs_taban_puanlari.py \
+        --pdf-url "https://www.meb.gov.tr/meb_iys_dosyalar/.../XXXX_taban_tavan_....pdf" \
+        --il ANKARA \
+        --output data/ankara_lgs_taban_puanlari.json
+"""
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+import requests
+
+try:
+    import pdfplumber
+except ImportError:
+    print("pdfplumber kurulu değil. Kurulum: pip install pdfplumber")
+    sys.exit(1)
+
+# MEB'in PDF'teki bilinen okul TÜRÜ değerleri -> bizim institution_types.slug
+TUR_MAP = {
+    "Fen Lisesi": "fen-lisesi",
+    "Sosyal Bilimler Lisesi": "sosyal-bilimler-lisesi",
+    "Hazırlık Sınıfı Bulunmayan Sosyal Bilimler Lisesi": "sosyal-bilimler-lisesi",
+    "Anadolu Lisesi": "anadolu-lisesi",
+    "Hazırlık Sınıfı Bulunan Anadolu Lisesi": "anadolu-lisesi",
+    "Anadolu İmam Hatip Lisesi": "anadolu-imam-hatip-lisesi",
+    "Hazırlık Sınıfı Bulunan Anadolu İmam Hatip Lisesi": "anadolu-imam-hatip-lisesi",
+    "Anadolu Teknik Programı": "mesleki-teknik-anadolu-lisesi",
+    "Anadolu Meslek Programı": "mesleki-teknik-anadolu-lisesi",
+}
+
+# Bir satırın başlangıcı: TERCİH KODU (4-6 haneli sayı) + İL (büyük harf) + İLÇE (büyük harf)
+LINE_RE = re.compile(
+    r"^(?P<kod>\d{4,6})\s+"
+    r"(?P<il>[A-ZÇĞİÖŞÜ]+(?:\s[A-ZÇĞİÖŞÜ]+)*?)\s+"
+    r"(?P<ilce>[A-ZÇĞİÖŞÜ]+(?:\s[A-ZÇĞİÖŞÜ]+)*?)\s+"
+    r"(?P<rest>.+)$"
+)
+
+# Satırın sonundaki 4 sayısal alan: TABAN_PUAN TABAN_YÜZDE TAVAN_PUAN TAVAN_YÜZDE
+NUMS_RE = re.compile(
+    r"(?P<taban_puan>\d+(?:,\d+)?)\s+(?P<taban_yuzde>\d+(?:,\d+)?)\s+"
+    r"(?P<tavan_puan>\d+(?:,\d+)?)\s+(?P<tavan_yuzde>\d+(?:,\d+)?)\s*$"
+)
+
+
+def download_pdf(url: str, dest: str) -> None:
+    print(f"PDF indiriliyor: {url}")
+    resp = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0 (EduScor-Pilot/1.0)"})
+    resp.raise_for_status()
+    Path(dest).write_bytes(resp.content)
+    print(f"İndirildi -> {dest} ({len(resp.content) / 1024:.0f} KB)")
+
+
+def extract_tur(rest: str) -> tuple[str | None, str]:
+    """'rest' metninden okul TÜRÜ'nü bulur, geri kalanını (okul adı) döndürür.
+    Okul adları çoğunlukla kendi türleriyle bitiyor (örn. '... Anadolu Lisesi'),
+    ve TÜR sütunu bunu ayrıca tekrarlıyor - bu yüzden İLK değil SON eşleşmeyi
+    almak gerekiyor (aksi halde okul adının kendi soneki 'tür' sanılıp isim kesilir).
+    """
+    best_idx, best_tur = -1, None
+    for tur_text in TUR_MAP:
+        idx = rest.rfind(tur_text)
+        if idx != -1 and idx > best_idx:
+            best_idx, best_tur = idx, tur_text
+    if best_tur is None:
+        return None, rest
+    okul_adi = rest[:best_idx].strip()
+    return best_tur, okul_adi
+
+
+def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
+    results: list[dict] = []
+    skipped_no_match = 0
+
+    with pdfplumber.open(pdf_path) as pdf:
+        print(f"PDF {len(pdf.pages)} sayfa, işleniyor...")
+        for page_num, page in enumerate(pdf.pages, 1):
+            text = page.extract_text() or ""
+            for raw_line in text.split("\n"):
+                line = raw_line.strip()
+                if not line or "TERCİH" in line or "TABAN PUAN" in line or "Yılı Merkezi" in line:
+                    continue  # başlık/sayfa başlığı satırları
+
+                m = LINE_RE.match(line)
+                if not m:
+                    continue
+
+                il = m.group("il").strip()
+                if il != il_filter.upper():
+                    continue
+
+                ilce = m.group("ilce").strip()
+                rest = m.group("rest").strip()
+
+                nums_match = NUMS_RE.search(rest)
+                if not nums_match:
+                    skipped_no_match += 1
+                    continue
+
+                rest_before_nums = rest[: nums_match.start()].strip()
+                tur, okul_adi_ham = extract_tur(rest_before_nums)
+                if not tur:
+                    skipped_no_match += 1
+                    continue
+
+                results.append({
+                    "il": il,
+                    "ilce": ilce,
+                    "okul_adi": okul_adi_ham.strip(),
+                    "tur_ham": tur,
+                    "institution_type_slug": TUR_MAP[tur],
+                    "taban_puan": float(nums_match.group("taban_puan").replace(",", ".")),
+                    "taban_yuzde": float(nums_match.group("taban_yuzde").replace(",", ".")),
+                    "tavan_puan": float(nums_match.group("tavan_puan").replace(",", ".")),
+                    "tavan_yuzde": float(nums_match.group("tavan_yuzde").replace(",", ".")),
+                })
+
+            if page_num % 20 == 0:
+                print(f"  ...{page_num} sayfa işlendi, şu ana kadar {len(results)} {il_filter} kaydı bulundu")
+
+    print(f"Toplam {len(results)} kayıt bulundu ({il_filter}), {skipped_no_match} satır ayrıştırılamadı (atlandı).")
+    return results
+
+
+def main():
+    parser = argparse.ArgumentParser(description="MEB resmi LGS taban puan PDF'ini indirip il bazında ayrıştırır.")
+    parser.add_argument("--pdf-url", required=True, help="MEB'in o yılki resmi PDF URL'i (elle bulunmalı, bkz. dosya başlığı)")
+    parser.add_argument("--il", default="ANKARA")
+    parser.add_argument("--output", default="data/lgs_taban_puanlari.json")
+    parser.add_argument("--pdf-cache", default="data/_lgs_kaynak.pdf")
+    args = parser.parse_args()
+
+    Path(args.pdf_cache).parent.mkdir(parents=True, exist_ok=True)
+    download_pdf(args.pdf_url, args.pdf_cache)
+
+    results = parse_pdf(args.pdf_cache, args.il)
+
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Kaydedildi -> {out_path}")
+
+
+if __name__ == "__main__":
+    main()
