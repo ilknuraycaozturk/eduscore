@@ -122,7 +122,17 @@ def main():
     print(f"{len(schools)} benzersiz okul (program bazında gruplanmış).")
 
     if args.dry_run:
-        print(json.dumps(schools[:5], ensure_ascii=False, indent=2))
+        hazirlik_true = sum(1 for s in schools if s["hazirlik_var"])
+        by_type: dict[str, int] = defaultdict(int)
+        for s in schools:
+            by_type[s["institution_type_slug"]] += 1
+        print("--- ÖZET ---")
+        print(f"Hazırlık Sınıfı olan okul sayısı: {hazirlik_true} / {len(schools)}")
+        print("Türe göre dağılım:", dict(by_type))
+        print("--- Hazırlık Sınıfı OLAN ilk 5 örnek ---")
+        print(json.dumps([s for s in schools if s["hazirlik_var"]][:5], ensure_ascii=False, indent=2))
+        print("--- Hazırlık Sınıfı OLMAYAN ilk 3 örnek ---")
+        print(json.dumps([s for s in schools if not s["hazirlik_var"]][:3], ensure_ascii=False, indent=2))
         print("... (dry-run, Supabase'e yazılmadı)")
         return
 
