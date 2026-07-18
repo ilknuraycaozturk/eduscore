@@ -71,21 +71,40 @@ def download_pdf(url: str, dest: str) -> None:
     print(f"İndirildi -> {dest} ({len(resp.content) / 1024:.0f} KB)")
 
 
-def extract_tur(rest: str) -> tuple[str | None, str]:
-    """'rest' metninden okul TÜRÜ'nü bulur, geri kalanını (okul adı) döndürür.
+LANGUAGES = ["İngilizce", "Almanca", "Fransızca", "Çince", "İspanyolca", "Japonca", "Rusça", "Arapça", "İtalyanca"]
+
+
+def extract_tur(rest: str) -> tuple[str | None, str, int]:
+    """'rest' metninden okul TÜRÜ'nü bulur, geri kalanını (okul adı) ve
+    türün bittiği indeksi döndürür (kalan kısımda ALAN/YABANCI DİLİ olabilir).
     Okul adları çoğunlukla kendi türleriyle bitiyor (örn. '... Anadolu Lisesi'),
     ve TÜR sütunu bunu ayrıca tekrarlıyor - bu yüzden İLK değil SON eşleşmeyi
     almak gerekiyor (aksi halde okul adının kendi soneki 'tür' sanılıp isim kesilir).
     """
-    best_idx, best_tur = -1, None
+    # En sağdaki (rightmost) bitiş konumuna sahip eşleşmeyi tercih et;
+    # bitiş konumu eşitse (örn. 'Anadolu Lisesi' hem tek başına hem de
+    # 'Hazırlık Sınıfı Bulunan Anadolu Lisesi' içinde aynı yerde bitebilir)
+    # daha UZUN/spesifik olanı (daha erken başlayanı) tercih et.
+    best_end, best_start, best_tur = -1, None, None
     for tur_text in TUR_MAP:
         idx = rest.rfind(tur_text)
-        if idx != -1 and idx > best_idx:
-            best_idx, best_tur = idx, tur_text
+        if idx == -1:
+            continue
+        end = idx + len(tur_text)
+        if end > best_end or (end == best_end and (best_start is None or idx < best_start)):
+            best_end, best_start, best_tur = end, idx, tur_text
     if best_tur is None:
-        return None, rest
-    okul_adi = rest[:best_idx].strip()
-    return best_tur, okul_adi
+        return None, rest, -1
+    okul_adi = rest[:best_start].strip()
+    return best_tur, okul_adi, best_end
+
+
+def extract_yabanci_dil(trailing_text: str) -> str | None:
+    """TÜR'den sonraki (ALAN + YABANCI DİLİ içerebilen) metinden dil adını bulur."""
+    for lang in LANGUAGES:
+        if lang in trailing_text:
+            return lang
+    return None
 
 
 def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
@@ -118,10 +137,14 @@ def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
                     continue
 
                 rest_before_nums = rest[: nums_match.start()].strip()
-                tur, okul_adi_ham = extract_tur(rest_before_nums)
+                tur, okul_adi_ham, tur_end_idx = extract_tur(rest_before_nums)
                 if not tur:
                     skipped_no_match += 1
                     continue
+
+                trailing_text = rest_before_nums[tur_end_idx:].strip()
+                yabanci_dil = extract_yabanci_dil(trailing_text)
+                hazirlik_var = "Hazırlık Sınıfı Bulunan" in tur
 
                 results.append({
                     "il": il,
@@ -129,6 +152,8 @@ def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
                     "okul_adi": okul_adi_ham.strip(),
                     "tur_ham": tur,
                     "institution_type_slug": TUR_MAP[tur],
+                    "yabanci_dil": yabanci_dil,
+                    "hazirlik_var": hazirlik_var,
                     "taban_puan": float(nums_match.group("taban_puan").replace(",", ".")),
                     "taban_yuzde": float(nums_match.group("taban_yuzde").replace(",", ".")),
                     "tavan_puan": float(nums_match.group("tavan_puan").replace(",", ".")),
