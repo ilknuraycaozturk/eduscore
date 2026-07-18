@@ -511,7 +511,7 @@
         
         <!-- Arama Arayüzü -->
         <div class="search-container">
-            <form action="#" method="GET" class="search-steps">
+            <form action="explorer.html" method="GET" class="search-steps" id="searchForm">
                 
                 <!-- Adım 1: EduScor Kurumsal Eğitim Segmentleri -->
                 <div class="step-box">
@@ -575,7 +575,7 @@
                     <div class="custom-select">
                         <input type="text" name="location" placeholder="İl, ilçe veya mahalle..." autocomplete="off" required>
                     </div>
-                    <button type="button" class="location-btn">
+                    <button type="button" class="location-btn" id="nearMeBtn">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
                         Yakınımda Ara
                     </button>
@@ -646,6 +646,94 @@
                 navMenu.classList.remove('active');
             }
         });
+
+        // ---- Arama formunu explorer.html'e bağlama ----
+        // Segment seçenekleri veritabanımızdaki kategori slug'larıyla birebir
+        // örtüşmüyor (20 segment var, bizim 12 kategorimiz var) - bu yüzden
+        // en yakın eşleşmeye çeviriyoruz. Tam eşleşmesi olmayanlar için en
+        // mantıklı kategoriye yönlendiriyoruz (ör. "Sürücü Akademileri" ->
+        // "mesleki-teknik").
+        const SEGMENT_TO_CATEGORY = {
+            'seg-preschool': 'okul-oncesi-k12',
+            'seg-primary': 'okul-oncesi-k12',
+            'seg-middle': 'okul-oncesi-k12',
+            'seg-high': 'okul-oncesi-k12',
+            'seg-university': 'yuksekogretim',
+            'seg-distance': 'online-uzaktan',
+            'seg-edtech': 'online-uzaktan',
+            'seg-courses': 'sanat-spor-hobi',
+            'seg-language': 'dil-egitimi',
+            'seg-driving': 'mesleki-teknik',
+            'seg-sports-arts': 'sanat-spor-hobi',
+            'seg-special': 'ozel-egitim-kapsayici',
+            'seg-camps': 'yaz-kisa-sureli',
+            'seg-summer': 'yaz-kisa-sureli',
+            'seg-corporate': 'yetiskin-yasam-boyu',
+            'seg-lifelong': 'yetiskin-yasam-boyu',
+            'seg-vocational': 'mesleki-teknik',
+            'seg-stk': 'yetiskin-yasam-boyu',
+            'seg-defense': 'mesleki-teknik',
+            'seg-religious': 'okul-oncesi-k12',
+        };
+
+        // "Lise" segmenti seçilirse doğrudan Lise Skoru Hesaplayıcı'ya yönlendir
+        // (o segment için ayrı, daha zengin bir deneyimimiz var).
+        const SEGMENT_TO_DEDICATED_PAGE = {
+            'seg-high': 'lise-skoru.html',
+        };
+
+        let nearMeLat = null, nearMeLng = null;
+
+        const nearMeBtn = document.getElementById('nearMeBtn');
+        if (nearMeBtn) {
+            nearMeBtn.addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    nearMeBtn.textContent = 'Konum desteklenmiyor';
+                    return;
+                }
+                nearMeBtn.textContent = 'Konum alınıyor...';
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        nearMeLat = pos.coords.latitude;
+                        nearMeLng = pos.coords.longitude;
+                        nearMeBtn.textContent = '✓ Konum alındı';
+                        document.querySelector('input[name="location"]').value = '';
+                        document.querySelector('input[name="location"]').placeholder = 'Konumunuz kullanılacak';
+                        document.querySelector('input[name="location"]').required = false;
+                    },
+                    () => { nearMeBtn.textContent = 'İzin verilmedi'; }
+                );
+            });
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const segment = document.getElementById('institutionSegmentSelect').value;
+                const location = document.querySelector('input[name="location"]').value.trim();
+                const query = document.querySelector('input[name="query"]').value.trim();
+
+                const dedicatedPage = SEGMENT_TO_DEDICATED_PAGE[segment];
+                const targetPage = dedicatedPage || 'explorer.html';
+
+                const params = new URLSearchParams();
+                const category = SEGMENT_TO_CATEGORY[segment];
+                if (category && !dedicatedPage) params.set('category', category);
+
+                const qParts = [location, query].filter(Boolean);
+                if (qParts.length) params.set('q', qParts.join(' '));
+
+                if (nearMeLat && nearMeLng) {
+                    params.set('lat', nearMeLat);
+                    params.set('lng', nearMeLng);
+                }
+
+                const qs = params.toString();
+                window.location.href = targetPage + (qs ? '?' + qs : '');
+            });
+        }
     </script>
 </body>
 </html>
