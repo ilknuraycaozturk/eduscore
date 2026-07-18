@@ -67,6 +67,59 @@
         const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
         let map, markersLayer, isMobileMap = false;
 
+        const CATEGORIES = [
+            ["okul-oncesi-k12", "Okul Öncesi & K-12"],
+            ["yuksekogretim", "Yükseköğretim"],
+            ["dil-egitimi", "Dil Eğitimi"],
+            ["online-uzaktan", "Online & Uzaktan"],
+            ["yetiskin-yasam-boyu", "Yetişkin & Yaşam Boyu"],
+            ["ileri-yas", "İleri Yaş"],
+            ["mesleki-teknik", "Mesleki & Teknik"],
+            ["burs-finansman", "Burs & Finansman"],
+            ["yaz-kisa-sureli", "Yaz & Kısa Süreli"],
+            ["sertifika-programlari", "Sertifika Programları"],
+            ["ozel-egitim-kapsayici", "Özel Eğitim & Kapsayıcı"],
+            ["sanat-spor-hobi", "Sanat, Spor & Hobi"],
+        ];
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const qParam = urlParams.get('q') || '';
+        const categoryParam = urlParams.get('category') || '';
+        const userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
+        const userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
+
+        document.getElementById('searchInput').value = qParam;
+
+        function distanceKm(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function renderCategoryChips() {
+            const chipsEl = document.getElementById('categoryChips');
+            chipsEl.innerHTML = CATEGORIES.map(([slug, label]) => {
+                const isActive = slug === categoryParam;
+                const p = new URLSearchParams(window.location.search);
+                p.set('category', slug);
+                return `<a href="explorer.html?${p.toString()}" class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    isActive ? 'bg-[#E8543A] text-white border-[#E8543A]' : 'bg-white border-slate-200 text-[#8A7A72] hover:border-[#E8543A] hover:text-[#E8543A]'
+                }">${label}</a>`;
+            }).join('');
+        }
+
+        function goSearch() {
+            const q = document.getElementById('searchInput').value.trim();
+            const p = new URLSearchParams();
+            if (q) p.set('q', q);
+            if (categoryParam) p.set('category', categoryParam);
+            window.location.href = 'explorer.html' + (p.toString() ? '?' + p.toString() : '');
+        }
+        document.getElementById('updateBtn').addEventListener('click', goSearch);
+        document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') goSearch(); });
+
         function initMap() {
             map = L.map('map').setView([39.90, 32.65], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -113,20 +166,51 @@
         async function loadResults() {
             let query = sb.from('institutions').select(`*, institution_types(name_tr), categories(slug), locations(name)`);
             const { data } = await query;
-            
-            document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${data?.length || 0} kurum)`;
-            
+
+            let results = data || [];
+
+            if (categoryParam) {
+                results = results.filter(r => r.categories && r.categories.slug === categoryParam);
+            }
+
+            if (qParam) {
+                const needle = qParam.toLocaleLowerCase('tr');
+                results = results.filter(r => {
+                    const haystack = [
+                        r.name, r.address,
+                        r.institution_types && r.institution_types.name_tr,
+                        r.locations && r.locations.name,
+                    ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
+                    return haystack.includes(needle);
+                });
+            }
+
+            if (userLat && userLng) {
+                results = results
+                    .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
+                    .sort((a, b) => a._dist - b._dist);
+            }
+
+            document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
+
             const listEl = document.getElementById('resultsList');
-            if (data && data.length > 0) {
-                listEl.innerHTML = data.map(renderCardHTML).join('');
+            const emptyEl = document.getElementById('emptyState');
+            if (results.length > 0) {
+                emptyEl.classList.add('hidden');
+                listEl.innerHTML = results.map(renderCardHTML).join('');
             } else {
                 listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
             }
-            
+
             markersLayer.clearLayers();
-            data?.forEach(r => { if(r.lat && r.lng) L.marker([r.lat, r.lng]).addTo(markersLayer); });
+            results.forEach(r => { if (r.lat && r.lng) L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`); });
+            if (userLat && userLng) {
+                L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 }).addTo(markersLayer).bindPopup('Konumunuz');
+            }
         }
 
+        renderCategoryChips();
         initMap();
         loadResults();
     </script>
