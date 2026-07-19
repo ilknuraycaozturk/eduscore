@@ -43,6 +43,7 @@ TYPE_KEYWORDS = [
     ("lise", ["lisesi", " lise "]),  # yukarıdakilere uymayan ama yine de "lise" olan genel durum
     ("halk-egitim-merkezi", ["halk eğitim merkezi", "halk eğitimi merkezi"]),
     ("dershane-etut-merkezi", ["etüt eğitim merkezi", "etüt merkezi"]),
+    ("ozel-egitim-okulu", ["özel eğitim uygulama okulu", "özel eğitim meslek okulu", "özel eğitim okulu"]),
 ]
 
 # Bu isim kalıpları bir "kurum tipi" değil, idari/destek birimi olduğu için
@@ -117,7 +118,7 @@ def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
 
 
 def guess_type(name: str) -> str | None:
-    lower = name.lower()
+    lower = turkish_lower(name)  # standart .lower() Türkçe 'İ'yi bozar, bkz. turkish_lower()
     for slug, keywords in TYPE_KEYWORDS:
         if any(k in lower for k in keywords):
             return slug
@@ -184,7 +185,7 @@ def main():
     skipped_admin = 0
     skipped_unknown_names = []
     for r in raw:
-        name_lower = r["raw_name"].lower()
+        name_lower = turkish_lower(r["raw_name"])
         if any(pat in name_lower for pat in ADMINISTRATIVE_UNIT_PATTERNS):
             skipped_admin += 1
             continue
