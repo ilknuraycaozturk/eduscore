@@ -124,8 +124,12 @@ def get_lookup(base_url: str, headers: dict, table: str) -> dict[str, str]:
 
 
 def get_existing_institutions(base_url: str, headers: dict, location_id: str) -> list[dict]:
+    """ÖNEMLİ: location_id ile SINIRLAMIYORUZ - tüm kurumlar arasında global
+    dedup yapıyoruz. Aksi halde farklı konum granülerliğinde (mahalle vs
+    ilçe) kaydedilmiş aynı okul mükerrer eklenebilir (bu bug'ı canlıda
+    yaşadık ve LGS scriptinde düzelttik, aynı düzeltmeyi burada da uyguluyoruz)."""
     resp = requests.get(
-        f"{base_url}/rest/v1/institutions?select=id,name,address,lat,lng&location_id=eq.{location_id}",
+        f"{base_url}/rest/v1/institutions?select=id,name,address,lat,lng",
         headers=headers,
     )
     resp.raise_for_status()
