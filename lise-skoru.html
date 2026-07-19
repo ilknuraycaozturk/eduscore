@@ -23,9 +23,14 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         input[type=range] { accent-color: #E8543A; }
+        @media print {
+            header, #surveyContainer, #dataNotice, #filterNotice, #exportButtons { display: none !important; }
+            body { background: white; }
+        }
     </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
@@ -48,6 +53,9 @@
             </p>
         </div>
 
+        <!-- Konum/Metin Filtresi Bilgisi -->
+        <div id="filterNotice" class="hidden bg-slate-100 text-brandDark text-xs rounded-xl px-4 py-3 mb-4 text-center"></div>
+
         <!-- Şeffaflık Uyarısı -->
         <div id="dataNotice" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl px-4 py-3 mb-6"></div>
 
@@ -62,7 +70,17 @@
 
         <!-- Sonuçlar -->
         <div id="resultsSection" class="hidden">
-            <h2 id="resultsTitle" class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Sonuçlar</h2>
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                <h2 id="resultsTitle" class="text-sm font-bold text-brandGray uppercase tracking-wider">Sonuçlar</h2>
+                <div id="exportButtons" class="flex gap-2">
+                    <button id="exportExcelBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all">
+                        📊 Excel'e Aktar
+                    </button>
+                    <button id="exportPrintBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all">
+                        🖨️ Yazdır / PDF
+                    </button>
+                </div>
+            </div>
             <div id="resultsList" class="space-y-3"></div>
         </div>
 
@@ -96,9 +114,32 @@
             const typeIds = (typeRows || []).map(t => t.id);
 
             const { data: instRows } = await sb.from('institutions')
-                .select('id, name, is_public, is_verified, locations ( name )')
+                .select('id, name, address, is_public, is_verified, locations ( name )')
                 .in('institution_type_id', typeIds);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const qParam = (urlParams.get('q') || '').trim();
+
             institutions = instRows || [];
+            if (qParam) {
+                const needle = qParam.toLocaleLowerCase('tr');
+                institutions = institutions.filter(inst => {
+                    const haystack = [inst.name, inst.address, inst.locations && inst.locations.name]
+                        .filter(Boolean).join(' ').toLocaleLowerCase('tr');
+                    return haystack.includes(needle);
+                });
+            }
+
+            const filterNotice = document.getElementById('filterNotice');
+            if (qParam) {
+                filterNotice.classList.remove('hidden');
+                filterNotice.textContent = `🔎 "${qParam}" için filtrelendi — ${institutions.length} lise bulundu. `;
+                const clearLink = document.createElement('a');
+                clearLink.href = 'lise-skoru.html';
+                clearLink.className = 'underline font-semibold';
+                clearLink.textContent = 'Filtreyi kaldır (tüm Ankara)';
+                filterNotice.appendChild(clearLink);
+            }
 
             const { data: scoreRows } = await sb.from('institution_criteria_scores')
                 .select('institution_id, score, criteria_id, scoring_criteria ( key )')
@@ -194,7 +235,12 @@
             renderResults(ranked, withData);
         }
 
+        let lastRanked = [];
+        let lastWithData = [];
+
         function renderResults(ranked, withData) {
+            lastRanked = ranked;
+            lastWithData = withData;
             document.getElementById('resultsSection').classList.remove('hidden');
             document.getElementById('resultsTitle').textContent = `Kişiselleştirilmiş Sıralama (${ranked.length} lise)`;
 
@@ -228,6 +274,29 @@
                 `;
             }).join('');
         }
+
+        function exportExcel() {
+            if (!lastRanked.length) return;
+            const rows = lastRanked.map((r, idx) => {
+                const row = {
+                    'Sıra': idx + 1,
+                    'Okul Adı': r.inst.name,
+                    'İlçe': r.inst.locations ? r.inst.locations.name : '',
+                    'Kamu/Özel': r.inst.is_public ? 'Kamu' : 'Özel',
+                    'Doğrulama Durumu': r.inst.is_verified ? 'Doğrulanmış' : 'Taslak Veri',
+                    'Kişisel Skor': r.personalScore.toFixed(2),
+                };
+                lastWithData.forEach(c => { row[c.name_tr] = r.scores[c.key] != null ? r.scores[c.key] : ''; });
+                return row;
+            });
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Lise Sıralaması');
+            XLSX.writeFile(wb, `EduScor-Lise-Siralamasi-${new Date().toISOString().slice(0, 10)}.xlsx`);
+        }
+
+        document.getElementById('exportExcelBtn').addEventListener('click', exportExcel);
+        document.getElementById('exportPrintBtn').addEventListener('click', () => window.print());
 
         document.getElementById('calculateBtn').addEventListener('click', calculate);
         loadData();
