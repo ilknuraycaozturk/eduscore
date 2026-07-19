@@ -217,7 +217,9 @@
                 totalWeight += w;
             });
 
-            const ranked = institutions.map(inst => {
+            const withScore = [];
+            const withoutScore = [];
+            institutions.forEach(inst => {
                 const scores = scoresByInstitution[inst.id] || {};
                 let weightedSum = 0, usedWeight = 0;
                 withData.forEach(c => {
@@ -227,25 +229,43 @@
                     }
                 });
                 const personalScore = usedWeight > 0 ? (weightedSum / usedWeight) : null;
-                return { inst, personalScore, scores };
-            })
-            .filter(r => r.personalScore !== null)
-            .sort((a, b) => b.personalScore - a.personalScore);
+                (personalScore !== null ? withScore : withoutScore).push({ inst, personalScore, scores });
+            });
 
-            renderResults(ranked, withData);
+            withScore.sort((a, b) => b.personalScore - a.personalScore);
+            // Puanı olmayanlar en altta, alfabetik sırayla (rastgele/anlamsız bir sıra vermemek için)
+            withoutScore.sort((a, b) => a.inst.name.localeCompare(b.inst.name, 'tr'));
+
+            const ranked = [...withScore, ...withoutScore];
+
+            renderResults(ranked, withData, withScore.length);
         }
 
         let lastRanked = [];
         let lastWithData = [];
 
-        function renderResults(ranked, withData) {
+        function renderResults(ranked, withData, scoredCount) {
             lastRanked = ranked;
             lastWithData = withData;
             document.getElementById('resultsSection').classList.remove('hidden');
-            document.getElementById('resultsTitle').textContent = `Kişiselleştirilmiş Sıralama (${ranked.length} lise)`;
+            document.getElementById('resultsTitle').textContent =
+                `Kişiselleştirilmiş Sıralama (${scoredCount} puanlı / ${ranked.length} toplam lise)`;
 
             const listEl = document.getElementById('resultsList');
-            listEl.innerHTML = ranked.map((r, idx) => {
+            let html = '';
+            let dividerInserted = false;
+
+            ranked.forEach((r, idx) => {
+                if (!dividerInserted && idx === scoredCount && scoredCount < ranked.length) {
+                    html += `
+                        <div class="pt-2 pb-1 px-2">
+                            <p class="text-[11px] text-brandGray font-semibold uppercase tracking-wider">
+                                ⚠️ Aşağıdaki liseler için henüz hiçbir kriterde veri yok — sıralanamıyor, alfabetik listeleniyor
+                            </p>
+                        </div>`;
+                    dividerInserted = true;
+                }
+
                 const loc = r.inst.locations ? r.inst.locations.name : 'Ankara';
                 const breakdown = withData.map(c => {
                     const s = r.scores[c.key];
@@ -255,9 +275,17 @@
                     ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
                     : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
 
-                return `
-                    <a href="okul-detay.html?id=${r.inst.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-10 h-10 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
+                const hasScore = r.personalScore !== null;
+                const rankBadge = hasScore
+                    ? `<div class="w-10 h-10 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>`
+                    : `<div class="w-10 h-10 rounded-full bg-slate-100 text-brandGray flex items-center justify-center text-sm shrink-0">—</div>`;
+                const scoreBlock = hasScore
+                    ? `<div class="text-xl font-bold text-brandRed">${r.personalScore.toFixed(1)}</div><div class="text-[10px] text-brandGray uppercase tracking-wide">Kişisel Skor</div>`
+                    : `<div class="text-[11px] text-brandGray italic max-w-[110px] text-right">Henüz akademik veri yok</div>`;
+
+                html += `
+                    <a href="okul-detay.html?id=${r.inst.id}" class="bg-white rounded-2xl border ${hasScore ? 'border-slate-200' : 'border-dashed border-slate-300'} shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
+                        ${rankBadge}
                         <div class="flex-grow">
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <h3 class="font-bold text-sm text-brandDark">${r.inst.name}</h3>
@@ -267,12 +295,13 @@
                             <div class="flex flex-wrap gap-1">${breakdown}</div>
                         </div>
                         <div class="text-right shrink-0">
-                            <div class="text-xl font-bold text-brandRed">${r.personalScore.toFixed(1)}</div>
-                            <div class="text-[10px] text-brandGray uppercase tracking-wide">Kişisel Skor</div>
+                            ${scoreBlock}
                         </div>
                     </a>
                 `;
-            }).join('');
+            });
+
+            listEl.innerHTML = html;
         }
 
         function exportExcel() {
@@ -284,7 +313,7 @@
                     'İlçe': r.inst.locations ? r.inst.locations.name : '',
                     'Kamu/Özel': r.inst.is_public ? 'Kamu' : 'Özel',
                     'Doğrulama Durumu': r.inst.is_verified ? 'Doğrulanmış' : 'Taslak Veri',
-                    'Kişisel Skor': r.personalScore.toFixed(2),
+                    'Kişisel Skor': r.personalScore !== null ? r.personalScore.toFixed(2) : 'Veri yok',
                 };
                 lastWithData.forEach(c => { row[c.name_tr] = r.scores[c.key] != null ? r.scores[c.key] : ''; });
                 return row;
