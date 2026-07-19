@@ -1,0 +1,63 @@
+name: ÖOKGM Özel Kurum Verisi Çekme (Aksiyon 1.2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      il:
+        description: "İl adı BÜYÜK HARF (örn. ANKARA)"
+        required: true
+        default: "ANKARA"
+      tur:
+        description: "kurs: özel kurslar / okul: özel okullar"
+        required: true
+        default: "kurs"
+      filter_metin:
+        description: "Adres/ilçe filtresi (örn. Bağlıca)"
+        required: true
+        default: "Bağlıca"
+      location_name:
+        description: "Supabase locations.name"
+        required: true
+        default: "Bağlıca"
+      dry_run:
+        description: "true ise Supabase'e yazmaz, sadece önizler"
+        required: true
+        default: "true"
+
+jobs:
+  scrape-and-load:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install -r scripts/requirements.txt
+
+      - name: ÖOKGM verisini çek
+        run: |
+          python scripts/scrape_ookgm.py \
+            --il "${{ inputs.il }}" \
+            --tur "${{ inputs.tur }}" \
+            --filter-metin "${{ inputs.filter_metin }}" \
+            --output data/ookgm_raw.json
+
+      - name: Supabase'e yükle
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ARGS="--input data/ookgm_raw.json --location-name \"${{ inputs.location_name }}\""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          eval python scripts/load_ookgm_to_supabase.py $ARGS
+
+      - name: Ham veriyi artifact olarak kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: ookgm-raw-data
+          path: data/ookgm_raw.json
