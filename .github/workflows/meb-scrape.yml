@@ -12,17 +12,22 @@ on:
         required: true
         default: "27"
       location_name:
-        description: "Supabase locations.name (örn. Bağlıca)"
+        description: "Supabase locations.name (örn. Etimesgut)"
         required: true
-        default: "Bağlıca"
+        default: "Etimesgut"
       filter_mahalle:
-        description: "Adres filtresi (opsiyonel, boş bırakılırsa tüm ilçe alınır)"
+        description: "Adres/isim filtresi (opsiyonel, boş bırakılırsa tüm ilçe alınır - isim bazlı filtre bazı okulları (örn. adında mahalle adı geçmeyenleri) kaçırabilir)"
         required: false
-        default: "Bağlıca"
+        default: ""
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
         default: "true"
+  schedule:
+    # Her ayın 1'i, gece yarısı (UTC) - yeni açılan okulları otomatik yakalamak için.
+    # Zamanlanmış çalıştırmalarda workflow_dispatch inputları olmadığı için
+    # aşağıdaki adımlarda '||' ile varsayılan değerler kullanılıyor.
+    - cron: "0 0 1 * *"
 
 jobs:
   scrape-and-load:
@@ -42,8 +47,8 @@ jobs:
       - name: MEB verisini çek
         run: |
           python scripts/scrape_meb_schools.py \
-            --il-kodu "${{ inputs.il_kodu }}" \
-            --ilce-kodu "${{ inputs.ilce_kodu }}" \
+            --il-kodu "${{ inputs.il_kodu || '6' }}" \
+            --ilce-kodu "${{ inputs.ilce_kodu || '27' }}" \
             --output data/meb_raw.json
 
       - name: Supabase'e yükle
@@ -51,11 +56,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--input data/meb_raw.json --location-name \"${{ inputs.location_name }}\""
-          if [ -n "${{ inputs.filter_mahalle }}" ]; then
-            ARGS="$ARGS --filter-mahalle \"${{ inputs.filter_mahalle }}\""
+          ARGS="--input data/meb_raw.json --location-name \"${{ inputs.location_name || 'Etimesgut' }}\""
+          FILTER="${{ inputs.filter_mahalle }}"
+          if [ -n "$FILTER" ]; then
+            ARGS="$ARGS --filter-mahalle \"$FILTER\""
           fi
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
           eval python scripts/load_to_supabase.py $ARGS
