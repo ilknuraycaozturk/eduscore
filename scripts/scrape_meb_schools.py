@@ -56,41 +56,98 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
             browser.close()
             return results
 
-        rows = page.query_selector_all("table tr")
-        for row in rows:
-            cells = row.query_selector_all("td")
-            if len(cells) < 2:
-                continue  # başlık satırı ya da boş satır
+        # Sayfa sayısı için güvenli bir üst sınır (sonsuz döngüye girmeyi önler)
+        max_pages = 200
+        page_num = 1
 
-            name = cells[0].inner_text().strip()
-            # "Bilgi" sütunu adres/telefon içerebilir; boşsa ya da isimle
-            # aynıysa (gerçek adres değil, tekrar demektir) None bırakılır —
-            # gerçek adres/koordinat için load_to_supabase.py Nominatim ile geocoding yapar.
-            info = cells[1].inner_text().strip() if len(cells) > 1 else ""
-            if not info or info == name:
-                info = None
+        while page_num <= max_pages:
+            _scrape_current_page(page, il_kodu, ilce_kodu, results)
+            print(f"  Sayfa {page_num}: toplam {len(results)} kayıt (kümülatif).")
 
-            # Koordinatlar genelde 3. sütundaki (Harita) bir <a> etiketinin
-            # href/onclick içinde ya da data-* attribute'larında bulunur.
-            # Emin olmak için tüm satırın HTML'ini tarıyoruz.
-            row_html = row.inner_html()
-            lat, lng = _extract_coords(row_html)
-
-            if not name:
-                continue
-
-            results.append({
-                "raw_name": name,
-                "raw_info": info,
-                "lat": lat,
-                "lng": lng,
-                "il_kodu": il_kodu,
-                "ilce_kodu": ilce_kodu,
-            })
+            next_clicked = _go_to_next_page(page, timeout_ms)
+            if not next_clicked:
+                break
+            page_num += 1
 
         browser.close()
 
     return results
+
+
+def _scrape_current_page(page, il_kodu: str, ilce_kodu, results: list[dict]) -> None:
+    """Şu an ekranda görünen tablo satırlarını okuyup 'results' listesine ekler."""
+    rows = page.query_selector_all("table tr")
+    for row in rows:
+        cells = row.query_selector_all("td")
+        if len(cells) < 2:
+            continue  # başlık satırı ya da boş satır
+
+        name = cells[0].inner_text().strip()
+        info = cells[1].inner_text().strip() if len(cells) > 1 else ""
+        if not info or info == name:
+            info = None
+
+        row_html = row.inner_html()
+        lat, lng = _extract_coords(row_html)
+
+        if not name:
+            continue
+
+        results.append({
+            "raw_name": name,
+            "raw_info": info,
+            "lat": lat,
+            "lng": lng,
+            "il_kodu": il_kodu,
+            "ilce_kodu": ilce_kodu,
+        })
+
+
+def _go_to_next_page(page, timeout_ms: int) -> bool:
+    """'Sonraki sayfa' kontrolünü bulup tıklar. Bulunamazsa/tıklanamazsa False döner.
+    NOT: MEB sayfasının tam pagination yapısı bu ortamdan doğrudan görülemediği
+    için burada birkaç YAYGIN desen deneniyor (DataTables tarzı 'next' butonu,
+    numaralı sayfa linkleri, '>' / 'Sonraki' metinli linkler). Gerçek yapı
+    farklıysa, GitHub Actions loglarına bakıp seçicileri güncellememiz gerekebilir.
+    """
+    candidate_selectors = [
+        "a.paginate_button.next:not(.disabled)",
+        "li.paginate_button.next:not(.disabled) a",
+        "a[rel='next']",
+        "a:has-text('Sonraki')",
+        "a:has-text('İleri')",
+        "button:has-text('Sonraki')",
+    ]
+
+    for selector in candidate_selectors:
+        try:
+            el = page.query_selector(selector)
+            if el and el.is_visible() and el.is_enabled():
+                # Tıklamadan önceki ilk satırın metnini al; tıkladıktan sonra
+                # değişip değişmediğine bakarak tablo gerçekten güncellendi mi
+                # kontrol edeceğiz (AJAX yüklenmesini beklemek için).
+                first_row_before = page.query_selector("table tr td")
+                before_text = first_row_before.inner_text() if first_row_before else ""
+
+                el.click()
+                page.wait_for_timeout(500)
+                try:
+                    page.wait_for_function(
+                        """(oldText) => {
+                            const cell = document.querySelector('table tr td');
+                            return cell && cell.innerText !== oldText;
+                        }""",
+                        arg=before_text,
+                        timeout=timeout_ms,
+                    )
+                except Exception:
+                    pass  # tablo değişmediyse muhtemelen son sayfadaydık
+
+                return True
+        except Exception:
+            continue
+
+    return False
 
 
 def _extract_coords(text: str) -> tuple[float | None, float | None]:
