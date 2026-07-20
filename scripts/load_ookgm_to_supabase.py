@@ -42,6 +42,24 @@ TUR_MAP = {
     "özel mesleki eğitim merkezleri": "is-makinesi-operatorlugu-kursu",  # en yakın eşleşme
     "özel öğretim kursları": "kisisel-gelisim-kursu",
     "öğrenci etkinlik merkezi": "sosyal-etkinlik-merkezi",
+    # --- Okul türleri (tur=okul için) ---
+    "özel türk okul öncesi kurumu": "anaokulu",
+    "özel türk i̇lkokulu": "ilkokul",
+    "özel türk ilkokulu": "ilkokul",
+    "özel türk ortaokulu": "ortaokul",
+    "özel hazırlık sınıfı bulunan anadolu lisesi": "anadolu-lisesi",
+    "özel anadolu lisesi": "anadolu-lisesi",
+    "özel fen lisesi": "fen-lisesi",
+    "özel sosyal bilimler lisesi": "sosyal-bilimler-lisesi",
+    "özel anadolu i̇mam hatip lisesi": "anadolu-imam-hatip-lisesi",
+    "özel anadolu imam hatip lisesi": "anadolu-imam-hatip-lisesi",
+    "özel mesleki ve teknik anadolu lisesi": "mesleki-teknik-anadolu-lisesi",
+    "özel anadolu güzel sanatlar lisesi": "anadolu-guzel-sanatlar-lisesi",
+    "özel akşam lisesi": "aksam-lisesi",
+    "özel özel eğitim anaokulu": "ozel-egitim-okulu",
+    "özel özel eğitim i̇lkokulu": "ozel-egitim-okulu",
+    "özel özel eğitim ortaokulu": "ozel-egitim-okulu",
+    "özel özel eğitim mesleki eğitim merkezi": "ozel-egitim-okulu",
 }
 
 
