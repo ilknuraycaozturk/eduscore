@@ -130,6 +130,14 @@ def main():
     rows = scrape_all(args.il, args.tur)
     print(f"Toplam {len(rows)} ham kayıt bulundu.")
 
+    if rows:
+        print("--- İlk 3 ham kaydın tam yapısı (debug) ---")
+        for r in rows[:3]:
+            print(json.dumps(r, ensure_ascii=False))
+        # 'ilce' alanı boş/farklı geliyor olabilir - kaç kaydın dolu olduğunu göster
+        ilce_dolu = sum(1 for r in rows if r.get("ilce"))
+        print(f"'ilce' alanı dolu olan kayıt sayısı: {ilce_dolu} / {len(rows)}")
+
     if args.filter_metin:
         needle = args.filter_metin.lower()
         rows = [r for r in rows if needle in (r["address"] + r["ilce"]).lower()]
