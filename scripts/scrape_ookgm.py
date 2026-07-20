@@ -118,6 +118,14 @@ def scrape_all(il: str, tur: str, max_pages: int = 50) -> list[dict]:
     return all_rows
 
 
+def turkish_lower(s: str) -> str:
+    """Standart .lower() Türkçe büyük 'İ' harfini bozar (İ -> i + görünmez
+    nokta işareti), bu da örn. 'ETİMESGUT'.lower() içinde 'etimesgut'
+    aranmasını başarısız kılar. Önce İ/I harflerini Türkçe kurallarına
+    göre çeviriyoruz."""
+    return s.replace("İ", "i").replace("I", "ı").lower()
+
+
 def main():
     parser = argparse.ArgumentParser(description="ÖOKGM özel kurum/kurs listesini çeker.")
     parser.add_argument("--il", required=True, help="İl adı BÜYÜK HARF (örn. ANKARA)")
@@ -139,8 +147,8 @@ def main():
         print(f"'ilce' alanı dolu olan kayıt sayısı: {ilce_dolu} / {len(rows)}")
 
     if args.filter_metin:
-        needle = args.filter_metin.lower()
-        rows = [r for r in rows if needle in (r["address"] + r["ilce"]).lower()]
+        needle = turkish_lower(args.filter_metin)
+        rows = [r for r in rows if needle in turkish_lower(r["address"] + r["ilce"])]
         print(f"'{args.filter_metin}' filtresinden sonra {len(rows)} kayıt kaldı.")
 
     out_path = Path(args.output)
