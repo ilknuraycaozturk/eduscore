@@ -12,13 +12,13 @@ on:
         required: true
         default: "kurs"
       filter_metin:
-        description: "Adres/ilçe filtresi (örn. Bağlıca)"
-        required: true
-        default: "Bağlıca"
+        description: "Adres/ilçe filtresi (opsiyonel, boş bırakılırsa TÜM il alınır)"
+        required: false
+        default: ""
       location_name:
-        description: "Supabase locations.name"
-        required: true
-        default: "Bağlıca"
+        description: "Sabit tek konum (opsiyonel - pilot test için, örn. Bağlıca). Boş bırakılırsa her kayıt kendi ilçesine otomatik atanır (tüm il modu)."
+        required: false
+        default: ""
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
@@ -39,18 +39,23 @@ jobs:
 
       - name: ÖOKGM verisini çek
         run: |
-          python scripts/scrape_ookgm.py \
-            --il "${{ inputs.il }}" \
-            --tur "${{ inputs.tur }}" \
-            --filter-metin "${{ inputs.filter_metin }}" \
-            --output data/ookgm_raw.json
+          ARGS="--il \"${{ inputs.il }}\" --tur \"${{ inputs.tur }}\" --output data/ookgm_raw.json"
+          FILTER="${{ inputs.filter_metin }}"
+          if [ -n "$FILTER" ]; then
+            ARGS="$ARGS --filter-metin \"$FILTER\""
+          fi
+          eval python scripts/scrape_ookgm.py $ARGS
 
       - name: Supabase'e yükle
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--input data/ookgm_raw.json --location-name \"${{ inputs.location_name }}\""
+          ARGS="--input data/ookgm_raw.json"
+          LOC="${{ inputs.location_name }}"
+          if [ -n "$LOC" ]; then
+            ARGS="$ARGS --location-name \"$LOC\""
+          fi
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
