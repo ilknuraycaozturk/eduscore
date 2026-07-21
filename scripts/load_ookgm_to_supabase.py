@@ -69,8 +69,30 @@ def turkish_lower(s: str) -> str:
     return s.replace("İ", "i").replace("I", "ı").lower()
 
 
+FALLBACK_KEYWORD_RULES = [
+    # Bunlar TUR_MAP'te tam eşleşmeyen ama içinde geçen anahtar kelimeye göre
+    # sınıflandırılan türler (örn. '(III.Kademe)' gibi değişken sonekler içerdiği için).
+    ("milletlerarası", "milletlerarasi-okul"),
+    ("fen ve teknoloji lisesi", "fen-teknoloji-lisesi"),
+    ("laboratuvar lisesi", "laboratuvar-lisesi"),
+    ("yurt dışı eğitim danışmanlığı", "egitim-danismanligi"),
+    ("hafif düzeyde zihinsel engelliler", "ozel-egitim-okulu"),
+    ("özel eğitim uygulama okulu", "ozel-egitim-okulu"),
+    ("özel eğitim meslek okulu", "ozel-egitim-okulu"),
+    ("özel eğitim iş uygulama merkezi", "ozel-egitim-okulu"),
+    ("çocuk etkinlik ve oyun evi", "sosyal-etkinlik-merkezi"),
+]
+
+
 def map_tur(ham_tur: str) -> str | None:
-    return TUR_MAP.get(turkish_lower(ham_tur.strip()))
+    lower = turkish_lower(ham_tur.strip())
+    exact = TUR_MAP.get(lower)
+    if exact:
+        return exact
+    for keyword, slug in FALLBACK_KEYWORD_RULES:
+        if keyword in lower:
+            return slug
+    return None
 
 
 def normalize_name(name: str) -> str:
