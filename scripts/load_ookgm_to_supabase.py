@@ -114,10 +114,40 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     return resp.json()
 
 
+def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
+                            location_cache: dict, dry_run: bool) -> str | None:
+    key = ilce_adi.strip().title()
+    if key in location_cache:
+        return location_cache[key]
+
+    resp = requests.get(
+        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{ankara_id}&name=eq.{key}",
+        headers=headers,
+    )
+    resp.raise_for_status()
+    rows = resp.json()
+    if rows:
+        location_cache[key] = rows[0]["id"]
+        return rows[0]["id"]
+
+    if dry_run:
+        return None
+
+    payload = {"parent_id": ankara_id, "level": "district", "name": key}
+    resp = requests.post(f"{base_url}/rest/v1/locations", headers={**headers, "Prefer": "return=representation"}, json=payload)
+    resp.raise_for_status()
+    new_id = resp.json()[0]["id"]
+    location_cache[key] = new_id
+    print(f"Yeni ilçe konumu oluşturuldu: {key}")
+    return new_id
+
+
 def main():
     parser = argparse.ArgumentParser(description="ÖOKGM verisini Supabase'e yükler.")
     parser.add_argument("--input", required=True)
-    parser.add_argument("--location-name", required=True)
+    parser.add_argument("--location-name", default=None,
+                         help="Belirtilirse TÜM kayıtlar bu tek konuma bağlanır (pilot bölge testleri için). "
+                              "Belirtilmezse her kayıt kendi ilçesine (r['ilce']) göre otomatik konumlandırılır (tüm il için).")
     parser.add_argument("--category-slug", default=None, help="Belirtilmezse her kayıt kendi tipinin ait olduğu kategoriye eklenir")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -140,6 +170,7 @@ def main():
             continue
         prepared.append({
             "name": r["raw_name"].strip(),
+            "ilce": r.get("ilce", "").strip(),
             "institution_type_slug": type_slug,
             "address": r.get("address") or None,
             "phone": r.get("phone") or None,
@@ -172,16 +203,38 @@ def main():
     for row in resp.json():
         type_category_lookup[row["slug"]] = row["category_id"]
 
-    location_id = location_lookup.get(args.location_name)
-    if not location_id:
-        print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
-        sys.exit(1)
+    # Sabit tek konum (pilot mod) mu, yoksa ilçe bazlı otomatik mod mu?
+    fixed_location_id = None
+    location_cache: dict[str, str] = {}
+    ankara_id = None
 
-    existing = get_existing_institutions(supabase_url, headers, location_id)
-    print(f"Bu konumda {len(existing)} mevcut kurum bulundu.")
+    if args.location_name:
+        fixed_location_id = location_lookup.get(args.location_name)
+        if not fixed_location_id:
+            print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
+            sys.exit(1)
+    else:
+        resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
+        resp.raise_for_status()
+        ankara_rows = resp.json()
+        if not ankara_rows:
+            print("HATA: 'Ankara' locations tablosunda bulunamadı.")
+            sys.exit(1)
+        ankara_id = ankara_rows[0]["id"]
+
+    # Global dedup için tüm mevcut kurumları bir kez çek
+    existing = get_existing_institutions(supabase_url, headers, None)
+    print(f"Global dedup kontrolü için {len(existing)} mevcut kurum yüklendi.")
 
     inserted, enriched, skipped_dupe = 0, 0, 0
     for item in prepared:
+        if fixed_location_id:
+            location_id = fixed_location_id
+        else:
+            location_id = get_or_create_location(supabase_url, headers, item["ilce"], ankara_id, location_cache, args.dry_run)
+            if not location_id:
+                continue
+
         match = find_existing_match(item["name"], existing)
         if match:
             if not match.get("address") and item["address"]:
@@ -207,9 +260,11 @@ def main():
             "is_verified": item["is_verified"],
             "description": item["description"],
         }
-        resp = requests.post(f"{supabase_url}/rest/v1/institutions", headers=headers, json=payload)
+        resp = requests.post(f"{supabase_url}/rest/v1/institutions", headers={**headers, "Prefer": "return=representation"}, json=payload)
         if resp.status_code in (200, 201):
             inserted += 1
+            new_row = resp.json()[0]
+            existing.append({"id": new_row["id"], "name": item["name"], "address": item["address"]})
         else:
             print(f"UYARI: '{item['name']}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
 
