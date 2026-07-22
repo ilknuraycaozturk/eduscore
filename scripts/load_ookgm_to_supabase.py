@@ -123,17 +123,34 @@ def get_lookup(base_url: str, headers: dict, table: str) -> dict[str, str]:
     return {r["name"]: r["id"] for r in resp.json()}
 
 
+def fetch_all_paginated(base_url: str, headers: dict, path_with_query: str, page_size: int = 1000) -> list[dict]:
+    """PostgREST varsayılan olarak isteği 1000 satırla sınırlıyor - bu yüzden
+    tüm satırları almak için limit/offset ile sayfalama yapıyoruz. Bu olmadan
+    1000'den fazla kurum olduğunda dedup kontrolü eksik kalır ve mükerrer
+    kayıt oluşabilir (bunu canlı ortamda fark ettik)."""
+    all_rows: list[dict] = []
+    offset = 0
+    sep = "&" if "?" in path_with_query else "?"
+    while True:
+        resp = requests.get(
+            f"{base_url}{path_with_query}{sep}limit={page_size}&offset={offset}",
+            headers=headers,
+        )
+        resp.raise_for_status()
+        page = resp.json()
+        all_rows.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+    return all_rows
+
+
 def get_existing_institutions(base_url: str, headers: dict, location_id: str) -> list[dict]:
     """ÖNEMLİ: location_id ile SINIRLAMIYORUZ - tüm kurumlar arasında global
     dedup yapıyoruz (farklı konum granülerliğinde kaydedilmiş aynı okulun
     mükerrer eklenmesini önlemek için - bkz. diğer yükleme scriptlerindeki
     aynı düzeltme)."""
-    resp = requests.get(
-        f"{base_url}/rest/v1/institutions?select=id,name,address",
-        headers=headers,
-    )
-    resp.raise_for_status()
-    return resp.json()
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address")
 
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,

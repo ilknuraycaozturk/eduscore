@@ -85,6 +85,26 @@ def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_i
     return new_id
 
 
+def fetch_all_paginated(base_url: str, headers: dict, path_with_query: str, page_size: int = 1000) -> list[dict]:
+    """PostgREST varsayılan olarak isteği 1000 satırla sınırlıyor - tüm
+    satırları almak için limit/offset ile sayfalama yapıyoruz."""
+    all_rows: list[dict] = []
+    offset = 0
+    sep = "&" if "?" in path_with_query else "?"
+    while True:
+        resp = requests.get(
+            f"{base_url}{path_with_query}{sep}limit={page_size}&offset={offset}",
+            headers=headers,
+        )
+        resp.raise_for_status()
+        page = resp.json()
+        all_rows.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+    return all_rows
+
+
 def main():
     parser = argparse.ArgumentParser(description="Ankara LGS taban puan verisini Supabase'e yükler.")
     parser.add_argument("--input", required=True)
@@ -165,9 +185,7 @@ def main():
     # eşleşmeyip mükerrer kayıt olarak eklenebilir (bu bug'ı canlı ortamda
     # yaşadık: Bağlıca'da mahalle düzeyinde kayıtlı bir okul, ilçe düzeyinde
     # arama yapan bu script tarafından bulunamayıp tekrar eklenmişti).
-    all_institutions = requests.get(
-        f"{supabase_url}/rest/v1/institutions?select=id,name", headers=headers,
-    ).json()
+    all_institutions = fetch_all_paginated(supabase_url, headers, "/rest/v1/institutions?select=id,name")
     print(f"Global dedup kontrolü için {len(all_institutions)} mevcut kurum yüklendi.")
 
     for school in schools:

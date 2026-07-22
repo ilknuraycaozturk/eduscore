@@ -144,17 +144,32 @@ def get_lookup(base_url: str, headers: dict, table: str) -> dict[str, str]:
     return {r["name"]: r["id"] for r in resp.json()}
 
 
+def fetch_all_paginated(base_url: str, headers: dict, path_with_query: str, page_size: int = 1000) -> list[dict]:
+    """PostgREST varsayılan olarak isteği 1000 satırla sınırlıyor - tüm
+    satırları almak için limit/offset ile sayfalama yapıyoruz."""
+    all_rows: list[dict] = []
+    offset = 0
+    sep = "&" if "?" in path_with_query else "?"
+    while True:
+        resp = requests.get(
+            f"{base_url}{path_with_query}{sep}limit={page_size}&offset={offset}",
+            headers=headers,
+        )
+        resp.raise_for_status()
+        page = resp.json()
+        all_rows.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+    return all_rows
+
+
 def get_existing_institutions(base_url: str, headers: dict, location_id: str) -> list[dict]:
     """ÖNEMLİ: location_id ile SINIRLAMIYORUZ - tüm kurumlar arasında global
     dedup yapıyoruz. Aksi halde farklı konum granülerliğinde (mahalle vs
     ilçe) kaydedilmiş aynı okul mükerrer eklenebilir (bu bug'ı canlıda
     yaşadık ve LGS scriptinde düzelttik, aynı düzeltmeyi burada da uyguluyoruz)."""
-    resp = requests.get(
-        f"{base_url}/rest/v1/institutions?select=id,name,address,lat,lng",
-        headers=headers,
-    )
-    resp.raise_for_status()
-    return resp.json()
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng")
 
 
 def main():
