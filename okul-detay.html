@@ -84,6 +84,13 @@
                 </div>
             </div>
 
+            <!-- Kurum Bilgileri -->
+            <div id="infoCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Kurum Bilgileri</h2>
+                <div id="infoGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm"></div>
+                <div id="campusFacts" class="mt-3 flex flex-wrap gap-2"></div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <!-- Kriter Puanları -->
@@ -221,8 +228,9 @@
 
             const { data: inst, error } = await sb.from('institutions')
                 .select(`
-                    id, name, address, website, google_maps_url, lat, lng,
+                    id, name, address, website, google_maps_url, lat, lng, phone,
                     is_public, is_verified, description,
+                    age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
                     institution_types ( name_tr ),
                     locations ( name )
                 `)
@@ -291,6 +299,47 @@
             if (inst.description) {
                 document.getElementById('descCard').classList.remove('hidden');
                 document.getElementById('descText').textContent = inst.description;
+            }
+
+            // Kurum Bilgileri kartı - sadece en az bir alan doluysa göster
+            const infoItems = [];
+            if (inst.phone) infoItems.push({ label: 'Telefon', value: inst.phone });
+            if (inst.age_min != null && inst.age_max != null) infoItems.push({ label: 'Yaş Aralığı', value: `${inst.age_min}-${inst.age_max}` });
+            if (inst.class_size_avg) infoItems.push({ label: 'Ort. Sınıf Mevcudu', value: inst.class_size_avg });
+            if (inst.success_score != null) infoItems.push({ label: 'Genel Başarı Skoru', value: inst.success_score });
+
+            if (infoItems.length > 0) {
+                document.getElementById('infoCard').classList.remove('hidden');
+                document.getElementById('infoGrid').innerHTML = infoItems.map(it => `
+                    <div>
+                        <p class="text-[10px] text-brandGray uppercase tracking-wide">${it.label}</p>
+                        <p class="font-bold text-brandDark">${it.value}</p>
+                    </div>
+                `).join('');
+
+                if (inst.success_score_note) {
+                    document.getElementById('infoGrid').innerHTML += `
+                        <div class="col-span-2 sm:col-span-4">
+                            <p class="text-[11px] text-brandGray mt-1">${inst.success_score_note}</p>
+                        </div>`;
+                }
+            }
+
+            // Yerleşke bilgileri (varsa) - anaokulu/ilkokul/lise gibi fiziksel kurumlar için
+            if (inst.campus_info) {
+                const facts = [];
+                const ci = inst.campus_info;
+                if (ci.metrekare) facts.push(`📐 ${ci.metrekare} m²`);
+                if (ci.laboratuvar) facts.push('🔬 Laboratuvar');
+                if (ci.kapali_spor_salonu) facts.push('🏀 Kapalı Spor Salonu');
+                if (ci.kütüphane) facts.push('📚 Kütüphane');
+                if (ci.yemekhane) facts.push('🍽️ Yemekhane');
+                if (facts.length) {
+                    document.getElementById('infoCard').classList.remove('hidden');
+                    document.getElementById('campusFacts').innerHTML = facts.map(f =>
+                        `<span class="bg-brandBg text-brandDark text-[11px] font-medium px-2.5 py-1 rounded-full">${f}</span>`
+                    ).join('');
+                }
             }
 
             // Kriter puanları
