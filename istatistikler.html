@@ -88,6 +88,7 @@
                         <tr class="text-left text-brandGray border-b border-slate-100">
                             <th class="py-2 pr-3">Zaman</th>
                             <th class="py-2 pr-3">Sayfa</th>
+                            <th class="py-2 pr-3">Konum</th>
                             <th class="py-2 pr-3">Kaynak</th>
                             <th class="py-2 pr-3">Cihaz</th>
                             <th class="py-2">Parametreler</th>
@@ -177,15 +178,19 @@
             const maxLoc = sortedLocs.length ? sortedLocs[0][1] : 0;
             document.getElementById('byLocation').innerHTML = sortedLocs.map(([l, c]) => barRow(l, c, maxLoc)).join('') || '<p class="text-xs text-brandGray italic">Henüz veri yok.</p>';
 
-            document.getElementById('recentTable').innerHTML = data.slice(0, 50).map(d => `
+            document.getElementById('recentTable').innerHTML = data.slice(0, 50).map(d => {
+                const loc = d.country ? (d.city ? `${d.city}, ${d.country}` : d.country) : '—';
+                return `
                 <tr class="border-b border-slate-50">
                     <td class="py-1.5 pr-3 text-brandGray">${timeAgo(d.created_at)}</td>
                     <td class="py-1.5 pr-3 font-medium">${d.page_path}</td>
+                    <td class="py-1.5 pr-3 text-brandGray">${loc}</td>
                     <td class="py-1.5 pr-3 text-brandGray">${simplifyReferrer(d.referrer)}</td>
                     <td class="py-1.5 pr-3">${d.device_type === 'mobile' ? '📱' : '💻'}</td>
                     <td class="py-1.5 text-brandGray">${d.query_params || '—'}</td>
                 </tr>
-            `).join('') || '<tr><td colspan="5" class="text-center text-brandGray italic py-4">Henüz veri yok.</td></tr>';
+            `;
+            }).join('') || '<tr><td colspan="6" class="text-center text-brandGray italic py-4">Henüz veri yok.</td></tr>';
         }
 
         load();
