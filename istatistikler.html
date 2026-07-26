@@ -63,7 +63,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Ülke/Şehir Bazında -->
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">Nereden Girildi (Ülke/Şehir)</h2>
+                <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">Nereden Girildi (Ülke)</h2>
                 <div id="byLocation" class="space-y-2 text-sm"></div>
             </div>
             <!-- Sayfa Bazında -->
@@ -88,7 +88,7 @@
                         <tr class="text-left text-brandGray border-b border-slate-100">
                             <th class="py-2 pr-3">Zaman</th>
                             <th class="py-2 pr-3">Sayfa</th>
-                            <th class="py-2 pr-3">Konum</th>
+                            <th class="py-2 pr-3">Ülke</th>
                             <th class="py-2 pr-3">Kaynak</th>
                             <th class="py-2 pr-3">Cihaz</th>
                             <th class="py-2">Parametreler</th>
@@ -155,7 +155,7 @@
             const locCounts = {};
             data.forEach(d => {
                 pageCounts[d.page_path] = (pageCounts[d.page_path] || 0) + 1;
-                const loc = d.country ? (d.city ? `${d.city}, ${d.country}` : d.country) : 'Bilinmiyor';
+                const loc = d.country || 'Bilinmiyor';
                 locCounts[loc] = (locCounts[loc] || 0) + 1;
                 const ref = simplifyReferrer(d.referrer);
                 refCounts[ref] = (refCounts[ref] || 0) + 1;
@@ -179,7 +179,7 @@
             document.getElementById('byLocation').innerHTML = sortedLocs.map(([l, c]) => barRow(l, c, maxLoc)).join('') || '<p class="text-xs text-brandGray italic">Henüz veri yok.</p>';
 
             document.getElementById('recentTable').innerHTML = data.slice(0, 50).map(d => {
-                const loc = d.country ? (d.city ? `${d.city}, ${d.country}` : d.country) : '—';
+                const loc = d.country || '—';
                 return `
                 <tr class="border-b border-slate-50">
                     <td class="py-1.5 pr-3 text-brandGray">${timeAgo(d.created_at)}</td>
