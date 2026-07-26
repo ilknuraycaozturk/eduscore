@@ -161,14 +161,15 @@ def _extract_coords(text: str) -> tuple[float | None, float | None]:
 
 def discover_ilceler(il_kodu: str, timeout_ms: int = 20000) -> list[dict]:
     """Verilen il için MEB sayfasındaki ilçe seçim kutusunu (select) bulup
-    tüm ilçe kodu/adı çiftlerini döndürür. Bu kutu JS ile sonradan
-    dolduğu için Playwright ile render edip okuyoruz.
+    tüm ilçe kodu/adı çiftlerini döndürür.
 
-    NOT: Bu ortamdan (Claude'un sandbox'ı) meb.gov.tr'ye canlı erişim
-    olmadığı için select elementinin gerçek name/id'sini burada göremedim.
-    'ILCE' geçen herhangi bir <select>'i bulmaya çalışan genel bir yöntem
-    kullanıyorum - GitHub Actions'ta ilk çalıştırmada log çıktısına bakıp
-    gerekirse seçiciyi birlikte ayarlarız (diğer scriptlerde yaptığımız gibi).
+    ÖNEMLİ TEKNİK DETAY: Sayfa sadece ?ILKODU=X ile açıldığında ilçe kutusu
+    DOM'da hiç oluşmuyor - MEB'in JS'i ilçe listesini yalnızca il seçim
+    kutusunun (name='ILADI') 'onChange' olayı GERÇEKTEN tetiklendiğinde AJAX
+    ile getiriyor. URL parametresiyle önceden seçili gelmesi bu olayı
+    tetiklemiyor. Bu yüzden Playwright ile il kutusunu bilerek tekrar
+    seçiyoruz (aynı değeri seçsek de onChange olayını tetikler) - bunu
+    canlı ortamda gözlemleyip düzelttik.
     """
     url = f"{MEB_URL}?ILKODU={il_kodu}"
     ilceler: list[dict] = []
@@ -177,19 +178,54 @@ def discover_ilceler(il_kodu: str, timeout_ms: int = 20000) -> list[dict]:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(url, wait_until="networkidle", timeout=timeout_ms)
-        page.wait_for_timeout(2000)  # JS'in ilçe kutusunu doldurmasına zaman tanı
+        page.wait_for_timeout(1000)
+
+        # İl seçim kutusunu bul ve değerini "tekrar seç" - bu onChange'i tetikler
+        il_select = page.query_selector("select[name='ILADI']") or page.query_selector("select#ILADI")
+        if not il_select:
+            print("HATA: İl seçim kutusu (ILADI) bulunamadı.")
+            browser.close()
+            return ilceler
+
+        before_count = len(page.query_selector_all("select"))
+        try:
+            il_select.select_option(value=str(il_kodu))
+        except Exception as e:
+            print(f"UYARI: İl kutusu seçilirken hata: {e} (value ile olmadıysa label ile deneniyor)")
+
+        # onChange sonrası AJAX'in ilçe kutusunu DOM'a eklemesini/doldurmasını bekle
+        try:
+            page.wait_for_function(
+                "(before) => document.querySelectorAll('select').length > before",
+                arg=before_count, timeout=timeout_ms,
+            )
+        except Exception:
+            print("UYARI: Yeni bir <select> DOM'a eklenmedi (belki zaten vardı, devam ediliyor).")
+        page.wait_for_timeout(1500)
 
         all_selects = page.query_selector_all("select")
-        print(f"Sayfada {len(all_selects)} adet <select> bulundu (ilçe kutusu aranıyor)...")
+        print(f"Sayfada {len(all_selects)} adet <select> bulundu (il kutusu tetiklendikten sonra)...")
 
         ilce_select = None
         for sel in all_selects:
             name_attr = (sel.get_attribute("name") or "").upper()
             id_attr = (sel.get_attribute("id") or "").upper()
             print(f"  <select> name='{name_attr}' id='{id_attr}'")
-            if "ILCE" in name_attr or "ILCE" in id_attr:
+            if sel == il_select:
+                continue
+            if "ILCE" in name_attr or "ILCE" in id_attr or "ILÇE" in name_attr:
                 ilce_select = sel
                 break
+
+        # Hiçbiri 'ILCE' içermiyorsa, il kutusu dışındaki İLK yeni/farklı select'i dene
+        if not ilce_select:
+            for sel in all_selects:
+                if sel != il_select:
+                    name_attr = (sel.get_attribute("name") or "")
+                    if "LENGTH" not in name_attr.upper():  # sayfalama uzunluk kutusunu ele
+                        ilce_select = sel
+                        print(f"Not: 'ILCE' içeren isim bulunamadı, en olası aday deneniyor: name='{name_attr}'")
+                        break
 
         if not ilce_select:
             print("UYARI: İlçe seçim kutusu bulunamadı. Sayfa yapısı beklenenden farklı olabilir.")
