@@ -172,11 +172,41 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng")
 
 
+def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
+                            location_cache: dict, dry_run: bool) -> str | None:
+    key = ilce_adi.strip().title()
+    if key in location_cache:
+        return location_cache[key]
+
+    resp = requests.get(
+        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{ankara_id}&name=eq.{key}",
+        headers=headers,
+    )
+    resp.raise_for_status()
+    rows = resp.json()
+    if rows:
+        location_cache[key] = rows[0]["id"]
+        return rows[0]["id"]
+
+    if dry_run:
+        return None
+
+    payload = {"parent_id": ankara_id, "level": "district", "name": key}
+    resp = requests.post(f"{base_url}/rest/v1/locations", headers={**headers, "Prefer": "return=representation"}, json=payload)
+    resp.raise_for_status()
+    new_id = resp.json()[0]["id"]
+    location_cache[key] = new_id
+    print(f"Yeni ilçe konumu oluşturuldu: {key}")
+    return new_id
+
+
 def main():
     parser = argparse.ArgumentParser(description="MEB ham verisini Supabase'e yükler.")
     parser.add_argument("--input", required=True, help="scrape_meb_schools.py çıktısı JSON dosyası")
     parser.add_argument("--filter-mahalle", default=None, help="Sadece bu mahalleyi içeren adresler aktarılır")
-    parser.add_argument("--location-name", required=True, help="Kayıtların bağlanacağı locations.name (örn. 'Bağlıca')")
+    parser.add_argument("--location-name", default=None,
+                         help="Belirtilirse TÜM kayıtlar bu tek konuma bağlanır (tek ilçe/pilot modu). "
+                              "Belirtilmezse her kayıt kendi ilçesine (--all-ilceler çıktısındaki 'ilce_ad') göre otomatik konumlandırılır.")
     parser.add_argument("--category-slug", default="okul-oncesi-k12")
     parser.add_argument("--dry-run", action="store_true", help="Sadece ne ekleneceğini yazdır, Supabase'e yazma")
     args = parser.parse_args()
@@ -211,12 +241,17 @@ def main():
             skipped_unknown_names.append(r["raw_name"])
             continue
 
+        # --all-ilceler modunda scrape_meb_schools.py her satıra 'ilce_ad' ekler.
+        # Tek ilçe modunda (--location-name ile) bu alan olmayabilir, o zaman
+        # args.location_name'i coğrafi bağlam olarak kullanırız.
+        ilce_ad = r.get("ilce_ad") or args.location_name or ""
+
         lat, lng = r.get("lat"), r.get("lng")
         address = r.get("raw_info")
 
         if not lat or not lng:
             clean_name = normalize_name(r["raw_name"]).title()
-            geocode_query = f"{clean_name}, Etimesgut, Ankara, Türkiye"
+            geocode_query = f"{clean_name}, {ilce_ad}, Ankara, Türkiye"
             lat, lng = geocode(geocode_query)
             if not lat:
                 time.sleep(1)
@@ -225,10 +260,10 @@ def main():
             is_approx_location = False
             if not lat:
                 # Bina OSM'de haritalanmamış olabilir (küçük/yeni okullarda sık görülür).
-                # Son çare: mahalle merkezini kullan, yaklaşık konum olarak işaretle.
+                # Son çare: ilçe merkezini kullan, yaklaşık konum olarak işaretle.
                 time.sleep(1)
-                mahalle_query = f"{args.location_name}, Etimesgut, Ankara, Türkiye"
-                lat, lng = geocode(mahalle_query)
+                ilce_query = f"{ilce_ad}, Ankara, Türkiye"
+                lat, lng = geocode(ilce_query)
                 is_approx_location = bool(lat)
             time.sleep(1)  # Nominatim kullanım politikası: en fazla 1 istek/saniye
         else:
@@ -238,11 +273,12 @@ def main():
         if is_approx_location:
             description += (
                 " Not: Bu kurumun tam adresi bulunamadığı için harita konumu "
-                f"'{args.location_name}' mahalle merkezine yaklaşık olarak yerleştirilmiştir."
+                f"'{ilce_ad}' ilçe merkezine yaklaşık olarak yerleştirilmiştir."
             )
 
         prepared.append({
             "name": r["raw_name"].strip(),
+            "ilce": ilce_ad,
             "institution_type_slug": type_slug,
             "address": address,
             "lat": lat,
@@ -274,16 +310,36 @@ def main():
     location_lookup = get_lookup(supabase_url, headers, "locations")
     category_lookup = get_lookup(supabase_url, headers, "categories")
 
-    location_id = location_lookup.get(args.location_name)
-    if not location_id:
-        print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
-        sys.exit(1)
+    fixed_location_id = None
+    location_cache: dict[str, str] = {}
+    ankara_id = None
 
-    existing = get_existing_institutions(supabase_url, headers, location_id)
-    print(f"Bu konumda {len(existing)} mevcut kurum bulundu, çakışma kontrolü yapılacak.")
+    if args.location_name:
+        fixed_location_id = location_lookup.get(args.location_name)
+        if not fixed_location_id:
+            print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
+            sys.exit(1)
+    else:
+        resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
+        resp.raise_for_status()
+        ankara_rows = resp.json()
+        if not ankara_rows:
+            print("HATA: 'Ankara' locations tablosunda bulunamadı.")
+            sys.exit(1)
+        ankara_id = ankara_rows[0]["id"]
+
+    existing = get_existing_institutions(supabase_url, headers, None)
+    print(f"Global dedup kontrolü için {len(existing)} mevcut kurum yüklendi.")
 
     inserted, enriched, skipped_dupe = 0, 0, 0
     for item in prepared:
+        if fixed_location_id:
+            location_id = fixed_location_id
+        else:
+            location_id = get_or_create_location(supabase_url, headers, item["ilce"], ankara_id, location_cache, args.dry_run)
+            if not location_id:
+                continue
+
         match = find_existing_match(item["name"], existing)
 
         if match:
@@ -303,12 +359,10 @@ def main():
                 )
                 if resp.status_code in (200, 204):
                     enriched += 1
-                    print(f"ZENGİNLEŞTİRİLDİ: '{item['name']}' -> mevcut kayıt '{match['name']}' güncellendi ({list(needs_update.keys())})")
                 else:
                     print(f"UYARI: '{item['name']}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
             else:
                 skipped_dupe += 1
-                print(f"ATLANDI (zaten var, eklenecek yeni bilgi yok): '{item['name']}' ~ '{match['name']}'")
             continue
 
         type_id = type_lookup.get(item["institution_type_slug"])
@@ -326,9 +380,11 @@ def main():
             "is_verified": item["is_verified"],
             "description": item["description"],
         }
-        resp = requests.post(f"{supabase_url}/rest/v1/institutions", headers=headers, json=payload)
+        resp = requests.post(f"{supabase_url}/rest/v1/institutions", headers={**headers, "Prefer": "return=representation"}, json=payload)
         if resp.status_code in (200, 201):
             inserted += 1
+            new_row = resp.json()[0]
+            existing.append({"id": new_row["id"], "name": item["name"], "address": item["address"], "lat": item["lat"], "lng": item["lng"]})
         else:
             print(f"UYARI: '{item['name']}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
 
