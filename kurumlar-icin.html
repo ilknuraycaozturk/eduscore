@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Kurumlar İçin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            brandRed: '#E8543A', brandRedDark: '#CC3F28', brandDark: '#241A16', brandGray: '#8A7A72', brandBg: '#FDF8F5'
+        } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
+        <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+            <a href="giris.html" class="text-brandGray hover:text-brandDark transition-colors">Giriş Yap</a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-12">
+
+        <div class="text-center mb-12">
+            <span class="inline-block bg-red-50 text-brandRed text-xs font-bold px-3 py-1 rounded-full mb-4">KURUM YÖNETİCİLERİ İÇİN</span>
+            <h1 class="text-3xl sm:text-4xl font-bold text-brandDark mb-3">Kurumunuzun Profilini Sahiplenin</h1>
+            <p class="text-brandGray max-w-xl mx-auto">
+                EduScor'daki okulunuzun/kurumunuzun bilgilerini siz güncelleyin, "Doğrulanmış" rozetini kazanın
+                ve velilere en doğru bilgiyi doğrudan siz ulaştırın.
+            </p>
+        </div>
+
+        <!-- Faydalar -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 text-center">
+                <span class="text-3xl">✓</span>
+                <p class="font-semibold text-sm mt-2 mb-1">Doğrulanmış Rozeti</p>
+                <p class="text-xs text-brandGray">Profilinizde "🔍 Taslak Veri" yerine "✓ Doğrulanmış" rozeti görünür.</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 text-center">
+                <span class="text-3xl">✏️</span>
+                <p class="font-semibold text-sm mt-2 mb-1">Bilgilerinizi Güncelleyin</p>
+                <p class="text-xs text-brandGray">Adres, web sitesi ve açıklama gibi bilgileri siz düzenleyin.</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 text-center">
+                <span class="text-3xl">👨‍👩‍👧</span>
+                <p class="font-semibold text-sm mt-2 mb-1">Velilere Doğrudan Ulaşın</p>
+                <p class="text-xs text-brandGray">Kurumunuzu arayan velilere en doğru bilgiyi siz sağlayın.</p>
+            </div>
+        </section>
+
+        <!-- Nasıl Çalışır -->
+        <section class="mb-12">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4 text-center">Nasıl Çalışır</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                    <p class="text-sm pt-1">Ücretsiz hesap oluşturun.</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                    <p class="text-sm pt-1">Kurumunuzu <a href="explorer.html" class="text-brandRed underline">Genel Arama</a>'da bulup detay sayfasına gidin.</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+                    <p class="text-sm pt-1">"Bu Sizin Kurumunuz mu?" bölümünden sahiplenme talebi gönderin (rolünüzü ve kimliğinizi doğrulayan bir not ekleyin).</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">4</div>
+                    <p class="text-sm pt-1">Talebiniz incelenip onaylandığında kurumunuzu düzenleme yetkisi kazanırsınız.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Güven İlkesi -->
+        <section class="mb-12">
+            <div class="bg-brandDark text-white rounded-2xl p-6 text-center">
+                <p class="text-lg font-bold mb-2">"Doğrulama, sıralamanızı asla etkilemez."</p>
+                <p class="text-xs text-white/70 max-w-md mx-auto">
+                    Doğrulanmış rozeti sadece kimlik ve bilgi doğruluğunu onaylar. Hiçbir kurum, ödeme ya da doğrulama
+                    yoluyla EduScor puanını veya sıralamasını iyileştiremez — bu değişmez bir ilkemizdir.
+                </p>
+            </div>
+        </section>
+
+        <!-- Gelecek Özellikler -->
+        <section class="mb-12">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4 text-center">Yakında</h2>
+            <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-6 text-center">
+                <p class="text-xs text-brandGray">
+                    Zenginleştirilmiş profil özellikleri (fotoğraf galerisi, tanıtım videosu, detaylı kriter verisi girişi)
+                    ve kurum performans paneli üzerinde çalışıyoruz.
+                </p>
+            </div>
+        </section>
+
+        <div class="text-center">
+            <a href="kayit.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white font-semibold px-6 py-3 rounded-full transition-all">
+                Ücretsiz Kayıt Ol →
+            </a>
+        </div>
+
+    </main>
+
+    <script>
+        try {
+            const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+            sb.from('page_views').insert({
+                page_path: 'kurumlar-icin.html',
+                referrer: document.referrer || 'direkt',
+                device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+            }).then(() => {});
+        } catch (e) {}
+    </script>
+</body>
+</html>
