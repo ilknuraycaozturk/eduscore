@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Kayıt Ol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            brandRed: '#E8543A', brandRedDark: '#CC3F28', brandDark: '#241A16', brandGray: '#8A7A72', brandBg: '#FDF8F5'
+        } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
+        <a href="giris.html" class="text-xs sm:text-sm font-semibold text-brandGray hover:text-brandDark transition-colors">Zaten hesabım var</a>
+    </header>
+
+    <main class="max-w-sm mx-auto px-4 py-16">
+        <h1 class="text-2xl font-bold text-brandDark mb-2 text-center">Kayıt Ol</h1>
+        <p class="text-sm text-brandGray text-center mb-8">Favorilerinizi kaydedin, yorum yapın, okulunuzu sahiplenin.</p>
+
+        <form id="signupForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div>
+                <label class="text-xs font-semibold text-brandGray">Ad Soyad</label>
+                <input type="text" id="fullName" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-brandGray">E-posta</label>
+                <input type="email" id="email" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-brandGray">Şifre (en az 6 karakter)</label>
+                <input type="password" id="password" required minlength="6" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+            </div>
+            <button type="submit" id="submitBtn" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                Kayıt Ol
+            </button>
+            <p id="messageBox" class="hidden text-xs text-center rounded-lg p-2"></p>
+        </form>
+    </main>
+
+    <script>
+        const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+
+        function showMessage(text, isError) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `text-xs text-center rounded-lg p-2 ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
+            box.classList.remove('hidden');
+        }
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'İşleniyor...';
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await sb.auth.signUp({
+                email, password,
+                options: { data: { full_name: fullName } }
+            });
+
+            if (error) {
+                showMessage(error.message, true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Kayıt Ol';
+                return;
+            }
+
+            if (data.user) {
+                await sb.from('profiles').insert({ id: data.user.id, full_name: fullName });
+            }
+
+            showMessage('Kayıt başarılı! E-postanızı kontrol edip hesabınızı onaylayın, sonra giriş yapabilirsiniz.', false);
+            submitBtn.textContent = 'Kayıt Ol';
+        });
+    </script>
+</body>
+</html>

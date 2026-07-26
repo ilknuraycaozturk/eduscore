@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Giriş Yap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            brandRed: '#E8543A', brandRedDark: '#CC3F28', brandDark: '#241A16', brandGray: '#8A7A72', brandBg: '#FDF8F5'
+        } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
+        <a href="kayit.html" class="text-xs sm:text-sm font-semibold text-brandGray hover:text-brandDark transition-colors">Hesabım yok, kayıt ol</a>
+    </header>
+
+    <main class="max-w-sm mx-auto px-4 py-16">
+        <h1 class="text-2xl font-bold text-brandDark mb-2 text-center">Giriş Yap</h1>
+        <p class="text-sm text-brandGray text-center mb-8">Favorileriniz ve okul profilleriniz için giriş yapın.</p>
+
+        <div id="loggedInBox" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
+            <p class="text-sm mb-4">Zaten giriş yapmışsınız: <b id="loggedInEmail"></b></p>
+            <button id="logoutBtn" class="text-xs font-semibold text-brandRed hover:underline">Çıkış Yap</button>
+        </div>
+
+        <form id="loginForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div>
+                <label class="text-xs font-semibold text-brandGray">E-posta</label>
+                <input type="email" id="email" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-brandGray">Şifre</label>
+                <input type="password" id="password" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+            </div>
+            <button type="submit" id="submitBtn" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                Giriş Yap
+            </button>
+            <p id="messageBox" class="hidden text-xs text-center rounded-lg p-2"></p>
+        </form>
+    </main>
+
+    <script>
+        const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+
+        function showMessage(text, isError) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `text-xs text-center rounded-lg p-2 ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
+            box.classList.remove('hidden');
+        }
+
+        async function checkSession() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                document.getElementById('loggedInBox').classList.remove('hidden');
+                document.getElementById('loggedInEmail').textContent = session.user.email;
+                document.getElementById('loginForm').classList.add('hidden');
+            }
+        }
+        checkSession();
+
+        document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+            await sb.auth.signOut();
+            window.location.reload();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Giriş yapılıyor...';
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                showMessage(error.message === 'Invalid login credentials' ? 'E-posta ya da şifre hatalı.' : error.message, true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Giriş Yap';
+                return;
+            }
+
+            showMessage('Giriş başarılı! Yönlendiriliyorsunuz...', false);
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        });
+    </script>
+</body>
+</html>
