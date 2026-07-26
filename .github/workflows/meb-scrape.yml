@@ -7,16 +7,20 @@ on:
         description: "İl plaka kodu (Ankara=6)"
         required: true
         default: "6"
-      ilce_kodu:
-        description: "İlçe kodu (Etimesgut=27)"
+      all_ilceler:
+        description: "true ise ildeki TÜM ilçeleri otomatik keşfedip çeker (ilce_kodu/location_name/filter_mahalle görmezden gelinir)"
         required: true
+        default: "false"
+      ilce_kodu:
+        description: "İlçe kodu (Etimesgut=27) - sadece all_ilceler=false iken kullanılır"
+        required: false
         default: "27"
       location_name:
-        description: "Supabase locations.name (örn. Etimesgut)"
-        required: true
+        description: "Supabase locations.name (örn. Etimesgut) - sadece all_ilceler=false iken kullanılır"
+        required: false
         default: "Etimesgut"
       filter_mahalle:
-        description: "Adres/isim filtresi (opsiyonel, boş bırakılırsa tüm ilçe alınır - isim bazlı filtre bazı okulları (örn. adında mahalle adı geçmeyenleri) kaçırabilir)"
+        description: "Adres/isim filtresi (opsiyonel) - sadece all_ilceler=false iken kullanılır"
         required: false
         default: ""
       dry_run:
@@ -24,14 +28,12 @@ on:
         required: true
         default: "true"
   schedule:
-    # Her ayın 1'i, gece yarısı (UTC) - yeni açılan okulları otomatik yakalamak için.
-    # Zamanlanmış çalıştırmalarda workflow_dispatch inputları olmadığı için
-    # aşağıdaki adımlarda '||' ile varsayılan değerler kullanılıyor.
     - cron: "0 0 1 * *"
 
 jobs:
   scrape-and-load:
     runs-on: ubuntu-latest
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
 
@@ -46,20 +48,30 @@ jobs:
 
       - name: MEB verisini çek
         run: |
-          python scripts/scrape_meb_schools.py \
-            --il-kodu "${{ inputs.il_kodu || '6' }}" \
-            --ilce-kodu "${{ inputs.ilce_kodu || '27' }}" \
-            --output data/meb_raw.json
+          if [ "${{ inputs.all_ilceler || 'false' }}" = "true" ]; then
+            python scripts/scrape_meb_schools.py \
+              --il-kodu "${{ inputs.il_kodu || '6' }}" \
+              --all-ilceler \
+              --output data/meb_raw.json
+          else
+            python scripts/scrape_meb_schools.py \
+              --il-kodu "${{ inputs.il_kodu || '6' }}" \
+              --ilce-kodu "${{ inputs.ilce_kodu || '27' }}" \
+              --output data/meb_raw.json
+          fi
 
       - name: Supabase'e yükle
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--input data/meb_raw.json --location-name \"${{ inputs.location_name || 'Etimesgut' }}\""
-          FILTER="${{ inputs.filter_mahalle }}"
-          if [ -n "$FILTER" ]; then
-            ARGS="$ARGS --filter-mahalle \"$FILTER\""
+          ARGS="--input data/meb_raw.json"
+          if [ "${{ inputs.all_ilceler || 'false' }}" != "true" ]; then
+            ARGS="$ARGS --location-name \"${{ inputs.location_name || 'Etimesgut' }}\""
+            FILTER="${{ inputs.filter_mahalle }}"
+            if [ -n "$FILTER" ]; then
+              ARGS="$ARGS --filter-mahalle \"$FILTER\""
+            fi
           fi
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
             ARGS="$ARGS --dry-run"
