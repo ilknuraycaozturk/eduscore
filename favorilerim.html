@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Favorilerim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
+        <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+            <a href="lise-skoru.html" class="text-brandGray hover:text-brandDark transition-colors">🎓 Lise Skoru</a>
+            <a href="favorilerim.html" class="text-brandRed transition-colors">★ Favorilerim</a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-8">
+
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-brandDark mb-1">★ Favorilerim</h1>
+            <p class="text-sm text-brandGray">
+                Bu liste sadece bu tarayıcıda saklanır (henüz hesap sistemi yok — farklı bir cihazdan girerseniz görünmez).
+            </p>
+        </div>
+
+        <div id="emptyState" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+            <p class="text-brandDark font-semibold mb-1">Henüz favori eklemediniz</p>
+            <p class="text-xs text-brandGray mb-4">Bir okulun detay sayfasında "☆ Listeme Ekle" butonuna basarak buraya ekleyebilirsiniz.</p>
+            <a href="explorer.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">Genel Aramaya Git →</a>
+        </div>
+
+        <div id="resultsList" class="space-y-3"></div>
+
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const FAV_KEY = 'eduscor_favorites';
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch { return []; }
+        }
+        function removeFavorite(id) {
+            const favs = getFavorites().filter(f => f !== id);
+            localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+            document.getElementById(`card-${id}`)?.remove();
+            if (!getFavorites().length) document.getElementById('emptyState').classList.remove('hidden');
+        }
+
+        function renderCard(inst) {
+            const typeLabel = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
+            const loc = inst.locations ? inst.locations.name : 'Ankara';
+            const verifiedBadge = inst.is_verified
+                ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+
+            return `
+                <div id="card-${inst.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4">
+                    <a href="okul-detay.html?id=${inst.id}" class="flex-grow min-w-0">
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <span class="bg-red-50 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">${typeLabel}</span>
+                            ${verifiedBadge}
+                        </div>
+                        <h3 class="font-bold text-sm text-brandDark truncate">${inst.name}</h3>
+                        <p class="text-xs text-brandGray">📍 ${loc}, Ankara</p>
+                    </a>
+                    <button onclick="removeFavorite('${inst.id}')" class="shrink-0 text-brandGray hover:text-brandRed text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 hover:border-brandRed transition-all">
+                        ★ Çıkar
+                    </button>
+                </div>
+            `;
+        }
+
+        async function load() {
+            const ids = getFavorites();
+            if (!ids.length) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            const { data, error } = await sb.from('institutions')
+                .select(`id, name, is_verified, institution_types ( name_tr ), locations ( name )`)
+                .in('id', ids);
+
+            if (error || !data) {
+                document.getElementById('resultsList').innerHTML = `<p class="text-sm text-brandGray">Favoriler yüklenirken bir hata oluştu.</p>`;
+                return;
+            }
+
+            // localStorage'daki sırayı koru
+            const byId = {};
+            data.forEach(d => { byId[d.id] = d; });
+            const ordered = ids.map(id => byId[id]).filter(Boolean);
+
+            document.getElementById('resultsList').innerHTML = ordered.map(renderCard).join('');
+        }
+
+        load();
+    </script>
+</body>
+</html>
