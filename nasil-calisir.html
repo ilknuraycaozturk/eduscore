@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Nasıl Çalışır?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
+        <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+            <a href="lise-skoru.html" class="text-brandGray hover:text-brandDark transition-colors">🎓 Lise Skoru</a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-10">
+
+        <div class="text-center mb-12">
+            <h1 class="text-3xl sm:text-4xl font-bold text-brandDark mb-3">EduScor Nasıl Çalışır?</h1>
+            <p class="text-brandGray max-w-xl mx-auto">
+                EduScor, eğitim kararlarını şansa bırakmamanız için kurulmuş bir platform. Nasıl arama yaptığımızı,
+                puanları nasıl hesapladığımızı ve verilerimizin nereden geldiğini burada tam şeffaflıkla açıklıyoruz.
+            </p>
+        </div>
+
+        <!-- 1. Arama Akışı -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">1. Arama Nasıl Çalışır</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                    <div>
+                        <p class="font-semibold text-sm">Konum</p>
+                        <p class="text-xs text-brandGray">Tarayıcı konumunuzu kullanabilir ya da bir il/ilçe/semt yazabilirsiniz.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                    <div>
+                        <p class="font-semibold text-sm">Ne arıyorsunuz?</p>
+                        <p class="text-xs text-brandGray">Okul öncesinden ileri yaşa, kurslardan üniversiteye — 12 ana kategoriden birini seçin.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+                    <div>
+                        <p class="font-semibold text-sm">Sonuçlar</p>
+                        <p class="text-xs text-brandGray">Kriterlerinize uyan kurumlar, haritada ve liste halinde, kaynak bilgisiyle birlikte gösterilir.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Puanlama Sistemi -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">2. EduScor Puanlaması Nasıl Hesaplanır</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <p class="text-sm text-brandGray mb-4">
+                    Her kurum tipi için birden çok kritere (akademik başarı, yabancı dil eğitimi, fiziksel altyapı vb.) ayrı ayrı
+                    ağırlık veriyoruz. Lise Skoru Hesaplayıcı'da siz de kendi önceliklerinize göre bu ağırlıkları değiştirebilirsiniz:
+                </p>
+                <div class="bg-brandBg rounded-xl p-4 mb-4">
+                    <p class="text-xs font-mono text-brandDark">Kişisel Skor = Σ (Kriter Puanı × Temel Ağırlık × Aile Önem Çarpanı) / Σ Ağırlıklar</p>
+                </div>
+                <p class="text-xs text-brandGray">
+                    Önem derecenizi 1 (önemsiz) ile 5 (çok önemli) arasında seçtiğinizde, o kriterin ağırlığı buna göre
+                    0.50× ile 1.5× arasında yeniden hesaplanır. <b>Veri olmayan kriterler hesaplamaya hiç dahil edilmez</b> —
+                    hiçbir zaman tahmini/uydurma bir sayı göstermeyiz.
+                </p>
+            </div>
+        </section>
+
+        <!-- 3. Veri Kaynakları -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">3. Verilerimiz Nereden Geliyor</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">🏛️</span>
+                    <div>
+                        <p class="font-semibold text-sm">MEB (Milli Eğitim Bakanlığı)</p>
+                        <p class="text-xs text-brandGray">Kamu okullarının resmi listesi, adları, türleri — MEB'in kamuya açık sayfalarından.</p>
+                    </div>
+                </div>
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">📊</span>
+                    <div>
+                        <p class="font-semibold text-sm">MEB LGS Yerleştirme Kılavuzu</p>
+                        <p class="text-xs text-brandGray">Liselerin akademik başarı ve yabancı dil kriterleri, resmi MEB PDF kılavuzundan.</p>
+                    </div>
+                </div>
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">🎓</span>
+                    <div>
+                        <p class="font-semibold text-sm">ÖOKGM (Özel Öğretim Kurumları Genel Müdürlüğü)</p>
+                        <p class="text-xs text-brandGray">Özel okullar, kurslar ve merkezlerin resmi kayıt listesi.</p>
+                    </div>
+                </div>
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">🗺️</span>
+                    <div>
+                        <p class="font-semibold text-sm">OpenStreetMap</p>
+                        <p class="text-xs text-brandGray">Açık kaynak harita verisi — konum/koordinat bilgisi için.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Şeffaflık Rozetleri -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">4. Rozetlerimiz Ne Anlama Gelir</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded shrink-0">✓ Doğrulanmış</span>
+                    <p class="text-xs text-brandGray">Bilgi, kurumun kendi resmi sitesi ya da birincil bir kaynaktan doğrudan teyit edilmiştir.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded shrink-0">🔍 Taslak Veri</span>
+                    <p class="text-xs text-brandGray">Bilgi otomatik olarak resmi kaynaklardan derlenmiştir ama henüz kurum tarafından teyit edilmemiştir.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Güven Vaadi -->
+        <section class="mb-10">
+            <div class="bg-brandDark text-white rounded-2xl p-6 text-center">
+                <p class="text-lg font-bold mb-2">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
+                <p class="text-xs text-white/70">Bu, değişmez bir platform ilkemizdir.</p>
+            </div>
+        </section>
+
+        <div class="text-center">
+            <a href="explorer.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white font-semibold px-6 py-3 rounded-full transition-all">
+                Aramaya Başla →
+            </a>
+        </div>
+
+    </main>
+</body>
+</html>
