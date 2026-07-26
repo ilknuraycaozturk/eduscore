@@ -105,6 +105,33 @@
                         <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Kullanıcı Değerlendirmeleri</h2>
                         <p class="text-xs text-brandGray italic">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
                     </div>
+
+                    <!-- Profilini Sahiplen -->
+                    <div id="claimCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Bu Sizin Kurumunuz mu?</h2>
+                        <div id="claimLoggedOut" class="hidden">
+                            <p class="text-xs text-brandGray mb-3">Kurum bilgilerini güncellemek için önce giriş yapmanız gerekiyor.</p>
+                            <a href="giris.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">Giriş Yap</a>
+                        </div>
+                        <div id="claimNotRequested" class="hidden">
+                            <p class="text-xs text-brandGray mb-3">Bu kurumun yöneticisi/öğretmeniyseniz profili sahiplenip bilgileri güncelleyebilirsiniz.</p>
+                            <form id="claimForm" class="space-y-2">
+                                <select id="claimRole" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
+                                    <option value="yonetici">Okul Yöneticisiyim</option>
+                                    <option value="ogretmen">Öğretmenim</option>
+                                    <option value="veli">Veliyim</option>
+                                </select>
+                                <textarea id="claimNote" rows="2" placeholder="Kendinizi nasıl doğrularsınız? (örn. resmi okul e-postanız, göreviniz)" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5"></textarea>
+                                <button type="submit" class="w-full bg-brandDark hover:bg-brandRed text-white text-xs font-semibold py-2 rounded-full transition-all">Sahiplenme Talebi Gönder</button>
+                            </form>
+                        </div>
+                        <div id="claimPending" class="hidden">
+                            <p class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">⏳ Sahiplenme talebiniz inceleniyor.</p>
+                        </div>
+                        <div id="claimApproved" class="hidden">
+                            <p class="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">✓ Bu kurumu sahiplendiniz. Bilgileri güncelleyebilirsiniz.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -209,6 +236,7 @@
                 .eq('institution_id', instId);
 
             renderInstitution(inst, scores || []);
+            setupClaimSection(instId);
         }
 
         function showNotFound() {
@@ -315,6 +343,51 @@
                 }).addTo(map);
                 L.marker([inst.lat, inst.lng]).addTo(map);
             }
+        }
+
+        async function setupClaimSection(institutionId) {
+            const { data: { session } } = await sb.auth.getSession();
+
+            if (!session) {
+                document.getElementById('claimLoggedOut').classList.remove('hidden');
+                return;
+            }
+
+            const { data: existingClaim } = await sb.from('institution_claims')
+                .select('status')
+                .eq('institution_id', institutionId)
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+
+            if (existingClaim) {
+                if (existingClaim.status === 'onaylandi') {
+                    document.getElementById('claimApproved').classList.remove('hidden');
+                } else if (existingClaim.status === 'reddedildi') {
+                    document.getElementById('claimNotRequested').classList.remove('hidden');
+                } else {
+                    document.getElementById('claimPending').classList.remove('hidden');
+                }
+                return;
+            }
+
+            document.getElementById('claimNotRequested').classList.remove('hidden');
+            document.getElementById('claimForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const role = document.getElementById('claimRole').value;
+                const note = document.getElementById('claimNote').value.trim();
+
+                const { error } = await sb.from('institution_claims').insert({
+                    institution_id: institutionId,
+                    user_id: session.user.id,
+                    role: role,
+                    verification_note: note || null,
+                });
+
+                if (!error) {
+                    document.getElementById('claimNotRequested').classList.add('hidden');
+                    document.getElementById('claimPending').classList.remove('hidden');
+                }
+            });
         }
 
         load();
