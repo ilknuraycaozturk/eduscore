@@ -166,25 +166,35 @@
 
         async function loadResults() {
             let query = sb.from('institutions').select(`*, institution_types(name_tr), categories(slug), locations(name)`);
-            const { data } = await query;
+
+            // Kategori filtresini SUNUCU tarafında uyguluyoruz (önce id'yi bul)
+            if (categoryParam) {
+                const { data: catRow } = await sb.from('categories').select('id').eq('slug', categoryParam).maybeSingle();
+                if (catRow) query = query.eq('category_id', catRow.id);
+            }
+
+            // Metin aramasını da sunucu tarafında uyguluyoruz (isim/adres üzerinde)
+            if (qParam) {
+                query = query.or(`name.ilike.%${qParam}%,address.ilike.%${qParam}%`);
+            }
+
+            // ÖNEMLİ: Supabase/PostgREST varsayılan olarak sorguyu 1000 satırla
+            // sınırlıyor - 2500+ kurumumuz olduğu için filtresiz "Platformu Keşfet"
+            // gibi durumlarda hem bu sınıra takılıyor hem de binlerce kartı aynı anda
+            // render etmeye çalışıp yavaşlıyordu. Performans için makul bir üst sınır
+            // koyuyoruz ve kullanıcıya bunu açıkça belirtiyoruz.
+            const DISPLAY_LIMIT = 60;
+            query = query.order('name').limit(DISPLAY_LIMIT);
+
+            const { data, error } = await query;
+
+            if (error) {
+                document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
+                console.error(error);
+                return;
+            }
 
             let results = data || [];
-
-            if (categoryParam) {
-                results = results.filter(r => r.categories && r.categories.slug === categoryParam);
-            }
-
-            if (qParam) {
-                const needle = qParam.toLocaleLowerCase('tr');
-                results = results.filter(r => {
-                    const haystack = [
-                        r.name, r.address,
-                        r.institution_types && r.institution_types.name_tr,
-                        r.locations && r.locations.name,
-                    ].filter(Boolean).join(' ').toLocaleLowerCase('tr');
-                    return haystack.includes(needle);
-                });
-            }
 
             if (userLat && userLng) {
                 results = results
@@ -192,7 +202,10 @@
                     .sort((a, b) => a._dist - b._dist);
             }
 
-            document.getElementById('resultsTitle').textContent = `Arama Sonuçları (${results.length} kurum)`;
+            const noFilterAtAll = !categoryParam && !qParam;
+            document.getElementById('resultsTitle').textContent = noFilterAtAll
+                ? `Öne Çıkan Kurumlar (ilk ${results.length})`
+                : `Arama Sonuçları (${results.length}${results.length === DISPLAY_LIMIT ? '+' : ''} kurum)`;
 
             const listEl = document.getElementById('resultsList');
             const emptyEl = document.getElementById('emptyState');
