@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | İstatistikler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
+        <a href="index.html" class="text-xs sm:text-sm font-semibold text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold text-brandDark mb-1">📊 Ziyaret İstatistikleri</h1>
+        <p class="text-sm text-brandGray mb-8">
+            Anonim, KVKK uyumlu ziyaret kaydı — IP adresi veya kişisel veri tutulmaz, sadece sayfa/kaynak/cihaz bilgisi.
+        </p>
+
+        <!-- Özet Kartları -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+                <p class="text-2xl font-bold text-brandRed" id="statTotal">—</p>
+                <p class="text-xs text-brandGray">Toplam Görüntülenme</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+                <p class="text-2xl font-bold text-brandRed" id="statToday">—</p>
+                <p class="text-xs text-brandGray">Bugün</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+                <p class="text-2xl font-bold text-brandRed" id="statMobile">—</p>
+                <p class="text-xs text-brandGray">Mobil %</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 text-center">
+                <p class="text-2xl font-bold text-brandRed" id="statPages">—</p>
+                <p class="text-xs text-brandGray">Farklı Sayfa</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Ülke/Şehir Bazında -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">Nereden Girildi (Ülke/Şehir)</h2>
+                <div id="byLocation" class="space-y-2 text-sm"></div>
+            </div>
+            <!-- Sayfa Bazında -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">En Çok Görüntülenen Sayfalar</h2>
+                <div id="byPage" class="space-y-2 text-sm"></div>
+            </div>
+
+            <!-- Kaynak Bazında -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+                <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">Nereden Geliniyor (Referrer)</h2>
+                <div id="byReferrer" class="space-y-2 text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Son Ziyaretler -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">Son 50 Ziyaret</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="text-left text-brandGray border-b border-slate-100">
+                            <th class="py-2 pr-3">Zaman</th>
+                            <th class="py-2 pr-3">Sayfa</th>
+                            <th class="py-2 pr-3">Kaynak</th>
+                            <th class="py-2 pr-3">Cihaz</th>
+                            <th class="py-2">Parametreler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+
+        function simplifyReferrer(ref) {
+            if (!ref) return 'Direkt / Bilinmiyor';
+            try {
+                const url = new URL(ref);
+                return url.hostname;
+            } catch { return ref; }
+        }
+
+        function timeAgo(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function barRow(label, count, max) {
+            const pct = max > 0 ? Math.round((count / max) * 100) : 0;
+            return `
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-brandDark font-medium truncate max-w-[70%]">${label}</span>
+                        <span class="text-brandGray">${count}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-brandRed rounded-full" style="width:${pct}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function load() {
+            // Sayfalama sınırını aşmamak için son 5000 kaydı çekiyoruz (yeterli olmalı)
+            const { data, error } = await sb.from('page_views')
+                .select('page_path, referrer, device_type, query_params, country, city, created_at')
+                .order('created_at', { ascending: false })
+                .limit(5000);
+
+            if (error || !data) {
+                document.body.innerHTML += `<p class="text-center text-red-600 mt-10">Veri yüklenirken hata oluştu.</p>`;
+                return;
+            }
+
+            const total = data.length;
+            const today = new Date().toDateString();
+            const todayCount = data.filter(d => new Date(d.created_at).toDateString() === today).length;
+            const mobileCount = data.filter(d => d.device_type === 'mobile').length;
+            const mobilePct = total > 0 ? Math.round((mobileCount / total) * 100) : 0;
+
+            const pageCounts = {};
+            const refCounts = {};
+            const locCounts = {};
+            data.forEach(d => {
+                pageCounts[d.page_path] = (pageCounts[d.page_path] || 0) + 1;
+                const loc = d.country ? (d.city ? `${d.city}, ${d.country}` : d.country) : 'Bilinmiyor';
+                locCounts[loc] = (locCounts[loc] || 0) + 1;
+                const ref = simplifyReferrer(d.referrer);
+                refCounts[ref] = (refCounts[ref] || 0) + 1;
+            });
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statToday').textContent = todayCount;
+            document.getElementById('statMobile').textContent = `%${mobilePct}`;
+            document.getElementById('statPages').textContent = Object.keys(pageCounts).length;
+
+            const sortedPages = Object.entries(pageCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const maxPage = sortedPages.length ? sortedPages[0][1] : 0;
+            document.getElementById('byPage').innerHTML = sortedPages.map(([p, c]) => barRow(p, c, maxPage)).join('') || '<p class="text-xs text-brandGray italic">Henüz veri yok.</p>';
+
+            const sortedRefs = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const maxRef = sortedRefs.length ? sortedRefs[0][1] : 0;
+            document.getElementById('byReferrer').innerHTML = sortedRefs.map(([r, c]) => barRow(r, c, maxRef)).join('') || '<p class="text-xs text-brandGray italic">Henüz veri yok.</p>';
+
+            const sortedLocs = Object.entries(locCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const maxLoc = sortedLocs.length ? sortedLocs[0][1] : 0;
+            document.getElementById('byLocation').innerHTML = sortedLocs.map(([l, c]) => barRow(l, c, maxLoc)).join('') || '<p class="text-xs text-brandGray italic">Henüz veri yok.</p>';
+
+            document.getElementById('recentTable').innerHTML = data.slice(0, 50).map(d => `
+                <tr class="border-b border-slate-50">
+                    <td class="py-1.5 pr-3 text-brandGray">${timeAgo(d.created_at)}</td>
+                    <td class="py-1.5 pr-3 font-medium">${d.page_path}</td>
+                    <td class="py-1.5 pr-3 text-brandGray">${simplifyReferrer(d.referrer)}</td>
+                    <td class="py-1.5 pr-3">${d.device_type === 'mobile' ? '📱' : '💻'}</td>
+                    <td class="py-1.5 text-brandGray">${d.query_params || '—'}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="text-center text-brandGray italic py-4">Henüz veri yok.</td></tr>';
+        }
+
+        load();
+    </script>
+</body>
+</html>

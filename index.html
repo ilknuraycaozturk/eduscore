@@ -735,5 +735,32 @@
             });
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        (async function () {
+            try {
+                const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+
+                // IP adresinin KENDİSİ hiçbir zaman saklanmıyor - sadece ondan
+                // türetilen genel ülke/şehir bilgisi (KVKK uyumu için).
+                let country = null, city = null;
+                try {
+                    const geoResp = await fetch('https://ipapi.co/json/');
+                    const geo = await geoResp.json();
+                    country = geo.country_name || null;
+                    city = geo.city || null;
+                } catch (geoErr) { /* konum servisine erişilemezse sessizce devam et */ }
+
+                sb.from('page_views').insert({
+                    page_path: 'index.html',
+                    referrer: document.referrer || 'direkt',
+                    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                    query_params: window.location.search || null,
+                    country: country,
+                    city: city,
+                }).then(() => {});
+            } catch (e) {}
+        })();
+    </script>
 </body>
 </html>
