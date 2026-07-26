@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Metodoloji</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { text-align: left; padding: 0.6rem 0.75rem; font-size: 0.8rem; }
+        thead th { color: #8A7A72; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #EAE0D9; }
+        tbody tr { border-bottom: 1px solid #F3ECE7; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center">
+        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
+        <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="nasil-calisir.html" class="text-brandGray hover:text-brandDark transition-colors">❓ Nasıl Çalışır?</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-10">
+
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-brandDark mb-2">Metodoloji</h1>
+            <p class="text-brandGray">
+                Bu sayfa, EduScor puanlama sisteminin tam matematiksel ve teknik detaylarını içerir.
+                Amacımız: hiçbir "kara kutu" olmadan, her puanın nasıl hesaplandığını herkesin görebilmesi.
+            </p>
+        </div>
+
+        <!-- Formül -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Ağırlıklandırma Formülü</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="bg-brandBg rounded-xl p-4 mb-4 overflow-x-auto">
+                    <p class="text-xs font-mono whitespace-nowrap">Kişisel Skor = Σ(Kriter Puanı × Temel Ağırlık × Önem Çarpanı) / Σ(Temel Ağırlık × Önem Çarpanı)</p>
+                </div>
+                <p class="text-xs text-brandGray mb-3">
+                    Toplam sadece <b>veri mevcut olan</b> kriterler üzerinden hesaplanır — eksik kriterler paydaya da payaya da dahil edilmez,
+                    yani hiçbir zaman "0 varsayılan puan" ile cezalandırma yapılmaz.
+                </p>
+                <table>
+                    <thead><tr><th>Aile Önem Derecesi</th><th>Çarpan</th></tr></thead>
+                    <tbody>
+                        <tr><td>5 — Çok Önemli</td><td>1.50×</td></tr>
+                        <tr><td>4 — Önemli</td><td>1.25×</td></tr>
+                        <tr><td>3 — Normal</td><td>1.00×</td></tr>
+                        <tr><td>2 — Az Önemli</td><td>0.75×</td></tr>
+                        <tr><td>1 — Önemsiz</td><td>0.50×</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Kriter Ağırlıkları -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Lise İçin Temel Kriter Ağırlıkları</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <table>
+                    <thead><tr><th>Kriter</th><th>Ağırlık</th><th>Veri Durumu</th></tr></thead>
+                    <tbody id="criteriaTable"><tr><td colspan="3" class="text-brandGray italic">Yükleniyor...</td></tr></tbody>
+                </table>
+                <p class="text-[11px] text-brandGray mt-3">
+                    "Veri Durumu" sütunu, kaç kurumda bu kritere ait gerçek veri bulunduğunu (152+ Ankara lisesi üzerinden) gösterir.
+                    Veri olmayan kriterler hesaplamaya dahil edilmez.
+                </p>
+            </div>
+        </section>
+
+        <!-- Veri Kaynakları Tablosu -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Kriter → Kaynak Eşleştirmesi</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <table>
+                    <thead><tr><th>Kriter</th><th>Kaynak</th><th>Güncelleme Sıklığı</th></tr></thead>
+                    <tbody>
+                        <tr><td>Akademik Başarı</td><td>MEB LGS Yerleştirme Kılavuzu (resmi PDF)</td><td>Yıllık</td></tr>
+                        <tr><td>Yabancı Dil Eğitimi</td><td>MEB LGS Kılavuzu ("Hazırlık Sınıfı" bilgisi)</td><td>Yıllık</td></tr>
+                        <tr><td>Üniversite Yerleştirme</td><td>Okulun kendi resmi web sitesi (varsa)</td><td>Düzensiz / manuel</td></tr>
+                        <tr><td>Fiziksel Altyapı, Öğretmen Kalitesi, Sosyal Etkinlik, Güvenlik, Burs</td><td class="text-brandGray italic">Henüz merkezi kaynak yok — "Profilini Sahiplen" özelliği gelince okul yöneticileri girecek</td><td>—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Değişiklik Günlüğü -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Değişiklik Günlüğü (Changelog)</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+                <div class="p-4">
+                    <p class="text-xs font-bold text-brandDark">v1.1 — Temmuz 2026</p>
+                    <p class="text-xs text-brandGray">Yabancı Dil Eğitimi kriteri eklendi (MEB Hazırlık Sınıfı verisi kaynaklı). Ankara geneline genişletildi (152+ lise).</p>
+                </div>
+                <div class="p-4">
+                    <p class="text-xs font-bold text-brandDark">v1.0 — Temmuz 2026</p>
+                    <p class="text-xs text-brandGray">İlk versiyon: 9 kriterlik ağırlık sistemi tanımlandı, Akademik Başarı kriteri MEB LGS verisiyle dolduruldu (Bağlıca pilot bölgesi).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Güven İlkeleri -->
+        <section>
+            <div class="bg-brandDark text-white rounded-2xl p-6">
+                <h2 class="text-sm font-bold text-white/70 uppercase tracking-wider mb-3">Değişmez İlkelerimiz</h2>
+                <ul class="text-sm space-y-2">
+                    <li>✓ Hiçbir kurum EduScor puanını satın alamaz.</li>
+                    <li>✓ Sponsorlu içerikler her zaman açıkça etiketlenir.</li>
+                    <li>✓ Aynı kriterlerle, aynı formülle her kurum değerlendirilir.</li>
+                    <li>✓ Veri olmayan kriterler asla tahmini bir sayıyla doldurulmaz.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+
+        async function loadCriteriaTable() {
+            const { data: cat } = await sb.from('categories').select('id').eq('slug', 'okul-oncesi-k12').single();
+            if (!cat) return;
+
+            const { data: criteria } = await sb.from('scoring_criteria')
+                .select('id, name_tr, default_weight, display_order')
+                .eq('category_id', cat.id)
+                .order('display_order');
+
+            if (!criteria) return;
+
+            const { data: scores } = await sb.from('institution_criteria_scores').select('criteria_id');
+            const countByCriteria = {};
+            (scores || []).forEach(s => { countByCriteria[s.criteria_id] = (countByCriteria[s.criteria_id] || 0) + 1; });
+
+            document.getElementById('criteriaTable').innerHTML = criteria.map(c => {
+                const count = countByCriteria[c.id] || 0;
+                const statusBadge = count > 0
+                    ? `<span class="text-green-700">✓ ${count} kurumda veri var</span>`
+                    : `<span class="text-amber-700">Veri yok</span>`;
+                return `<tr><td>${c.name_tr}</td><td class="font-bold text-brandRed">%${c.default_weight}</td><td>${statusBadge}</td></tr>`;
+            }).join('');
+        }
+
+        loadCriteriaTable();
+
+        // Anonim sayfa görüntüleme kaydı
+        (async function () {
+            try {
+                let country = null;
+                try {
+                    const geoResp = await fetch('https://ipapi.co/json/');
+                    const geo = await geoResp.json();
+                    country = geo.country_name || null;
+                } catch (e) {}
+                sb.from('page_views').insert({
+                    page_path: 'metodoloji.html',
+                    referrer: document.referrer || 'direkt',
+                    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                    country: country,
+                }).then(() => {});
+            } catch (e) {}
+        })();
+    </script>
+</body>
+</html>
