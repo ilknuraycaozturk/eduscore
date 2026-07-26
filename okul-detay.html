@@ -45,6 +45,14 @@
 
         <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-xs text-brandGray hover:text-brandRed mb-4 font-semibold">← Geri dön</a>
 
+        <div id="matchBanner" class="hidden bg-brandRed text-white rounded-2xl p-4 mb-4 flex items-center justify-between">
+            <div>
+                <p class="text-[11px] uppercase tracking-wider opacity-80">Sizin Kriterlerinize Göre</p>
+                <p class="text-2xl font-bold" id="matchScoreText">—</p>
+            </div>
+            <span class="text-3xl">🎯</span>
+        </div>
+
         <div id="loadingState" class="text-center py-20 text-brandGray text-sm">Kurum bilgileri yükleniyor...</div>
         <div id="notFoundState" class="hidden text-center py-20">
             <p class="text-brandDark font-semibold mb-1">Kurum bulunamadı</p>
@@ -55,10 +63,15 @@
 
             <!-- Üst Kart -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
-                <div class="flex flex-wrap items-center gap-2 mb-3">
-                    <span id="typeBadge" class="bg-red-50 text-brandRed text-[11px] font-bold px-2.5 py-1 rounded"></span>
-                    <span id="publicBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
-                    <span id="verifiedBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="typeBadge" class="bg-red-50 text-brandRed text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                        <span id="publicBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                        <span id="verifiedBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                    </div>
+                    <button id="favBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all">
+                        <span id="favIcon">☆</span> <span id="favText">Listeme Ekle</span>
+                    </button>
                 </div>
                 <h1 id="instName" class="text-xl sm:text-2xl font-bold text-brandDark mb-2"></h1>
                 <p id="instLocation" class="text-sm text-brandGray mb-1">📍 <span></span></p>
@@ -75,6 +88,7 @@
                 <!-- Kriter Puanları -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Kriter Puanları</h2>
+                    <div id="radarChartContainer" class="hidden flex justify-center mb-5"></div>
                     <div id="criteriaScores" class="space-y-3"></div>
                     <p id="noCriteriaMsg" class="hidden text-xs text-brandGray italic">Bu kurum için henüz kriter bazlı puan verisi yok.</p>
                 </div>
@@ -108,6 +122,71 @@
 
         const params = new URLSearchParams(window.location.search);
         const instId = params.get('id');
+        const matchScore = params.get('match');
+
+        const FAV_KEY = 'eduscor_favorites';
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch { return []; }
+        }
+        function isFavorite(id) { return getFavorites().includes(id); }
+        function toggleFavorite(id) {
+            let favs = getFavorites();
+            if (favs.includes(id)) {
+                favs = favs.filter(f => f !== id);
+            } else {
+                favs.push(id);
+            }
+            localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+            updateFavButton(id);
+        }
+        function updateFavButton(id) {
+            const fav = isFavorite(id);
+            document.getElementById('favIcon').textContent = fav ? '★' : '☆';
+            document.getElementById('favText').textContent = fav ? 'Listemde' : 'Listeme Ekle';
+            document.getElementById('favBtn').className = fav
+                ? 'flex items-center gap-1.5 px-3 py-1.5 bg-brandRed text-white border border-brandRed rounded-full text-xs font-semibold transition-all'
+                : 'flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all';
+        }
+
+        function renderRadarChart(points) {
+            // points: [{ label, score }] - en fazla 9 kriter, SVG ile örümcek grafik çiziyoruz
+            const size = 240, center = size / 2, maxR = 85;
+            const n = points.length;
+            if (n < 3) return ''; // 2 veya daha az eksende radar grafiği anlamlı görünmez, bar'lar yeterli
+
+            const angleFor = i => (-90 + i * (360 / n)) * (Math.PI / 180);
+            const pointAt = (i, rFrac) => {
+                const a = angleFor(i);
+                return [center + Math.cos(a) * maxR * rFrac, center + Math.sin(a) * maxR * rFrac];
+            };
+
+            let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+
+            // Izgara çemberleri (25/50/75/100%)
+            [0.25, 0.5, 0.75, 1].forEach(frac => {
+                const pts = points.map((_, i) => pointAt(i, frac).join(',')).join(' ');
+                svg += `<polygon points="${pts}" fill="none" stroke="#E2D8D0" stroke-width="1"/>`;
+            });
+
+            // Eksen çizgileri ve etiketler
+            points.forEach((p, i) => {
+                const [x, y] = pointAt(i, 1);
+                svg += `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" stroke="#E2D8D0" stroke-width="1"/>`;
+                const [lx, ly] = pointAt(i, 1.18);
+                svg += `<text x="${lx}" y="${ly}" font-size="8" fill="#8A7A72" text-anchor="middle" dominant-baseline="middle">${p.label}</text>`;
+            });
+
+            // Veri poligonu
+            const dataPts = points.map((p, i) => pointAt(i, Math.max(0, Math.min(100, p.score)) / 100).join(',')).join(' ');
+            svg += `<polygon points="${dataPts}" fill="#E8543A" fill-opacity="0.25" stroke="#E8543A" stroke-width="2"/>`;
+            points.forEach((p, i) => {
+                const [x, y] = pointAt(i, Math.max(0, Math.min(100, p.score)) / 100);
+                svg += `<circle cx="${x}" cy="${y}" r="3" fill="#E8543A"/>`;
+            });
+
+            svg += `</svg>`;
+            return svg;
+        }
 
         async function load() {
             if (!instId) { showNotFound(); return; }
@@ -139,6 +218,14 @@
         function renderInstitution(inst, scores) {
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
+
+            if (matchScore) {
+                document.getElementById('matchBanner').classList.remove('hidden');
+                document.getElementById('matchScoreText').textContent = `%${matchScore} Uyumlu (Kişisel Skor: ${matchScore})`;
+            }
+
+            updateFavButton(inst.id);
+            document.getElementById('favBtn').addEventListener('click', () => toggleFavorite(inst.id));
 
             document.getElementById('typeBadge').textContent = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
             document.getElementById('instName').textContent = inst.name;
@@ -187,6 +274,17 @@
                     const ob = b.scoring_criteria ? b.scoring_criteria.display_order : 99;
                     return oa - ob;
                 });
+
+                if (sorted.length >= 3) {
+                    const radarPoints = sorted.map(s => ({
+                        label: (s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter').split(' ')[0],
+                        score: s.score,
+                    }));
+                    const radarEl = document.getElementById('radarChartContainer');
+                    radarEl.innerHTML = renderRadarChart(radarPoints);
+                    radarEl.classList.remove('hidden');
+                }
+
                 criteriaEl.innerHTML = sorted.map(s => {
                     const name = s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter';
                     const weight = s.scoring_criteria ? s.scoring_criteria.default_weight : '';

@@ -284,7 +284,7 @@
                     : `<div class="text-[11px] text-brandGray italic max-w-[110px] text-right">Henüz akademik veri yok</div>`;
 
                 html += `
-                    <a href="okul-detay.html?id=${r.inst.id}" class="bg-white rounded-2xl border ${hasScore ? 'border-slate-200' : 'border-dashed border-slate-300'} shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
+                    <a href="okul-detay.html?id=${r.inst.id}${hasScore ? '&match=' + r.personalScore.toFixed(1) : ''}" class="bg-white rounded-2xl border ${hasScore ? 'border-slate-200' : 'border-dashed border-slate-300'} shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
                         ${rankBadge}
                         <div class="flex-grow">
                             <div class="flex flex-wrap items-center gap-2 mb-1">
