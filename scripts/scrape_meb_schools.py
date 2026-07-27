@@ -87,6 +87,17 @@ def _scrape_current_page(page, il_kodu: str, ilce_kodu, results: list[dict]) -> 
         if not info or info == name:
             info = None
 
+        # Okul adı genelde kendi resmi web sitesine (X.meb.k12.tr) link veriyor -
+        # önceden bu hiç yakalanmıyordu, sadece metin alınıyordu.
+        website = None
+        for cell in cells[:2]:
+            link_el = cell.query_selector("a")
+            if link_el:
+                href = link_el.get_attribute("href")
+                if href and ("meb.k12.tr" in href or href.startswith("http")):
+                    website = href
+                    break
+
         row_html = row.inner_html()
         lat, lng = _extract_coords(row_html)
 
@@ -96,6 +107,7 @@ def _scrape_current_page(page, il_kodu: str, ilce_kodu, results: list[dict]) -> 
         results.append({
             "raw_name": name,
             "raw_info": info,
+            "website": website,
             "lat": lat,
             "lng": lng,
             "il_kodu": il_kodu,

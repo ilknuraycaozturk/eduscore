@@ -169,7 +169,7 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     dedup yapıyoruz. Aksi halde farklı konum granülerliğinde (mahalle vs
     ilçe) kaydedilmiş aynı okul mükerrer eklenebilir (bu bug'ı canlıda
     yaşadık ve LGS scriptinde düzelttik, aynı düzeltmeyi burada da uyguluyoruz)."""
-    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng")
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website")
 
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
@@ -281,6 +281,7 @@ def main():
             "ilce": ilce_ad,
             "institution_type_slug": type_slug,
             "address": address,
+            "website": r.get("website"),
             "lat": lat,
             "lng": lng,
             "is_public": True,  # bu uç nokta resmi MEB okulları için; özel kurumlar ayrı script (ookgm) ile işlenir
@@ -343,7 +344,7 @@ def main():
         match = find_existing_match(item["name"], existing)
 
         if match:
-            # Aynı okul zaten var — sadece eksik alanları (adres/koordinat) doldur, yeni satır açma
+            # Aynı okul zaten var — sadece eksik alanları (adres/koordinat/website) doldur, yeni satır açma
             needs_update = {}
             if not match.get("address") and item["address"]:
                 needs_update["address"] = item["address"]
@@ -351,6 +352,8 @@ def main():
                 needs_update["lat"] = item["lat"]
             if not match.get("lng") and item["lng"]:
                 needs_update["lng"] = item["lng"]
+            if not match.get("website") and item.get("website"):
+                needs_update["website"] = item["website"]
 
             if needs_update:
                 resp = requests.patch(
@@ -375,6 +378,7 @@ def main():
             "location_id": location_id,
             "is_public": item["is_public"],
             "address": item["address"],
+            "website": item.get("website"),
             "lat": item["lat"],
             "lng": item["lng"],
             "is_verified": item["is_verified"],
