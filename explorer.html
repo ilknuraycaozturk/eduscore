@@ -13,25 +13,24 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-[#FDF8F5] text-[#241A16] min-h-screen flex flex-col overflow-hidden">
+<body class="bg-[#FDF8F5] text-[#241A16] min-h-screen flex flex-col">
 
-    <!-- Üst Menü: Dil ve giriş alanını en sağa yaslamak için padding sıfırlandı ve justify kullanıldı -->
-    <header class="w-full bg-white border-b border-slate-200 px-6 sm:px-10 py-4 flex justify-between items-center shrink-0 z-10">
+    <!-- Üst Menü -->
+    <header class="w-full bg-white border-b border-slate-200 px-4 sm:px-10 py-4 flex flex-wrap justify-between items-center gap-y-2 shrink-0 z-10">
         <span class="text-xl font-bold text-[#E8543A]">EduScor</span>
-        <!-- gap-8 ve pr-0 ile sağdaki buton alanının sağ kenara tam oturması sağlandı -->
-        <div class="flex items-center gap-8 text-sm font-semibold pr-0">
+        <div class="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm font-semibold">
             <a href="index.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors">🏠 Ana Sayfa</a>
             <a href="lise-skoru.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors">🎓 Lise Skoru</a>
             <a href="favorilerim.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors">★ Favorilerim</a>
-            <button class="px-4 py-1.5 bg-[#241A16] text-white hover:bg-[#E8543A] rounded-full transition-all text-xs">Giriş Yap</button>
+            <a href="giris.html" class="px-4 py-1.5 bg-[#241A16] text-white hover:bg-[#E8543A] rounded-full transition-all text-xs whitespace-nowrap">Giriş Yap</a>
         </div>
     </header>
 
-    <!-- Ana İçerik Konteynırı -->
-    <div class="flex-grow flex w-full h-full relative overflow-hidden">
+    <!-- Ana İçerik Konteynırı: mobilde normal akış (kaydırılabilir), masaüstünde sabit yükseklikli 2 sütun -->
+    <div class="flex-grow flex flex-col md:flex-row w-full relative md:h-[calc(100vh-73px)] md:overflow-hidden">
 
         <!-- SOL SÜTUN (Liste) -->
-        <main id="listContainer" class="w-full md:w-[60%] h-full overflow-y-auto p-4 md:p-6 bg-[#FDF8F5]">
+        <main id="listContainer" class="w-full md:w-[60%] md:h-full md:overflow-y-auto p-4 md:p-6 bg-[#FDF8F5]">
             <!-- Arama Barı -->
             <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
                 <div class="flex gap-2">
