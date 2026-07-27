@@ -150,7 +150,7 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     dedup yapıyoruz (farklı konum granülerliğinde kaydedilmiş aynı okulun
     mükerrer eklenmesini önlemek için - bkz. diğer yükleme scriptlerindeki
     aynı düzeltme)."""
-    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address")
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,phone")
 
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
@@ -276,10 +276,15 @@ def main():
 
         match = find_existing_match(item["name"], existing)
         if match:
+            needs_update = {}
             if not match.get("address") and item["address"]:
+                needs_update["address"] = item["address"]
+            if not match.get("phone") and item.get("phone"):
+                needs_update["phone"] = item["phone"]
+            if needs_update:
                 requests.patch(
                     f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
-                    headers=headers, json={"address": item["address"]},
+                    headers=headers, json=needs_update,
                 )
                 enriched += 1
             else:
@@ -296,6 +301,7 @@ def main():
             "location_id": location_id,
             "is_public": item["is_public"],
             "address": item["address"],
+            "phone": item.get("phone"),
             "is_verified": item["is_verified"],
             "description": item["description"],
         }
