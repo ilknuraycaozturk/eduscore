@@ -31,7 +31,12 @@ on:
     - cron: "0 0 1 * *"
 
 jobs:
-  scrape-and-load:
+  # ÖNEMLİ: Scraping ve Supabase'e yükleme artık İKİ AYRI İŞ (job).
+  # Önceden tek bir işte birleşikti ve GitHub Actions'ın 6 saatlik iş
+  # başına zaman sınırına takılıyordu (tüm Ankara için scraping ~4sa,
+  # yükleme +2sa sürüyor, toplamda 6 saati aşıyordu). Ayrı işler her
+  # birine kendi 6 saatlik hakkını verir (toplamda 12 saate kadar).
+  scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -60,6 +65,33 @@ jobs:
               --output data/meb_raw.json
           fi
 
+      - name: Ham veriyi artifact olarak kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: meb-raw-data
+          path: data/meb_raw.json
+          retention-days: 7
+
+  load:
+    needs: scrape
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install -r scripts/requirements.txt
+
+      - name: Ham veriyi indir
+        uses: actions/download-artifact@v4
+        with:
+          name: meb-raw-data
+          path: data/
+
       - name: Supabase'e yükle
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -77,9 +109,3 @@ jobs:
             ARGS="$ARGS --dry-run"
           fi
           eval python scripts/load_to_supabase.py $ARGS
-
-      - name: Ham veriyi artifact olarak kaydet
-        uses: actions/upload-artifact@v4
-        with:
-          name: meb-raw-data
-          path: data/meb_raw.json
