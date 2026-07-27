@@ -109,8 +109,31 @@
                     </div>
 
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Kullanıcı Değerlendirmeleri</h2>
-                        <p class="text-xs text-brandGray italic">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider">Kullanıcı Değerlendirmeleri</h2>
+                            <div id="avgRatingBox" class="hidden text-right">
+                                <span id="avgRatingValue" class="text-lg font-bold text-brandRed"></span>
+                                <span id="avgRatingCount" class="text-[11px] text-brandGray block"></span>
+                            </div>
+                        </div>
+
+                        <div id="reviewsList" class="space-y-3 mb-4"></div>
+                        <p id="noReviewsMsg" class="hidden text-xs text-brandGray italic mb-4">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
+
+                        <div id="reviewLoggedOut" class="hidden border-t border-slate-100 pt-4">
+                            <p class="text-xs text-brandGray mb-2">Yorum yapmak için giriş yapın.</p>
+                            <a href="giris.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">Giriş Yap</a>
+                        </div>
+
+                        <form id="reviewForm" class="hidden border-t border-slate-100 pt-4 space-y-2">
+                            <p class="text-xs font-semibold text-brandGray">Puanınız</p>
+                            <div id="starPicker" class="flex gap-1 text-2xl"></div>
+                            <textarea id="reviewComment" rows="3" placeholder="Deneyiminizi paylaşın (opsiyonel)..." class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2"></textarea>
+                            <button type="submit" class="bg-brandDark hover:bg-brandRed text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">
+                                Yorumu Gönder
+                            </button>
+                            <p id="reviewMsg" class="hidden text-[11px] rounded-lg px-2 py-1"></p>
+                        </form>
                     </div>
 
                     <!-- Profilini Sahiplen -->
@@ -145,6 +168,17 @@
             <!-- Açıklama / Kaynak notu -->
             <div id="descCard" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-6">
                 <p id="descText" class="text-xs text-amber-800 leading-relaxed"></p>
+            </div>
+
+            <div id="programsCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-6">
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Programlar</h2>
+                <div id="programsList" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Benzer Kurumlar -->
+            <div id="similarCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-6">
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Benzer Kurumlar</h2>
+                <div id="similarList" class="space-y-2"></div>
             </div>
 
         </div>
@@ -229,7 +263,7 @@
             const { data: inst, error } = await sb.from('institutions')
                 .select(`
                     id, name, address, website, google_maps_url, lat, lng, phone,
-                    is_public, is_verified, description,
+                    is_public, is_verified, description, category_id, location_id, institution_type_id,
                     age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
                     institution_types ( name_tr ),
                     locations ( name )
@@ -245,6 +279,143 @@
 
             renderInstitution(inst, scores || []);
             setupClaimSection(instId);
+            setupReviewsSection(instId);
+            loadSimilarInstitutions(inst);
+        }
+
+        async function loadSimilarInstitutions(inst) {
+            if (!inst.institution_type_id) return;
+
+            // Önce aynı tür + aynı ilçede dene, yetersizse aynı tür (il genelinde) ile genişlet
+            let { data: similar } = await sb.from('institutions')
+                .select('id, name, institution_types(name_tr), locations(name)')
+                .eq('institution_type_id', inst.institution_type_id)
+                .eq('location_id', inst.location_id)
+                .neq('id', inst.id)
+                .limit(4);
+
+            if (!similar || similar.length < 2) {
+                const { data: broader } = await sb.from('institutions')
+                    .select('id, name, institution_types(name_tr), locations(name)')
+                    .eq('institution_type_id', inst.institution_type_id)
+                    .neq('id', inst.id)
+                    .limit(4);
+                similar = broader;
+            }
+
+            if (similar && similar.length) {
+                document.getElementById('similarCard').classList.remove('hidden');
+                document.getElementById('similarList').innerHTML = similar.map(s => `
+                    <a href="okul-detay.html?id=${s.id}" class="flex items-center justify-between bg-brandBg hover:bg-red-50 rounded-xl px-4 py-2.5 transition-all">
+                        <span class="text-xs font-semibold text-brandDark truncate pr-2">${s.name}</span>
+                        <span class="text-[10px] text-brandGray whitespace-nowrap">${s.locations ? s.locations.name : ''} →</span>
+                    </a>
+                `).join('');
+            }
+        }
+
+        async function setupReviewsSection(institutionId) {
+            const { data: { session } } = await sb.auth.getSession();
+
+            // Mevcut yorumları çek
+            const { data: reviews } = await sb.from('reviews')
+                .select('id, user_id, rating, comment, created_at')
+                .eq('institution_id', institutionId)
+                .order('created_at', { ascending: false });
+
+            const list = reviews || [];
+
+            // Yorum sahiplerinin adlarını ayrıca çek (reviews->profiles doğrudan
+            // ilişkili değil, ikisi de auth.users'a referans veriyor)
+            const userIds = [...new Set(list.map(r => r.user_id))];
+            let namesById = {};
+            if (userIds.length) {
+                const { data: profs } = await sb.from('profiles').select('id, full_name').in('id', userIds);
+                (profs || []).forEach(p => { namesById[p.id] = p.full_name; });
+            }
+
+            if (list.length === 0) {
+                document.getElementById('noReviewsMsg').classList.remove('hidden');
+            } else {
+                const avg = list.reduce((sum, r) => sum + r.rating, 0) / list.length;
+                document.getElementById('avgRatingBox').classList.remove('hidden');
+                document.getElementById('avgRatingValue').textContent = `★ ${avg.toFixed(1)}`;
+                document.getElementById('avgRatingCount').textContent = `${list.length} değerlendirme`;
+
+                document.getElementById('reviewsList').innerHTML = list.map(r => {
+                    const name = namesById[r.user_id] || 'Anonim Kullanıcı';
+                    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+                    const date = new Date(r.created_at).toLocaleDateString('tr-TR');
+                    return `
+                        <div class="border-b border-slate-50 pb-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-semibold text-brandDark">${name}</span>
+                                <span class="text-[10px] text-brandGray">${date}</span>
+                            </div>
+                            <p class="text-amber-500 text-sm mb-1">${stars}</p>
+                            ${r.comment ? `<p class="text-xs text-brandGray">${r.comment}</p>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (!session) {
+                document.getElementById('reviewLoggedOut').classList.remove('hidden');
+                return;
+            }
+
+            const myReview = list.find(r => r.user_id === session.user.id);
+
+            // Yıldız seçici oluştur
+            let selectedRating = myReview ? myReview.rating : 0;
+            const starPicker = document.getElementById('starPicker');
+            function renderStars() {
+                starPicker.innerHTML = [1, 2, 3, 4, 5].map(i => `
+                    <span data-star="${i}" class="cursor-pointer ${i <= selectedRating ? 'text-amber-500' : 'text-slate-200'}">★</span>
+                `).join('');
+                starPicker.querySelectorAll('[data-star]').forEach(el => {
+                    el.addEventListener('click', () => {
+                        selectedRating = parseInt(el.dataset.star);
+                        renderStars();
+                    });
+                });
+            }
+            renderStars();
+
+            if (myReview) {
+                document.getElementById('reviewComment').value = myReview.comment || '';
+            }
+
+            document.getElementById('reviewForm').classList.remove('hidden');
+            document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const msgEl = document.getElementById('reviewMsg');
+
+                if (selectedRating < 1) {
+                    msgEl.textContent = 'Lütfen bir puan seçin.';
+                    msgEl.className = 'text-[11px] rounded-lg px-2 py-1 bg-red-50 text-red-700';
+                    msgEl.classList.remove('hidden');
+                    return;
+                }
+
+                const comment = document.getElementById('reviewComment').value.trim();
+                const { error } = await sb.from('reviews').upsert({
+                    institution_id: institutionId,
+                    user_id: session.user.id,
+                    rating: selectedRating,
+                    comment: comment || null,
+                }, { onConflict: 'institution_id,user_id' });
+
+                if (error) {
+                    msgEl.textContent = 'Bir hata oluştu, tekrar deneyin.';
+                    msgEl.className = 'text-[11px] rounded-lg px-2 py-1 bg-red-50 text-red-700';
+                } else {
+                    msgEl.textContent = 'Yorumunuz kaydedildi, teşekkürler!';
+                    msgEl.className = 'text-[11px] rounded-lg px-2 py-1 bg-green-50 text-green-700';
+                    setTimeout(() => window.location.reload(), 1200);
+                }
+                msgEl.classList.remove('hidden');
+            });
         }
 
         function showNotFound() {
@@ -297,8 +468,23 @@
             }
 
             if (inst.description) {
-                document.getElementById('descCard').classList.remove('hidden');
-                document.getElementById('descText').textContent = inst.description;
+                // "Programlar: X,Y,Z," kısmını ayrı bir bölüme çıkar, kalan
+                // açıklamayı (varsa) taslak-veri notu olarak göster.
+                const programMatch = inst.description.match(/Programlar:\s*(.+)$/);
+                if (programMatch) {
+                    const programs = programMatch[1].split(',').map(p => p.trim()).filter(Boolean);
+                    if (programs.length) {
+                        document.getElementById('programsCard').classList.remove('hidden');
+                        document.getElementById('programsList').innerHTML = programs.map(p =>
+                            `<span class="bg-brandBg text-brandDark text-xs font-medium px-3 py-1.5 rounded-full">${p}</span>`
+                        ).join('');
+                    }
+                }
+                const restOfDesc = inst.description.replace(/Programlar:\s*.+$/, '').trim();
+                if (restOfDesc) {
+                    document.getElementById('descCard').classList.remove('hidden');
+                    document.getElementById('descText').textContent = restOfDesc;
+                }
             }
 
             // Kurum Bilgileri kartı - sadece en az bir alan doluysa göster
