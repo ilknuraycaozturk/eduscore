@@ -173,6 +173,12 @@
                                         <input type="text" id="editPhone" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
                                     </div>
                                     <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">E-posta</label>
+                                        <input type="email" id="editEmail" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="okul@ornek.k12.tr">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
                                         <label class="text-[11px] font-semibold text-brandGray">Web Sitesi</label>
                                         <input type="text" id="editWebsite" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="https://...">
                                     </div>
@@ -363,7 +369,7 @@
 
             const { data: inst, error } = await sb.from('institutions')
                 .select(`
-                    id, name, address, website, google_maps_url, lat, lng, phone,
+                    id, name, address, website, google_maps_url, lat, lng, phone, email,
                     is_public, is_verified, description, category_id, location_id, institution_type_id,
                     age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
                     fee_info, transport_note, instagram_url, facebook_url,
@@ -597,6 +603,7 @@
             // Kurum Bilgileri kartı - sadece en az bir alan doluysa göster
             const infoItems = [];
             if (inst.phone) infoItems.push({ label: 'Telefon', value: inst.phone });
+            if (inst.email) infoItems.push({ label: 'E-posta', value: `<a href="mailto:${inst.email}" class="text-brandRed hover:underline">${inst.email}</a>` });
             if (inst.age_min != null && inst.age_max != null) infoItems.push({ label: 'Yaş Aralığı', value: `${inst.age_min}-${inst.age_max}` });
             if (inst.class_size_avg) infoItems.push({ label: 'Ort. Sınıf Mevcudu', value: inst.class_size_avg });
             if (inst.success_score != null) infoItems.push({ label: 'Genel Başarı Skoru', value: inst.success_score });
@@ -744,6 +751,7 @@
             // Formu mevcut verilerle doldur
             document.getElementById('editAddress').value = inst.address || '';
             document.getElementById('editPhone').value = inst.phone || '';
+            document.getElementById('editEmail').value = inst.email || '';
             document.getElementById('editWebsite').value = inst.website || '';
             document.getElementById('editAgeMin').value = inst.age_min ?? '';
             document.getElementById('editAgeMax').value = inst.age_max ?? '';
@@ -786,6 +794,7 @@
                 const updatePayload = {
                     address: document.getElementById('editAddress').value.trim() || null,
                     phone: document.getElementById('editPhone').value.trim() || null,
+                    email: document.getElementById('editEmail').value.trim() || null,
                     website: document.getElementById('editWebsite').value.trim() || null,
                     age_min: ageMinVal ? parseInt(ageMinVal) : null,
                     age_max: ageMaxVal ? parseInt(ageMaxVal) : null,
