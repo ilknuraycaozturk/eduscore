@@ -691,33 +691,56 @@
         };
 
         let nearMeLat = null, nearMeLng = null;
+        let wantsNearMe = false;
 
         const nearMeBtn = document.getElementById('nearMeBtn');
+        function getPositionPromise() {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject);
+            });
+        }
+
         if (nearMeBtn) {
             nearMeBtn.addEventListener('click', () => {
                 if (!navigator.geolocation) {
                     nearMeBtn.textContent = 'Konum desteklenmiyor';
                     return;
                 }
-                nearMeBtn.textContent = 'Konum alınıyor...';
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        nearMeLat = pos.coords.latitude;
-                        nearMeLng = pos.coords.longitude;
-                        nearMeBtn.textContent = '✓ Konum alındı';
-                        document.querySelector('input[name="location"]').value = '';
-                        document.querySelector('input[name="location"]').placeholder = 'Konumunuz kullanılacak';
-                        document.querySelector('input[name="location"]').required = false;
-                    },
-                    () => { nearMeBtn.textContent = 'İzin verilmedi'; }
-                );
+                wantsNearMe = true;
+                nearMeLat = null;
+                nearMeLng = null;
+                nearMeBtn.textContent = '📍 Yakınımda Ara (seçili)';
+                document.querySelector('input[name="location"]').value = '';
+                document.querySelector('input[name="location"]').placeholder = 'Konumunuz kullanılacak';
+                document.querySelector('input[name="location"]').required = false;
             });
         }
 
         const searchForm = document.getElementById('searchForm');
         if (searchForm) {
-            searchForm.addEventListener('submit', (e) => {
+            searchForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitBtn = searchForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn ? submitBtn.textContent : '';
+
+                // ÖNEMLİ: "Yakınımda Ara" seçiliyse, konum GERÇEKTEN alınana kadar
+                // bekliyoruz - önceden burada beklemediğimiz için kullanıcı hemen
+                // "Sorgula"ya basınca form konumsuz (filtre uygulanmadan) gönderiliyordu.
+                if (wantsNearMe && (!nearMeLat || !nearMeLng)) {
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Konumunuz alınıyor...'; }
+                    try {
+                        const pos = await getPositionPromise();
+                        nearMeLat = pos.coords.latitude;
+                        nearMeLng = pos.coords.longitude;
+                        if (nearMeBtn) nearMeBtn.textContent = '✓ Konum alındı';
+                    } catch (err) {
+                        if (nearMeBtn) nearMeBtn.textContent = 'İzin verilmedi';
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+                        alert('Konum izni alınamadı. "Yakınımda Ara" olmadan devam etmek için önce o seçimi kaldırıp tekrar Sorgula\'ya basabilirsiniz.');
+                        return;
+                    }
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+                }
 
                 const segment = document.getElementById('institutionSegmentSelect').value;
                 const location = document.querySelector('input[name="location"]').value.trim();
