@@ -180,12 +180,16 @@
                 filterNotice.appendChild(clearLink);
             }
 
-            const { data: scoreRows } = await sb.from('institution_criteria_scores')
-                .select('institution_id, score, criteria_id, scoring_criteria ( key )')
-                .in('institution_id', institutions.map(i => i.id));
+            let scoreRows = [];
+            if (institutions.length > 0) {
+                const resp = await sb.from('institution_criteria_scores')
+                    .select('institution_id, score, criteria_id, scoring_criteria ( key )')
+                    .in('institution_id', institutions.map(i => i.id));
+                scoreRows = resp.data || [];
+            }
 
             scoresByInstitution = {};
-            (scoreRows || []).forEach(r => {
+            scoreRows.forEach(r => {
                 const key = r.scoring_criteria ? r.scoring_criteria.key : null;
                 if (!key) return;
                 if (!scoresByInstitution[r.institution_id]) scoresByInstitution[r.institution_id] = {};
