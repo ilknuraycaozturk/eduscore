@@ -159,7 +159,80 @@
                             <p class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">⏳ Sahiplenme talebiniz inceleniyor.</p>
                         </div>
                         <div id="claimApproved" class="hidden">
-                            <p class="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">✓ Bu kurumu sahiplendiniz. Bilgileri güncelleyebilirsiniz.</p>
+                            <p class="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2 mb-3">✓ Bu kurumu sahiplendiniz. Bilgileri aşağıdan güncelleyebilirsiniz.</p>
+
+                            <form id="editForm" class="space-y-3">
+                                <div>
+                                    <label class="text-[11px] font-semibold text-brandGray">Adres</label>
+                                    <input type="text" id="editAddress" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Telefon</label>
+                                        <input type="text" id="editPhone" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Web Sitesi</label>
+                                        <input type="text" id="editWebsite" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Yaş Aralığı (Min-Max)</label>
+                                        <div class="flex gap-1">
+                                            <input type="number" id="editAgeMin" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="Min">
+                                            <input type="number" id="editAgeMax" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="Max">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Ort. Sınıf Mevcudu</label>
+                                        <input type="number" id="editClassSize" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="text-[11px] font-semibold text-brandGray">Yerleşke Özellikleri</label>
+                                    <div class="grid grid-cols-2 gap-1 mt-1">
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editLab"> 🔬 Laboratuvar</label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editSpor"> 🏀 Kapalı Spor Salonu</label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editKutuphane"> 📚 Kütüphane</label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editYemekhane"> 🍽️ Yemekhane</label>
+                                    </div>
+                                    <input type="number" id="editMetrekare" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 mt-1" placeholder="Yerleşke alanı (m²)">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Ücret Bilgisi</label>
+                                        <input type="text" id="editFee" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 15.000-25.000 TL/yıl">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Ulaşım Notu</label>
+                                        <input type="text" id="editTransport" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Metro 400m">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Instagram</label>
+                                        <input type="text" id="editInstagram" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="https://instagram.com/...">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Facebook</label>
+                                        <input type="text" id="editFacebook" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="https://facebook.com/...">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="text-[11px] font-semibold text-brandGray">Açıklama</label>
+                                    <textarea id="editDescription" rows="3" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5"></textarea>
+                                </div>
+
+                                <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold py-2.5 rounded-full transition-all">
+                                    Bilgileri Kaydet
+                                </button>
+                                <p id="editMsg" class="hidden text-[11px] text-center rounded-lg px-2 py-1"></p>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -265,6 +338,7 @@
                     id, name, address, website, google_maps_url, lat, lng, phone,
                     is_public, is_verified, description, category_id, location_id, institution_type_id,
                     age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
+                    fee_info, transport_note, instagram_url, facebook_url,
                     institution_types ( name_tr ),
                     locations ( name )
                 `)
@@ -278,7 +352,7 @@
                 .eq('institution_id', instId);
 
             renderInstitution(inst, scores || []);
-            setupClaimSection(instId);
+            setupClaimSection(instId, inst);
             setupReviewsSection(instId);
             loadSimilarInstitutions(inst);
         }
@@ -580,7 +654,7 @@
             }
         }
 
-        async function setupClaimSection(institutionId) {
+        async function setupClaimSection(institutionId, inst) {
             const { data: { session } } = await sb.auth.getSession();
 
             if (!session) {
@@ -597,6 +671,7 @@
             if (existingClaim) {
                 if (existingClaim.status === 'onaylandi') {
                     document.getElementById('claimApproved').classList.remove('hidden');
+                    setupEditForm(institutionId, inst);
                 } else if (existingClaim.status === 'reddedildi') {
                     document.getElementById('claimNotRequested').classList.remove('hidden');
                 } else {
@@ -622,6 +697,73 @@
                     document.getElementById('claimNotRequested').classList.add('hidden');
                     document.getElementById('claimPending').classList.remove('hidden');
                 }
+            });
+        }
+
+        function setupEditForm(institutionId, inst) {
+            // Formu mevcut verilerle doldur
+            document.getElementById('editAddress').value = inst.address || '';
+            document.getElementById('editPhone').value = inst.phone || '';
+            document.getElementById('editWebsite').value = inst.website || '';
+            document.getElementById('editAgeMin').value = inst.age_min ?? '';
+            document.getElementById('editAgeMax').value = inst.age_max ?? '';
+            document.getElementById('editClassSize').value = inst.class_size_avg ?? '';
+            document.getElementById('editFee').value = inst.fee_info || '';
+            document.getElementById('editTransport').value = inst.transport_note || '';
+            document.getElementById('editInstagram').value = inst.instagram_url || '';
+            document.getElementById('editFacebook').value = inst.facebook_url || '';
+            document.getElementById('editDescription').value = inst.description || '';
+
+            const ci = inst.campus_info || {};
+            document.getElementById('editLab').checked = !!ci.laboratuvar;
+            document.getElementById('editSpor').checked = !!ci.kapali_spor_salonu;
+            document.getElementById('editKutuphane').checked = !!ci.kütüphane;
+            document.getElementById('editYemekhane').checked = !!ci.yemekhane;
+            document.getElementById('editMetrekare').value = ci.metrekare || '';
+
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const msgEl = document.getElementById('editMsg');
+
+                const ageMinVal = document.getElementById('editAgeMin').value;
+                const ageMaxVal = document.getElementById('editAgeMax').value;
+                const classSizeVal = document.getElementById('editClassSize').value;
+                const metrekareVal = document.getElementById('editMetrekare').value;
+
+                const campusInfo = {
+                    laboratuvar: document.getElementById('editLab').checked,
+                    kapali_spor_salonu: document.getElementById('editSpor').checked,
+                    kütüphane: document.getElementById('editKutuphane').checked,
+                    yemekhane: document.getElementById('editYemekhane').checked,
+                    metrekare: metrekareVal ? parseInt(metrekareVal) : null,
+                };
+
+                const updatePayload = {
+                    address: document.getElementById('editAddress').value.trim() || null,
+                    phone: document.getElementById('editPhone').value.trim() || null,
+                    website: document.getElementById('editWebsite').value.trim() || null,
+                    age_min: ageMinVal ? parseInt(ageMinVal) : null,
+                    age_max: ageMaxVal ? parseInt(ageMaxVal) : null,
+                    class_size_avg: classSizeVal ? parseInt(classSizeVal) : null,
+                    campus_info: campusInfo,
+                    fee_info: document.getElementById('editFee').value.trim() || null,
+                    transport_note: document.getElementById('editTransport').value.trim() || null,
+                    instagram_url: document.getElementById('editInstagram').value.trim() || null,
+                    facebook_url: document.getElementById('editFacebook').value.trim() || null,
+                    description: document.getElementById('editDescription').value.trim() || null,
+                };
+
+                const { error } = await sb.from('institutions').update(updatePayload).eq('id', institutionId);
+
+                if (error) {
+                    msgEl.textContent = 'Bir hata oluştu: ' + error.message;
+                    msgEl.className = 'text-[11px] text-center rounded-lg px-2 py-1 bg-red-50 text-red-700';
+                } else {
+                    msgEl.textContent = 'Bilgiler kaydedildi! Sayfa yenileniyor...';
+                    msgEl.className = 'text-[11px] text-center rounded-lg px-2 py-1 bg-green-50 text-green-700';
+                    setTimeout(() => window.location.reload(), 1200);
+                }
+                msgEl.classList.remove('hidden');
             });
         }
 
