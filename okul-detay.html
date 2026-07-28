@@ -214,6 +214,33 @@
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Servis Bilgisi</label>
+                                        <input type="text" id="editServis" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Ücretli servis, 5 hat">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Güvenlik Bilgisi</label>
+                                        <input type="text" id="editGuvenlik" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Turnike, 7/24 güvenlik">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="text-[11px] font-semibold text-brandGray">Sosyal & Sportif Olanaklar</label>
+                                    <input type="text" id="editSosyal" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 12 aktif kulüp, kapalı yüzme havuzu">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Kontenjan Bilgisi</label>
+                                        <input type="text" id="editKontenjan" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 160 kontenjan, 145 dolu">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] font-semibold text-brandGray">Öğretmen Deneyimi</label>
+                                        <input type="text" id="editOgretmen" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Ortalama 8 yıl kıdem">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
                                         <label class="text-[11px] font-semibold text-brandGray">Instagram</label>
                                         <input type="text" id="editInstagram" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="https://instagram.com/...">
                                     </div>
@@ -339,6 +366,7 @@
                     is_public, is_verified, description, category_id, location_id, institution_type_id,
                     age_min, age_max, class_size_avg, campus_info, success_score, success_score_note,
                     fee_info, transport_note, instagram_url, facebook_url,
+                    servis_bilgisi, guvenlik_bilgisi, sosyal_sportif_bilgisi, kontenjan_bilgisi, ogretmen_deneyimi_notu,
                     institution_types ( name_tr ),
                     locations ( name )
                 `)
@@ -567,6 +595,13 @@
             if (inst.age_min != null && inst.age_max != null) infoItems.push({ label: 'Yaş Aralığı', value: `${inst.age_min}-${inst.age_max}` });
             if (inst.class_size_avg) infoItems.push({ label: 'Ort. Sınıf Mevcudu', value: inst.class_size_avg });
             if (inst.success_score != null) infoItems.push({ label: 'Genel Başarı Skoru', value: inst.success_score });
+            if (inst.fee_info) infoItems.push({ label: 'Ücret', value: inst.fee_info });
+            if (inst.transport_note) infoItems.push({ label: 'Ulaşım', value: inst.transport_note });
+            if (inst.servis_bilgisi) infoItems.push({ label: 'Servis', value: inst.servis_bilgisi });
+            if (inst.guvenlik_bilgisi) infoItems.push({ label: 'Güvenlik', value: inst.guvenlik_bilgisi });
+            if (inst.sosyal_sportif_bilgisi) infoItems.push({ label: 'Sosyal & Sportif', value: inst.sosyal_sportif_bilgisi });
+            if (inst.kontenjan_bilgisi) infoItems.push({ label: 'Kontenjan', value: inst.kontenjan_bilgisi });
+            if (inst.ogretmen_deneyimi_notu) infoItems.push({ label: 'Öğretmen Deneyimi', value: inst.ogretmen_deneyimi_notu });
 
             if (infoItems.length > 0) {
                 document.getElementById('infoCard').classList.remove('hidden');
@@ -710,6 +745,11 @@
             document.getElementById('editClassSize').value = inst.class_size_avg ?? '';
             document.getElementById('editFee').value = inst.fee_info || '';
             document.getElementById('editTransport').value = inst.transport_note || '';
+            document.getElementById('editServis').value = inst.servis_bilgisi || '';
+            document.getElementById('editGuvenlik').value = inst.guvenlik_bilgisi || '';
+            document.getElementById('editSosyal').value = inst.sosyal_sportif_bilgisi || '';
+            document.getElementById('editKontenjan').value = inst.kontenjan_bilgisi || '';
+            document.getElementById('editOgretmen').value = inst.ogretmen_deneyimi_notu || '';
             document.getElementById('editInstagram').value = inst.instagram_url || '';
             document.getElementById('editFacebook').value = inst.facebook_url || '';
             document.getElementById('editDescription').value = inst.description || '';
@@ -748,6 +788,11 @@
                     campus_info: campusInfo,
                     fee_info: document.getElementById('editFee').value.trim() || null,
                     transport_note: document.getElementById('editTransport').value.trim() || null,
+                    servis_bilgisi: document.getElementById('editServis').value.trim() || null,
+                    guvenlik_bilgisi: document.getElementById('editGuvenlik').value.trim() || null,
+                    sosyal_sportif_bilgisi: document.getElementById('editSosyal').value.trim() || null,
+                    kontenjan_bilgisi: document.getElementById('editKontenjan').value.trim() || null,
+                    ogretmen_deneyimi_notu: document.getElementById('editOgretmen').value.trim() || null,
                     instagram_url: document.getElementById('editInstagram').value.trim() || null,
                     facebook_url: document.getElementById('editFacebook').value.trim() || null,
                     description: document.getElementById('editDescription').value.trim() || null,
