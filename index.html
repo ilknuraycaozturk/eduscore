@@ -580,6 +580,13 @@
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
                         Yakınımda Ara
                     </button>
+                    <select id="radiusSelect" style="font-size:11px; border:1px solid #E2D8D0; border-radius:8px; padding:4px 6px; margin-top:4px; color:#8A7A72;">
+                        <option value="5">5 km içinde</option>
+                        <option value="10" selected>10 km içinde</option>
+                        <option value="20">20 km içinde</option>
+                        <option value="50">50 km içinde</option>
+                        <option value="0">Sınırsız (sadece sırala)</option>
+                    </select>
                 </div>
 
                 <!-- Adım 3: Kurum Adı veya Kriter -->
@@ -729,6 +736,8 @@
                 if (nearMeLat && nearMeLng) {
                     params.set('lat', nearMeLat);
                     params.set('lng', nearMeLng);
+                    const radius = document.getElementById('radiusSelect').value;
+                    if (radius && radius !== '0') params.set('radius', radius);
                 }
 
                 const qs = params.toString();

@@ -87,6 +87,7 @@
         const categoryParam = urlParams.get('category') || '';
         const userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
         const userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
+        const radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
 
         document.getElementById('searchInput').value = qParam;
 
@@ -200,12 +201,20 @@
                 results = results
                     .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
                     .sort((a, b) => a._dist - b._dist);
+
+                if (radiusParam) {
+                    results = results.filter(r => r._dist <= radiusParam);
+                }
             }
 
+            const radiusNotice = (userLat && userLng && radiusParam)
+                ? ` <span class="text-brandRed">(${radiusParam} km içinde)</span>`
+                : '';
+
             const noFilterAtAll = !categoryParam && !qParam;
-            document.getElementById('resultsTitle').textContent = noFilterAtAll
+            document.getElementById('resultsTitle').innerHTML = (noFilterAtAll
                 ? `Öne Çıkan Kurumlar (ilk ${results.length})`
-                : `Arama Sonuçları (${results.length}${results.length === DISPLAY_LIMIT ? '+' : ''} kurum)`;
+                : `Arama Sonuçları (${results.length}${results.length === DISPLAY_LIMIT ? '+' : ''} kurum)`) + radiusNotice;
 
             const listEl = document.getElementById('resultsList');
             const emptyEl = document.getElementById('emptyState');
