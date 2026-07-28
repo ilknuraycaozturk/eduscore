@@ -115,7 +115,7 @@
             const typeIds = (typeRows || []).map(t => t.id);
 
             const { data: instRows } = await sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, locations ( name )')
+                .select('id, name, address, is_public, is_verified, fee_info, locations ( name )')
                 .in('institution_type_id', typeIds);
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -275,6 +275,9 @@
                 const verifiedBadge = r.inst.is_verified
                     ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
                     : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+                const feeBadge = r.inst.fee_info
+                    ? `<span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">💰 ${r.inst.fee_info}</span>`
+                    : '';
 
                 const hasScore = r.personalScore !== null;
                 const rankBadge = hasScore
@@ -291,6 +294,7 @@
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <h3 class="font-bold text-sm text-brandDark">${r.inst.name}</h3>
                                 ${verifiedBadge}
+                                ${feeBadge}
                             </div>
                             <p class="text-xs text-brandGray mb-1">📍 ${loc}, Ankara</p>
                             <div class="flex flex-wrap gap-1">${breakdown}</div>

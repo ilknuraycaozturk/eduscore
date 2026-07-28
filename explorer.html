@@ -148,6 +148,22 @@
 
         // Kırpılmayı tamamen önleyen esnek kart tasarımı
         function renderCardHTML(r) {
+            const verifiedBadge = r.is_verified
+                ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+
+            const extraBadges = [];
+            if (r.age_min != null && r.age_max != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🎂 ${r.age_min}-${r.age_max}</span>`);
+            if (r.class_size_avg) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">👥 ${r.class_size_avg}</span>`);
+            if (r.fee_info) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">💰 ${r.fee_info}</span>`);
+
+            const campusFacts = [];
+            const ci = r.campus_info || {};
+            if (ci.laboratuvar) campusFacts.push('🔬');
+            if (ci.kapali_spor_salonu) campusFacts.push('🏀');
+            if (ci.kütüphane) campusFacts.push('📚');
+            if (ci.yemekhane) campusFacts.push('🍽️');
+
             return `
                 <a href="okul-detay.html?id=${r.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
                     <!-- Görsel Alanı: Mobilde genişlik tam, yükseklik resme göre otomatik (Kırpılma İmkansız). Masaüstünde standart kutu düzeni. -->
@@ -156,6 +172,11 @@
                     </div>
                     <div class="flex-grow flex flex-col justify-between">
                         <div>
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                ${verifiedBadge}
+                                ${extraBadges.join('')}
+                                ${campusFacts.length ? `<span class="text-xs">${campusFacts.join(' ')}</span>` : ''}
+                            </div>
                             <h3 class="font-bold text-base text-[#241A16]">${r.name}</h3>
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || 'Ankara'}</p>
                         </div>
