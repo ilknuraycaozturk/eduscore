@@ -268,6 +268,9 @@
                 }
 
                 const loc = r.inst.locations ? r.inst.locations.name : 'Ankara';
+                const distText = (r.inst._dist != null && isFinite(r.inst._dist))
+                    ? ` · 📏 ${r.inst._dist.toFixed(1)} km`
+                    : '';
                 const breakdown = withData.map(c => {
                     const s = r.scores[c.key];
                     return s != null ? `<span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded">${c.name_tr.split(' ')[0]}: ${s}</span>` : '';
@@ -296,7 +299,7 @@
                                 ${verifiedBadge}
                                 ${feeBadge}
                             </div>
-                            <p class="text-xs text-brandGray mb-1">📍 ${loc}, Ankara</p>
+                            <p class="text-xs text-brandGray mb-1">📍 ${loc}, Ankara${distText}</p>
                             <div class="flex flex-wrap gap-1">${breakdown}</div>
                         </div>
                         <div class="text-right shrink-0">
