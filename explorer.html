@@ -179,6 +179,7 @@
                             </div>
                             <h3 class="font-bold text-base text-[#241A16]">${r.name}</h3>
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || 'Ankara'}</p>
+                            ${(r._dist != null && isFinite(r._dist)) ? `<p id="dist-${r.id}" class="text-[11px] text-brandRed font-semibold mt-1">📏 ${r._dist.toFixed(1)} km (kuş uçuşu)</p>` : ''}
                         </div>
                         ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">Web sitesi →</a>` : ''}
                     </div>
@@ -242,6 +243,7 @@
             if (results.length > 0) {
                 emptyEl.classList.add('hidden');
                 listEl.innerHTML = results.map(renderCardHTML).join('');
+                if (userLat && userLng) enhanceWithRealTravelTime(results.slice(0, 12));
             } else {
                 listEl.innerHTML = '';
                 emptyEl.classList.remove('hidden');
@@ -251,6 +253,27 @@
             results.forEach(r => { if (r.lat && r.lng) L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`); });
             if (userLat && userLng) {
                 L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 }).addTo(markersLayer).bindPopup('Konumunuz');
+            }
+        }
+
+        // Kuş uçuşu km yerine gerçek araçla sürüş süresini gösterir (ücretsiz OSRM
+        // servisi ile). Performans için sadece en yakın 12 sonuç için, ve sayfa
+        // ilk açıldıktan SONRA (progressive enhancement) - km bilgisi hep anında
+        // görünür, süre bilgisi birkaç saniye içinde üzerine yazılır.
+        async function enhanceWithRealTravelTime(closestResults) {
+            for (const r of closestResults) {
+                if (!r.lat || !r.lng) continue;
+                const el = document.getElementById(`dist-${r.id}`);
+                if (!el) continue;
+                try {
+                    const url = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${r.lng},${r.lat}?overview=false`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+                    if (data.routes && data.routes[0]) {
+                        const minutes = Math.round(data.routes[0].duration / 60);
+                        el.textContent = `🚗 ${minutes} dk (araçla) · 📏 ${r._dist.toFixed(1)} km`;
+                    }
+                } catch (e) { /* OSRM'e ulaşılamazsa km bilgisi zaten görünür durumda kalır */ }
             }
         }
 
