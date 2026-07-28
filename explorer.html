@@ -152,6 +152,10 @@
                 ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
                 : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
 
+            const ratingBadge = (r._rating && r._rating.review_count > 0)
+                ? `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">⭐ ${r._rating.avg_rating} (${r._rating.review_count})</span>`
+                : `<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-medium px-2 py-0.5 rounded italic">Henüz yorum yok</span>`;
+
             const extraBadges = [];
             if (r.age_min != null && r.age_max != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🎂 ${r.age_min}-${r.age_max}</span>`);
             if (r.class_size_avg) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">👥 ${r.class_size_avg}</span>`);
@@ -174,6 +178,7 @@
                         <div>
                             <div class="flex flex-wrap items-center gap-1.5 mb-1">
                                 ${verifiedBadge}
+                                ${ratingBadge}
                                 ${extraBadges.join('')}
                                 ${campusFacts.length ? `<span class="text-xs">${campusFacts.join(' ')}</span>` : ''}
                             </div>
@@ -218,6 +223,16 @@
             }
 
             let results = data || [];
+
+            // Ortalama puanları ayrıca çekip (view, FK ilişkisi olmadığı için ayrı
+            // sorgu gerekiyor) her kurumla eşleştiriyoruz
+            if (results.length > 0) {
+                const ids = results.map(r => r.id);
+                const { data: ratings } = await sb.from('institution_ratings').select('institution_id, avg_rating, review_count').in('institution_id', ids);
+                const ratingById = {};
+                (ratings || []).forEach(r => { ratingById[r.institution_id] = r; });
+                results = results.map(r => ({ ...r, _rating: ratingById[r.id] || null }));
+            }
 
             if (userLat && userLng) {
                 results = results

@@ -128,6 +128,14 @@
                 .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name )')
                 .in('institution_type_id', typeIds);
 
+            let ratingById = {};
+            if ((instRows || []).length > 0) {
+                const { data: ratings } = await sb.from('institution_ratings')
+                    .select('institution_id, avg_rating, review_count')
+                    .in('institution_id', instRows.map(i => i.id));
+                (ratings || []).forEach(r => { ratingById[r.institution_id] = r; });
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const qParam = (urlParams.get('q') || '').trim();
             userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
@@ -142,7 +150,7 @@
                 return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             }
 
-            institutions = instRows || [];
+            institutions = (instRows || []).map(inst => ({ ...inst, _rating: ratingById[inst.id] || null }));
             if (qParam) {
                 const needle = qParam.toLocaleLowerCase('tr');
                 institutions = institutions.filter(inst => {
@@ -349,6 +357,9 @@
                 const feeBadge = r.inst.fee_info
                     ? `<span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">💰 ${r.inst.fee_info}</span>`
                     : '';
+                const ratingBadge = (r.inst._rating && r.inst._rating.review_count > 0)
+                    ? `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">⭐ ${r.inst._rating.avg_rating} (${r.inst._rating.review_count})</span>`
+                    : '';
 
                 const hasScore = r.personalScore !== null;
                 const rankBadge = hasScore
@@ -366,6 +377,7 @@
                                 <h3 class="font-bold text-sm text-brandDark">${r.inst.name}</h3>
                                 ${verifiedBadge}
                                 ${feeBadge}
+                                ${ratingBadge}
                             </div>
                             <p class="text-xs text-brandGray mb-1">📍 ${loc}, Ankara${distText}</p>
                             <div class="flex flex-wrap gap-1">${breakdown}</div>

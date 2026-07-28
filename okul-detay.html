@@ -69,6 +69,7 @@
                         <span id="typeBadge" class="bg-red-50 text-brandRed text-[11px] font-bold px-2.5 py-1 rounded"></span>
                         <span id="publicBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
                         <span id="verifiedBadge" class="text-[11px] font-bold px-2.5 py-1 rounded"></span>
+                        <span id="ratingBadgeTop" class="hidden bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded"></span>
                     </div>
                     <button id="favBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all">
                         <span id="favIcon">☆</span> <span id="favText">Listeme Ekle</span>
@@ -443,6 +444,10 @@
                 document.getElementById('avgRatingBox').classList.remove('hidden');
                 document.getElementById('avgRatingValue').textContent = `★ ${avg.toFixed(1)}`;
                 document.getElementById('avgRatingCount').textContent = `${list.length} değerlendirme`;
+
+                const topBadge = document.getElementById('ratingBadgeTop');
+                topBadge.textContent = `⭐ ${avg.toFixed(1)} (${list.length})`;
+                topBadge.classList.remove('hidden');
 
                 document.getElementById('reviewsList').innerHTML = list.map(r => {
                     const name = namesById[r.user_id] || 'Anonim Kullanıcı';
