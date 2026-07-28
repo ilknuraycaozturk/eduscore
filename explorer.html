@@ -158,6 +158,7 @@
                             <h3 class="font-bold text-base text-[#241A16]">${r.name}</h3>
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || 'Ankara'}</p>
                         </div>
+                        ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">Web sitesi →</a>` : ''}
                     </div>
                 </a>
             `;
