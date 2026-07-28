@@ -115,11 +115,22 @@
             const typeIds = (typeRows || []).map(t => t.id);
 
             const { data: instRows } = await sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, fee_info, locations ( name )')
+                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name )')
                 .in('institution_type_id', typeIds);
 
             const urlParams = new URLSearchParams(window.location.search);
             const qParam = (urlParams.get('q') || '').trim();
+            const userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
+            const userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
+            const radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
+
+            function distKm(lat1, lng1, lat2, lng2) {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLng = (lng2 - lng1) * Math.PI / 180;
+                const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            }
 
             institutions = instRows || [];
             if (qParam) {
@@ -131,10 +142,27 @@
                 });
             }
 
+            if (userLat && userLng) {
+                institutions = institutions
+                    .map(inst => ({ ...inst, _dist: (inst.lat && inst.lng) ? distKm(userLat, userLng, inst.lat, inst.lng) : Infinity }))
+                    .filter(inst => !radiusParam || inst._dist <= radiusParam)
+                    .sort((a, b) => a._dist - b._dist);
+            }
+
             const filterNotice = document.getElementById('filterNotice');
             if (qParam) {
                 filterNotice.classList.remove('hidden');
                 filterNotice.textContent = `🔎 "${qParam}" için filtrelendi — ${institutions.length} lise bulundu. `;
+                const clearLink = document.createElement('a');
+                clearLink.href = 'lise-skoru.html';
+                clearLink.className = 'underline font-semibold';
+                clearLink.textContent = 'Filtreyi kaldır (tüm Ankara)';
+                filterNotice.appendChild(clearLink);
+            } else if (userLat && userLng) {
+                filterNotice.classList.remove('hidden');
+                filterNotice.textContent = radiusParam
+                    ? `📍 Konumunuza ${radiusParam} km içinde ${institutions.length} lise bulundu (koordinatı olmayan okullar henüz bu listede gösterilemiyor). `
+                    : `📍 Konumunuza göre sıralandı (${institutions.length} lise). `;
                 const clearLink = document.createElement('a');
                 clearLink.href = 'lise-skoru.html';
                 clearLink.className = 'underline font-semibold';
