@@ -110,6 +110,7 @@ def extract_yabanci_dil(trailing_text: str) -> str | None:
 def parse_pdf(pdf_path: str, il_filter: str | None) -> list[dict]:
     results: list[dict] = []
     skipped_no_match = 0
+    all_iller_seen: set[str] = set()  # teşhis amaçlı - filtre uygulanmadan ÖNCE
 
     with pdfplumber.open(pdf_path) as pdf:
         print(f"PDF {len(pdf.pages)} sayfa, işleniyor...")
@@ -125,6 +126,7 @@ def parse_pdf(pdf_path: str, il_filter: str | None) -> list[dict]:
                     continue
 
                 il = m.group("il").strip()
+                all_iller_seen.add(il)  # ÖNEMLİ: filtre uygulanmadan önce, teşhis için
                 if il_filter and il != il_filter.upper():
                     continue
 
@@ -166,6 +168,8 @@ def parse_pdf(pdf_path: str, il_filter: str | None) -> list[dict]:
 
     etiket = il_filter if il_filter else "TÜM TÜRKİYE"
     print(f"Toplam {len(results)} kayıt bulundu ({etiket}), {skipped_no_match} satır ayrıştırılamadı (atlandı).")
+    print(f"--- TEŞHİS: PDF'de (filtre uygulanmadan önce) görülen TÜM il isimleri ({len(all_iller_seen)} adet) ---")
+    print(sorted(all_iller_seen))
     return results
 
 
