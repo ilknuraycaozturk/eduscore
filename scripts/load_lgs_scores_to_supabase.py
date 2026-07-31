@@ -56,14 +56,14 @@ def get_lookup(base_url: str, headers: dict, table: str, key_field: str = "slug"
     return {r[key_field]: r["id"] for r in resp.json()}
 
 
-def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
+def get_or_create_province(base_url: str, headers: dict, il_adi: str, turkiye_id: str,
                             location_cache: dict, dry_run: bool) -> str | None:
-    key = ilce_adi.title()
+    key = ("__il__", il_adi.title())
     if key in location_cache:
         return location_cache[key]
 
     resp = requests.get(
-        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{ankara_id}&name=eq.{key}",
+        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{turkiye_id}&name=eq.{il_adi.title()}",
         headers=headers,
     )
     resp.raise_for_status()
@@ -73,15 +73,50 @@ def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_i
         return rows[0]["id"]
 
     if dry_run:
-        print(f"[DRY-RUN] Yeni ilçe konumu oluşturulacaktı: {key}")
+        print(f"[DRY-RUN] Yeni il konumu oluşturulacaktı: {il_adi.title()}")
         return None
 
-    payload = {"parent_id": ankara_id, "level": "district", "name": key}
+    payload = {"parent_id": turkiye_id, "level": "province", "name": il_adi.title()}
     resp = requests.post(f"{base_url}/rest/v1/locations", headers={**headers, "Prefer": "return=representation"}, json=payload)
     resp.raise_for_status()
     new_id = resp.json()[0]["id"]
     location_cache[key] = new_id
-    print(f"Yeni ilçe konumu oluşturuldu: {key}")
+    print(f"Yeni il konumu oluşturuldu: {il_adi.title()}")
+    return new_id
+
+
+def get_or_create_location(base_url: str, headers: dict, il_adi: str, ilce_adi: str, turkiye_id: str,
+                            location_cache: dict, dry_run: bool) -> str | None:
+    # ÖNEMLİ: Cache anahtarı (il, ilçe) ikilisi olmalı - aynı ilçe adı
+    # (örn. "Merkez") birden fazla ilde tekrar edebilir.
+    key = (il_adi.title(), ilce_adi.title())
+    if key in location_cache:
+        return location_cache[key]
+
+    il_id = get_or_create_province(base_url, headers, il_adi, turkiye_id, location_cache, dry_run)
+    if not il_id:
+        return None
+
+    resp = requests.get(
+        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{il_id}&name=eq.{ilce_adi.title()}",
+        headers=headers,
+    )
+    resp.raise_for_status()
+    rows = resp.json()
+    if rows:
+        location_cache[key] = rows[0]["id"]
+        return rows[0]["id"]
+
+    if dry_run:
+        print(f"[DRY-RUN] Yeni ilçe konumu oluşturulacaktı: {il_adi.title()} / {ilce_adi.title()}")
+        return None
+
+    payload = {"parent_id": il_id, "level": "district", "name": ilce_adi.title()}
+    resp = requests.post(f"{base_url}/rest/v1/locations", headers={**headers, "Prefer": "return=representation"}, json=payload)
+    resp.raise_for_status()
+    new_id = resp.json()[0]["id"]
+    location_cache[key] = new_id
+    print(f"Yeni ilçe konumu oluşturuldu: {il_adi.title()} / {ilce_adi.title()}")
     return new_id
 
 
@@ -132,6 +167,7 @@ def main():
         hazirlik_var = any(r.get("hazirlik_var") for r in rows)
         schools.append({
             "name": rows[0]["il"] + " - " + rows[0]["ilce"] + " - " + name,
+            "il": rows[0]["il"],
             "ilce": rows[0]["ilce"],
             "institution_type_slug": rows[0]["institution_type_slug"],
             "avg_taban_yuzde": round(avg_yuzde, 2),
@@ -167,14 +203,14 @@ def main():
     category_lookup = get_lookup(supabase_url, headers, "categories", "slug")
     criteria_lookup = get_lookup(supabase_url, headers, "scoring_criteria", "key")
 
-    # Ankara il kaydını bul
-    resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
+    # Türkiye kök kaydını bul (tüm iller bunun altında oluşturulur/aranır)
+    resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Türkiye", headers=headers)
     resp.raise_for_status()
-    ankara_rows = resp.json()
-    if not ankara_rows:
-        print("HATA: 'Ankara' locations tablosunda bulunamadı.")
+    turkiye_rows = resp.json()
+    if not turkiye_rows:
+        print("HATA: 'Türkiye' locations tablosunda bulunamadı.")
         sys.exit(1)
-    ankara_id = ankara_rows[0]["id"]
+    turkiye_id = turkiye_rows[0]["id"]
 
     location_cache: dict[str, str] = {}
     inserted_inst, enriched_inst, updated_scores, inserted_scores = 0, 0, 0, 0
@@ -189,7 +225,7 @@ def main():
     print(f"Global dedup kontrolü için {len(all_institutions)} mevcut kurum yüklendi.")
 
     for school in schools:
-        location_id = get_or_create_location(supabase_url, headers, school["ilce"], ankara_id, location_cache, args.dry_run)
+        location_id = get_or_create_location(supabase_url, headers, school["il"], school["ilce"], turkiye_id, location_cache, args.dry_run)
         if not location_id:
             continue
 

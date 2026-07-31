@@ -107,7 +107,7 @@ def extract_yabanci_dil(trailing_text: str) -> str | None:
     return None
 
 
-def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
+def parse_pdf(pdf_path: str, il_filter: str | None) -> list[dict]:
     results: list[dict] = []
     skipped_no_match = 0
 
@@ -125,7 +125,7 @@ def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
                     continue
 
                 il = m.group("il").strip()
-                if il != il_filter.upper():
+                if il_filter and il != il_filter.upper():
                     continue
 
                 ilce = m.group("ilce").strip()
@@ -161,24 +161,28 @@ def parse_pdf(pdf_path: str, il_filter: str) -> list[dict]:
                 })
 
             if page_num % 20 == 0:
-                print(f"  ...{page_num} sayfa işlendi, şu ana kadar {len(results)} {il_filter} kaydı bulundu")
+                etiket = il_filter if il_filter else "TÜM TÜRKİYE"
+                print(f"  ...{page_num} sayfa işlendi, şu ana kadar {len(results)} {etiket} kaydı bulundu")
 
-    print(f"Toplam {len(results)} kayıt bulundu ({il_filter}), {skipped_no_match} satır ayrıştırılamadı (atlandı).")
+    etiket = il_filter if il_filter else "TÜM TÜRKİYE"
+    print(f"Toplam {len(results)} kayıt bulundu ({etiket}), {skipped_no_match} satır ayrıştırılamadı (atlandı).")
     return results
 
 
 def main():
     parser = argparse.ArgumentParser(description="MEB resmi LGS taban puan PDF'ini indirip il bazında ayrıştırır.")
     parser.add_argument("--pdf-url", required=True, help="MEB'in o yılki resmi PDF URL'i (elle bulunmalı, bkz. dosya başlığı)")
-    parser.add_argument("--il", default="ANKARA")
+    parser.add_argument("--il", default="ANKARA", help="Belirli bir il (örn. ANKARA). Boş bırakılırsa (--il '') TÜM TÜRKİYE alınır.")
     parser.add_argument("--output", default="data/lgs_taban_puanlari.json")
     parser.add_argument("--pdf-cache", default="data/_lgs_kaynak.pdf")
     args = parser.parse_args()
 
+    il_filter = args.il.strip() if args.il and args.il.strip() else None
+
     Path(args.pdf_cache).parent.mkdir(parents=True, exist_ok=True)
     download_pdf(args.pdf_url, args.pdf_cache)
 
-    results = parse_pdf(args.pdf_cache, args.il)
+    results = parse_pdf(args.pdf_cache, il_filter)
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
