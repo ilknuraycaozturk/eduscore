@@ -8,8 +8,8 @@ on:
         required: true
         default: "https://www.meb.gov.tr/meb_iys_dosyalar/2022_07/25103752_2022_ilk_yerlestirme_taban_tavan_yerlesme_bilgileri.pdf"
       il:
-        description: "İl adı (BÜYÜK HARF)"
-        required: true
+        description: "İl adı (BÜYÜK HARF, örn. ANKARA). BOŞ bırakılırsa TÜM TÜRKİYE alınır."
+        required: false
         default: "ANKARA"
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
