@@ -49,7 +49,7 @@
         <div class="text-center mb-8">
             <h1 class="text-2xl sm:text-3xl font-bold text-brandDark mb-2">🎓 Lise Skoru Hesaplayıcı</h1>
             <p class="text-sm text-brandGray max-w-2xl mx-auto">
-                Ankara'daki liseleri, sizin için önemli olan kriterlere göre ağırlıklandırıp kişiselleştirilmiş bir sıralama oluşturuyoruz.
+                Türkiye'deki liseleri, sizin için önemli olan kriterlere göre ağırlıklandırıp kişiselleştirilmiş bir sıralama oluşturuyoruz.
                 Her kritere 1 (önemsiz) ile 5 (çok önemli) arası bir puan verin.
             </p>
         </div>
@@ -125,7 +125,7 @@
             const typeIds = (typeRows || []).map(t => t.id);
 
             const { data: instRows } = await sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name )')
+                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name, parent:parent_id ( name ) )')
                 .in('institution_type_id', typeIds);
 
             let ratingById = {};
@@ -174,7 +174,7 @@
                 const clearLink = document.createElement('a');
                 clearLink.href = 'lise-skoru.html';
                 clearLink.className = 'underline font-semibold';
-                clearLink.textContent = 'Filtreyi kaldır (tüm Ankara)';
+                clearLink.textContent = 'Filtreyi kaldır (tüm Türkiye)';
                 filterNotice.appendChild(clearLink);
             } else if (userLat && userLng) {
                 filterNotice.classList.remove('hidden');
@@ -184,7 +184,7 @@
                 const clearLink = document.createElement('a');
                 clearLink.href = 'lise-skoru.html';
                 clearLink.className = 'underline font-semibold';
-                clearLink.textContent = 'Filtreyi kaldır (tüm Ankara)';
+                clearLink.textContent = 'Filtreyi kaldır (tüm Türkiye)';
                 filterNotice.appendChild(clearLink);
             }
 
@@ -343,7 +343,8 @@
                     dividerInserted = true;
                 }
 
-                const loc = r.inst.locations ? r.inst.locations.name : 'Ankara';
+                const loc = r.inst.locations ? r.inst.locations.name : '';
+                const ilAdi = (r.inst.locations && r.inst.locations.parent) ? r.inst.locations.parent.name : 'Ankara';
                 const distText = (r.inst._dist != null && isFinite(r.inst._dist))
                     ? ` · 📏 ${r.inst._dist.toFixed(1)} km`
                     : '';
@@ -379,7 +380,7 @@
                                 ${feeBadge}
                                 ${ratingBadge}
                             </div>
-                            <p class="text-xs text-brandGray mb-1">📍 ${loc}, Ankara${distText}</p>
+                            <p class="text-xs text-brandGray mb-1">📍 ${loc}, ${ilAdi}${distText}</p>
                             <div class="flex flex-wrap gap-1">${breakdown}</div>
                         </div>
                         <div class="text-right shrink-0">
