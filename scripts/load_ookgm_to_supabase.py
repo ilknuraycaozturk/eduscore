@@ -69,6 +69,25 @@ def turkish_lower(s: str) -> str:
     return s.replace("İ", "i").replace("I", "ı").lower()
 
 
+def turkish_title(s: str) -> str:
+    """Python'un standart .title() metodu Türkçe İ/I harflerini bozar.
+    İlk harfi olduğu gibi bırakır, kalanını Türkçe kurallarına göre küçültür."""
+    def lower_char(c: str) -> str:
+        if c == "I":
+            return "ı"
+        if c == "İ":
+            return "i"
+        return c.lower()
+
+    words = s.strip().split(" ")
+    result = []
+    for w in words:
+        if not w:
+            continue
+        result.append(w[0] + "".join(lower_char(c) for c in w[1:]))
+    return " ".join(result)
+
+
 FALLBACK_KEYWORD_RULES = [
     # Bunlar TUR_MAP'te tam eşleşmeyen ama içinde geçen anahtar kelimeye göre
     # sınıflandırılan türler (örn. '(III.Kademe)' gibi değişken sonekler içerdiği için).
@@ -155,7 +174,7 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
                             location_cache: dict, dry_run: bool) -> str | None:
-    key = ilce_adi.strip().title()
+    key = turkish_title(ilce_adi.strip())
     if key in location_cache:
         return location_cache[key]
 

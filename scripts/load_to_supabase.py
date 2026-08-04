@@ -94,6 +94,43 @@ def turkish_lower(s: str) -> str:
     return s.replace("İ", "i").replace("I", "ı").lower()
 
 
+def turkish_title(s: str) -> str:
+    """Python'un standart .title() metodu Türkçe İ/I harflerini bozar
+    (örn. 'AĞRI'.title() -> 'Ağri' olur, 'Ağrı' olması gerekirken). Bu
+    fonksiyon ilk harfi olduğu gibi bırakır (kaynak zaten büyük harf ve
+    İ/I ayrımı doğru), kalan harfleri Türkçe kurallarına göre küçültür."""
+    def lower_char(c: str) -> str:
+        if c == "I":
+            return "ı"
+        if c == "İ":
+            return "i"
+        return c.lower()
+
+    words = s.strip().split(" ")
+    result = []
+    for w in words:
+        if not w:
+            continue
+        result.append(w[0] + "".join(lower_char(c) for c in w[1:]))
+    return " ".join(result)
+
+
+def turkish_capitalize_words(s: str) -> str:
+    """Zaten TAMAMEN KÜÇÜK HARF olan bir metni Türkçe kurallarına göre
+    başlık formatına çevirir (her kelimenin ilk harfi büyütülür).
+    Python'un .title()'ı 'i' harfini yanlışlıkla 'I' yapar (İ olması
+    gerekirken); bu fonksiyon bunu düzeltir."""
+    def upper_first(c: str) -> str:
+        if c == "i":
+            return "İ"
+        if c == "ı":
+            return "I"
+        return c.upper()
+
+    words = s.strip().split(" ")
+    return " ".join((upper_first(w[0]) + w[1:]) if w else w for w in words)
+
+
 def normalize_name(name: str) -> str:
     """MEB isimlerindeki 'İL - İLÇE - ' önekini ve 'Özel' gibi kelimeleri
     temizleyerek karşılaştırılabilir bir isim üretir.
@@ -174,7 +211,7 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
                             location_cache: dict, dry_run: bool) -> str | None:
-    key = ilce_adi.strip().title()
+    key = turkish_title(ilce_adi.strip())
     if key in location_cache:
         return location_cache[key]
 
@@ -311,7 +348,7 @@ def main():
             break
 
         if not lat or not lng:
-            clean_name = normalize_name(raw_name).title()
+            clean_name = turkish_capitalize_words(normalize_name(raw_name))
             geocode_query = f"{clean_name}, {ilce_ad}, Ankara, Türkiye"
             lat, lng = geocode(geocode_query)
             geocode_calls += 1
