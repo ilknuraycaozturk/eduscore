@@ -125,7 +125,7 @@
             const typeIds = (typeRows || []).map(t => t.id);
 
             const { data: instRows } = await sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name, parent:parent_id ( name ) )')
+                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name, parent:locations!parent_id ( name ) )')
                 .in('institution_type_id', typeIds);
 
             let ratingById = {};
