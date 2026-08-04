@@ -652,7 +652,14 @@
             // Kriter puanları
             const criteriaEl = document.getElementById('criteriaScores');
             if (!scores.length) {
-                document.getElementById('noCriteriaMsg').classList.remove('hidden');
+                const typeName = inst.institution_types ? inst.institution_types.name_tr : '';
+                const noCriteriaEl = document.getElementById('noCriteriaMsg');
+                if (typeName === 'Ortaokul') {
+                    noCriteriaEl.innerHTML = 'Bu kurum için henüz kriter bazlı puan verisi yok. <b>Not:</b> Ortaokullar için akademik başarı kriteri bilerek eklenmemiştir — MEB, ortaokulların mezun öğrencilerinin LGS başarısını okul bazında kamuya açık yayınlamamaktadır (araştırdık, merkezi/güvenilir bir kaynak bulunmuyor). Diğer kriterler "Profilini Sahiplen" ile okul yöneticisi tarafından doldurulabilir.';
+                } else {
+                    noCriteriaEl.textContent = 'Bu kurum için henüz kriter bazlı puan verisi yok.';
+                }
+                noCriteriaEl.classList.remove('hidden');
             } else {
                 const sorted = scores.slice().sort((a, b) => {
                     const oa = a.scoring_criteria ? a.scoring_criteria.display_order : 99;
