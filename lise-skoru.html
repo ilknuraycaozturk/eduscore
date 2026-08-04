@@ -125,8 +125,15 @@
             const typeIds = (typeRows || []).map(t => t.id);
 
             const { data: instRows } = await sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, locations ( name, parent:locations!parent_id ( name ) )')
+                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
                 .in('institution_type_id', typeIds);
+
+            // ÖNEMLİ: Supabase'in kendine-referanslı (self-join) embed söz dizimi
+            // güvenilmez davranabildiği için il adını AYRI bir sorguyla çekip
+            // JS tarafında birleştiriyoruz (ilçe.parent_id -> il.name).
+            const { data: allLocations } = await sb.from('locations').select('id, name, parent_id');
+            const locationById = {};
+            (allLocations || []).forEach(loc => { locationById[loc.id] = loc; });
 
             let ratingById = {};
             if ((instRows || []).length > 0) {
@@ -150,11 +157,19 @@
                 return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             }
 
-            institutions = (instRows || []).map(inst => ({ ...inst, _rating: ratingById[inst.id] || null }));
+            institutions = (instRows || []).map(inst => {
+                const district = locationById[inst.location_id];
+                const province = district ? locationById[district.parent_id] : null;
+                return {
+                    ...inst,
+                    _rating: ratingById[inst.id] || null,
+                    _ilAdi: province ? province.name : (district ? district.name : 'Ankara'),
+                };
+            });
             if (qParam) {
                 const needle = qParam.toLocaleLowerCase('tr');
                 institutions = institutions.filter(inst => {
-                    const haystack = [inst.name, inst.address, inst.locations && inst.locations.name]
+                    const haystack = [inst.name, inst.address, inst.locations && inst.locations.name, inst._ilAdi]
                         .filter(Boolean).join(' ').toLocaleLowerCase('tr');
                     return haystack.includes(needle);
                 });
@@ -344,7 +359,7 @@
                 }
 
                 const loc = r.inst.locations ? r.inst.locations.name : '';
-                const ilAdi = (r.inst.locations && r.inst.locations.parent) ? r.inst.locations.parent.name : 'Ankara';
+                const ilAdi = r.inst._ilAdi || 'Ankara';
                 const distText = (r.inst._dist != null && isFinite(r.inst._dist))
                     ? ` · 📏 ${r.inst._dist.toFixed(1)} km`
                     : '';
