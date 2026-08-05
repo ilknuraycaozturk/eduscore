@@ -73,12 +73,29 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
         except Exception as e:
             print(f"TEŞHİS: Sayfa boyutu kutusu ayarlanamadı: {e}")
 
+        # TEŞHİS: DataTables genelde "X ile Y arası, toplam Z kayıt gösteriliyor"
+        # gibi bir bilgi metni gösterir (genelde id='...INFO' ya da class
+        # 'dataTables_info'). Bu, MEB'in kendisinin toplamda kaç kayıt
+        # olduğunu düşündüğünü kesin olarak gösterir.
+        try:
+            info_el = (page.query_selector("[id*='_INFO' i]")
+                       or page.query_selector(".dataTables_info")
+                       or page.query_selector("[class*='dataTables_info' i]"))
+            if info_el:
+                print(f"TEŞHİS: Toplam kayıt bilgi metni: '{info_el.inner_text().strip()}'")
+            else:
+                print("TEŞHİS: Toplam kayıt bilgi metni bulunamadı.")
+        except Exception as e:
+            print(f"TEŞHİS: Toplam kayıt bilgisi okunamadı: {e}")
+
         # TEŞHİS: Sayfalama kontrollerinin gerçek yapısını logla - böylece
         # _go_to_next_page() doğru elemanı bulamıyorsa neden olduğunu görebiliriz.
+        # ÖNEMLİ: 'nav a' kaldırıldı - bu sitenin ÜST MENÜSÜNÜ (Bakan, Mevzuat vb.)
+        # yakalıyordu, gerçek sayfalama ile alakasızdı.
         try:
             pag_candidates = page.query_selector_all(
                 "a.paginate_button, li.paginate_button, [class*='pagin' i] a, "
-                "nav a, .dataTables_paginate a, .dataTables_paginate button"
+                "[class*='pagin' i] button, .dataTables_paginate a, .dataTables_paginate button"
             )
             print(f"TEŞHİS: Sayfalama alanında {len(pag_candidates)} olası eleman bulundu:")
             for el in pag_candidates[:15]:
