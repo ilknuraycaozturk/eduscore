@@ -218,12 +218,20 @@ def discover_ilceler(il_kodu: str, timeout_ms: int = 20000) -> list[dict]:
         all_selects = page.query_selector_all("select")
         print(f"Sayfada {len(all_selects)} adet <select> bulundu (il kutusu tetiklendikten sonra)...")
 
+        il_select_name = (il_select.get_attribute("name") or "").upper()
+        il_select_id = (il_select.get_attribute("id") or "").upper()
+
         ilce_select = None
         for sel in all_selects:
             name_attr = (sel.get_attribute("name") or "").upper()
             id_attr = (sel.get_attribute("id") or "").upper()
             print(f"  <select> name='{name_attr}' id='{id_attr}'")
-            if sel == il_select:
+            # ÖNEMLİ: Playwright ElementHandle'ları Python '==' ile karşılaştırmak
+            # DOM eşitliğini DEĞİL nesne referans eşitliğini kontrol eder - bu da
+            # aynı elemana işaret etseler bile hep 'eşit değil' çıkmasına, ve il
+            # kutusunun (ILADI) kendisinin yanlışlıkla ilçe kutusu sanılmasına
+            # yol açıyordu. Bunun yerine name/id STRING'ini karşılaştırıyoruz.
+            if name_attr == il_select_name and id_attr == il_select_id:
                 continue
             if "ILCE" in name_attr or "ILCE" in id_attr or "ILÇE" in name_attr:
                 ilce_select = sel
@@ -232,15 +240,38 @@ def discover_ilceler(il_kodu: str, timeout_ms: int = 20000) -> list[dict]:
         # Hiçbiri 'ILCE' içermiyorsa, il kutusu dışındaki İLK yeni/farklı select'i dene
         if not ilce_select:
             for sel in all_selects:
-                if sel != il_select:
-                    name_attr = (sel.get_attribute("name") or "")
-                    if "LENGTH" not in name_attr.upper():  # sayfalama uzunluk kutusunu ele
-                        ilce_select = sel
-                        print(f"Not: 'ILCE' içeren isim bulunamadı, en olası aday deneniyor: name='{name_attr}'")
-                        break
+                name_attr = (sel.get_attribute("name") or "").upper()
+                id_attr = (sel.get_attribute("id") or "").upper()
+                if name_attr == il_select_name and id_attr == il_select_id:
+                    continue
+                if "LENGTH" not in name_attr:  # sayfalama uzunluk kutusunu ele
+                    ilce_select = sel
+                    print(f"Not: 'ILCE' içeren isim bulunamadı, en olası aday deneniyor: name='{name_attr}'")
+                    break
 
         if not ilce_select:
             print("UYARI: İlçe seçim kutusu bulunamadı. Sayfa yapısı beklenenden farklı olabilir.")
+            browser.close()
+            return ilceler
+
+        # GÜVENLİK KONTROLÜ: Yanlışlıkla il kutusunu tekrar seçmediğimizden emin
+        # olalım - eğer bulunan kutunun name/id'si il kutusuyla AYNIYSA (yukarıdaki
+        # karşılaştırma bir şekilde atlanmışsa) ya da seçenek sayısı 70-85 arası
+        # gibi "81 il" sayısına çok yakınsa (gerçek bir ilin ilçe sayısı bu kadar
+        # olamaz), dur ve hata ver - garbage veri toplamayı önle.
+        ilce_name_check = (ilce_select.get_attribute("name") or "").upper()
+        ilce_id_check = (ilce_select.get_attribute("id") or "").upper()
+        if ilce_name_check == il_select_name and ilce_id_check == il_select_id:
+            print("HATA: Bulunan 'ilçe' kutusu il kutusuyla birebir aynı (name/id eşleşiyor). "
+                  "Sayfa yapısı beklenmedik - güvenlik için durduruluyor.")
+            browser.close()
+            return ilceler
+
+        options_preview = ilce_select.query_selector_all("option")
+        preview_count = len([o for o in options_preview if (o.get_attribute("value") or "").strip() not in ("", "0")])
+        if preview_count >= 70:
+            print(f"HATA: Bulunan kutuda {preview_count} seçenek var - bu bir İL listesi gibi görünüyor "
+                  f"(Türkiye'de 81 il var), gerçek bir ilin ilçe listesi olamaz. Güvenlik için durduruluyor.")
             browser.close()
             return ilceler
 
@@ -271,6 +302,11 @@ def main():
         ilceler = discover_ilceler(args.il_kodu)
         if not ilceler:
             print("HATA: Hiç ilçe bulunamadı, çıkılıyor.")
+            sys.exit(1)
+        if len(ilceler) > 50:
+            print(f"HATA: {len(ilceler)} 'ilçe' bulundu - bu sayı gerçekçi değil (bir ilin en fazla "
+                  f"~40 ilçesi olur, 50+ demek muhtemelen yanlışlıkla İL listesi (81 il) yakalandı). "
+                  f"Güvenlik için çıkılıyor. Bulunanlar: {[i['ad'] for i in ilceler[:10]]}...")
             sys.exit(1)
 
         all_data: list[dict] = []
