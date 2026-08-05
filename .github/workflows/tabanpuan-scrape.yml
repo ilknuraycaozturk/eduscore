@@ -1,4 +1,4 @@
-name: LGS Taban Puanları - Teşhis (Aksiyon 1.2)
+name: LGS Taban Puanları - tabanpuanlari.net (Aksiyon 1.2)
 
 on:
   workflow_dispatch:
@@ -7,9 +7,13 @@ on:
         description: "İl slug'ı (örn. ankara)"
         required: true
         default: "ankara"
+      dry_run:
+        description: "true ise Supabase'e yazmaz, sadece önizler"
+        required: true
+        default: "true"
 
 jobs:
-  diagnose:
+  scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -24,7 +28,7 @@ jobs:
           pip install -r scripts/requirements.txt
           playwright install --with-deps chromium
 
-      - name: tabanpuanlari.net yapısını teşhis et
+      - name: tabanpuanlari.net'ten veri çek
         run: |
           python scripts/scrape_tabanpuanlari.py --il "${{ inputs.il }}" --output data/tabanpuan_raw.json
 
@@ -34,3 +38,34 @@ jobs:
           name: tabanpuan-raw-data
           path: data/tabanpuan_raw.json
           retention-days: 7
+
+  load:
+    needs: scrape
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install -r scripts/requirements.txt
+
+      - name: Ham veriyi indir
+        uses: actions/download-artifact@v4
+        with:
+          name: tabanpuan-raw-data
+          path: data/
+
+      - name: Supabase'e yükle
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --dry-run
+          else
+            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json
+          fi
