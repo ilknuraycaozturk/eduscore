@@ -78,11 +78,22 @@ def scrape_il(il_slug: str, timeout_ms: int = 30000) -> list[dict]:
             for c in first_cells:
                 print(f"  hücre: '{c.inner_text().strip()}'")
 
-        for row in rows:
+        for row_idx, row in enumerate(rows):
             cells = row.query_selector_all("td")
             if len(cells) < 3:
                 continue  # başlık satırı
             cell_texts = [c.inner_text().strip() for c in cells]
+
+            if len(results) < 5:
+                print(f"TEŞHİS: Satır {row_idx} ham hücreler:")
+                for ci, ct in enumerate(cell_texts):
+                    print(f"  [{ci}] '{ct}'")
+                # İlk hücrenin (LİSE) iç HTML yapısını da görelim - okul adı ile
+                # program adı ayrı elemanlarda mı (örn. <br> ya da <span>) yoksa
+                # tek bir metin bloğu halinde mi birleşik?
+                first_cell_html = cells[0].inner_html()
+                print(f"  [0] iç HTML: {first_cell_html[:500]}")
+
             results.append({"il_slug": il_slug, "cells": cell_texts})
 
         browser.close()
