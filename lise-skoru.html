@@ -124,9 +124,24 @@
             const { data: typeRows } = await sb.from('institution_types').select('id, slug').in('slug', liseSlugs);
             const typeIds = (typeRows || []).map(t => t.id);
 
-            const { data: instRows } = await sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
-                .in('institution_type_id', typeIds);
+            // ÖNEMLİ: Supabase varsayılan olarak tek sorguda en fazla 1000 satır
+            // döndürür. 2500+ lise (tüm Türkiye) bu sınırı aştığı için, tüm
+            // kayıtları alana kadar sayfalama (pagination) ile çekiyoruz.
+            let instRows = [];
+            {
+                const PAGE_SIZE = 1000;
+                let from = 0;
+                while (true) {
+                    const { data: page, error } = await sb.from('institutions')
+                        .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
+                        .in('institution_type_id', typeIds)
+                        .range(from, from + PAGE_SIZE - 1);
+                    if (error) throw error;
+                    instRows = instRows.concat(page || []);
+                    if (!page || page.length < PAGE_SIZE) break;
+                    from += PAGE_SIZE;
+                }
+            }
 
             // ÖNEMLİ: Supabase'in kendine-referanslı (self-join) embed söz dizimi
             // güvenilmez davranabildiği için il adını AYRI bir sorguyla çekip
@@ -145,6 +160,7 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const qParam = (urlParams.get('q') || '').trim();
+            const locParam = (urlParams.get('loc') || '').trim();
             userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
             userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
             radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
@@ -166,6 +182,19 @@
                     _ilAdi: province ? province.name : (district ? district.name : 'Ankara'),
                 };
             });
+
+            // ÖNEMLİ: Konum (loc) ve okul adı/anahtar kelime (q) AYRI parametreler.
+            // loc SADECE coğrafi alanlarda (il/ilçe/adres) aranır - okul isminde
+            // geçen "Borsa İstanbul" gibi sponsor isimleri yanlışlıkla eşleşmesin
+            // diye inst.name buraya dahil edilmez. q ise okul ismini de içerir.
+            if (locParam) {
+                const needle = locParam.toLocaleLowerCase('tr');
+                institutions = institutions.filter(inst => {
+                    const haystack = [inst.address, inst.locations && inst.locations.name, inst._ilAdi]
+                        .filter(Boolean).join(' ').toLocaleLowerCase('tr');
+                    return haystack.includes(needle);
+                });
+            }
             if (qParam) {
                 const needle = qParam.toLocaleLowerCase('tr');
                 institutions = institutions.filter(inst => {
@@ -183,9 +212,12 @@
             }
 
             const filterNotice = document.getElementById('filterNotice');
-            if (qParam) {
+            if (qParam || locParam) {
+                const parts = [];
+                if (locParam) parts.push(`📍 "${locParam}"`);
+                if (qParam) parts.push(`🔎 "${qParam}"`);
                 filterNotice.classList.remove('hidden');
-                filterNotice.textContent = `🔎 "${qParam}" için filtrelendi — ${institutions.length} lise bulundu. `;
+                filterNotice.textContent = `${parts.join(' + ')} için filtrelendi — ${institutions.length} lise bulundu. `;
                 const clearLink = document.createElement('a');
                 clearLink.href = 'lise-skoru.html';
                 clearLink.className = 'underline font-semibold';

@@ -30,7 +30,7 @@
     <div class="flex-grow flex flex-col md:flex-row w-full relative md:h-[calc(100vh-73px)] md:overflow-hidden">
 
         <!-- SOL SÜTUN (Liste) -->
-        <main id="listContainer" class="w-full md:w-[60%] md:h-full md:overflow-y-auto p-4 md:p-6 bg-[#FDF8F5]">
+        <main id="listContainer" class="w-full md:w-[60%] md:h-full md:overflow-y-auto p-4 pb-24 md:pb-6 md:p-6 bg-[#FDF8F5]">
             <!-- Arama Barı -->
             <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
                 <div class="flex gap-2">
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Mobil Buton -->
-    <button id="mobileToggleBtn" onclick="toggleMobileMap()" class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] bg-[#241A16] text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm">
+    <button id="mobileToggleBtn" onclick="toggleMobileMap()" class="md:hidden fixed bottom-4 right-4 z-[9999] bg-[#241A16] text-white pl-3 pr-4 py-2 rounded-full shadow-xl font-bold text-xs whitespace-nowrap flex items-center gap-1.5">
         📍 Haritayı Göster
     </button>
 
@@ -83,10 +83,12 @@
         ];
 
         const urlParams = new URLSearchParams(window.location.search);
-        const qParam = urlParams.get('q') || '';
+        const locParam = urlParams.get('loc') || '';
+        const qParam = [locParam, urlParams.get('q') || ''].filter(Boolean).join(' ');
         const categoryParam = urlParams.get('category') || '';
         const userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
         const userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
+        const radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
 
         document.getElementById('searchInput').value = qParam;
 
@@ -147,6 +149,26 @@
 
         // Kırpılmayı tamamen önleyen esnek kart tasarımı
         function renderCardHTML(r) {
+            const verifiedBadge = r.is_verified
+                ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+
+            const ratingBadge = (r._rating && r._rating.review_count > 0)
+                ? `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">⭐ ${r._rating.avg_rating} (${r._rating.review_count})</span>`
+                : `<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-medium px-2 py-0.5 rounded italic">Henüz yorum yok</span>`;
+
+            const extraBadges = [];
+            if (r.age_min != null && r.age_max != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🎂 ${r.age_min}-${r.age_max}</span>`);
+            if (r.class_size_avg) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">👥 ${r.class_size_avg}</span>`);
+            if (r.fee_info) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">💰 ${r.fee_info}</span>`);
+
+            const campusFacts = [];
+            const ci = r.campus_info || {};
+            if (ci.laboratuvar) campusFacts.push('🔬');
+            if (ci.kapali_spor_salonu) campusFacts.push('🏀');
+            if (ci.kütüphane) campusFacts.push('📚');
+            if (ci.yemekhane) campusFacts.push('🍽️');
+
             return `
                 <a href="okul-detay.html?id=${r.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
                     <!-- Görsel Alanı: Mobilde genişlik tam, yükseklik resme göre otomatik (Kırpılma İmkansız). Masaüstünde standart kutu düzeni. -->
@@ -155,9 +177,17 @@
                     </div>
                     <div class="flex-grow flex flex-col justify-between">
                         <div>
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                ${verifiedBadge}
+                                ${ratingBadge}
+                                ${extraBadges.join('')}
+                                ${campusFacts.length ? `<span class="text-xs">${campusFacts.join(' ')}</span>` : ''}
+                            </div>
                             <h3 class="font-bold text-base text-[#241A16]">${r.name}</h3>
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || 'Ankara'}</p>
+                            ${(r._dist != null && isFinite(r._dist)) ? `<p id="dist-${r.id}" class="text-[11px] text-brandRed font-semibold mt-1">📏 ${r._dist.toFixed(1)} km (kuş uçuşu)</p>` : ''}
                         </div>
+                        ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">Web sitesi →</a>` : ''}
                     </div>
                 </a>
             `;
@@ -195,22 +225,41 @@
 
             let results = data || [];
 
+            // Ortalama puanları ayrıca çekip (view, FK ilişkisi olmadığı için ayrı
+            // sorgu gerekiyor) her kurumla eşleştiriyoruz
+            if (results.length > 0) {
+                const ids = results.map(r => r.id);
+                const { data: ratings } = await sb.from('institution_ratings').select('institution_id, avg_rating, review_count').in('institution_id', ids);
+                const ratingById = {};
+                (ratings || []).forEach(r => { ratingById[r.institution_id] = r; });
+                results = results.map(r => ({ ...r, _rating: ratingById[r.id] || null }));
+            }
+
             if (userLat && userLng) {
                 results = results
                     .map(r => ({ ...r, _dist: (r.lat && r.lng) ? distanceKm(userLat, userLng, r.lat, r.lng) : Infinity }))
                     .sort((a, b) => a._dist - b._dist);
+
+                if (radiusParam) {
+                    results = results.filter(r => r._dist <= radiusParam);
+                }
             }
 
+            const radiusNotice = (userLat && userLng && radiusParam)
+                ? ` <span class="text-brandRed">(${radiusParam} km içinde)</span>`
+                : '';
+
             const noFilterAtAll = !categoryParam && !qParam;
-            document.getElementById('resultsTitle').textContent = noFilterAtAll
+            document.getElementById('resultsTitle').innerHTML = (noFilterAtAll
                 ? `Öne Çıkan Kurumlar (ilk ${results.length})`
-                : `Arama Sonuçları (${results.length}${results.length === DISPLAY_LIMIT ? '+' : ''} kurum)`;
+                : `Arama Sonuçları (${results.length}${results.length === DISPLAY_LIMIT ? '+' : ''} kurum)`) + radiusNotice;
 
             const listEl = document.getElementById('resultsList');
             const emptyEl = document.getElementById('emptyState');
             if (results.length > 0) {
                 emptyEl.classList.add('hidden');
                 listEl.innerHTML = results.map(renderCardHTML).join('');
+                if (userLat && userLng) enhanceWithRealTravelTime(results.slice(0, 12));
             } else {
                 listEl.innerHTML = '';
                 emptyEl.classList.remove('hidden');
@@ -220,6 +269,27 @@
             results.forEach(r => { if (r.lat && r.lng) L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`); });
             if (userLat && userLng) {
                 L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 }).addTo(markersLayer).bindPopup('Konumunuz');
+            }
+        }
+
+        // Kuş uçuşu km yerine gerçek araçla sürüş süresini gösterir (ücretsiz OSRM
+        // servisi ile). Performans için sadece en yakın 12 sonuç için, ve sayfa
+        // ilk açıldıktan SONRA (progressive enhancement) - km bilgisi hep anında
+        // görünür, süre bilgisi birkaç saniye içinde üzerine yazılır.
+        async function enhanceWithRealTravelTime(closestResults) {
+            for (const r of closestResults) {
+                if (!r.lat || !r.lng) continue;
+                const el = document.getElementById(`dist-${r.id}`);
+                if (!el) continue;
+                try {
+                    const url = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${r.lng},${r.lat}?overview=false`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+                    if (data.routes && data.routes[0]) {
+                        const minutes = Math.round(data.routes[0].duration / 60);
+                        el.textContent = `🚗 ${minutes} dk (araçla) · 📏 ${r._dist.toFixed(1)} km`;
+                    }
+                } catch (e) { /* OSRM'e ulaşılamazsa km bilgisi zaten görünür durumda kalır */ }
             }
         }
 

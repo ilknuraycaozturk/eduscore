@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Eğitim Kararı Şansa Bırakılmaz</title>
+    <!-- Plus Jakarta Sans Fontu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Değişkenleri ve Reset */
+        :root {
+            --primary-red: #E8543A;
+            --primary-hover: #D1432A;
+            --dark-brown: #241A16;
+            --dark-text: #3D2D27;
+            --light-bg: #FFFDFB;
+            --pure-white: #FFFFFF;
+            --card-border: #F3EFEA;
+            --gray-text: #7D706A;
+            --light-orange-bg: #FFF5F2;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --shadow-sm: 0 4px 20px rgba(36, 26, 22, 0.04);
+            --shadow-md: 0 12px 40px rgba(36, 26, 22, 0.08);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Header & Navigasyon */
+        header {
+            background-color: rgba(255, 253, 251, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--card-border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dark-brown);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--primary-red);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--dark-text);
+            font-weight: 500;
+            font-size: 15px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-red);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-red);
+            transition: var(--transition);
+            border-radius: 2px;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .cta-btn {
+            background-color: var(--dark-brown);
+            color: var(--pure-white);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            border: 1px solid var(--dark-brown);
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--dark-brown);
+            transform: translateY(-2px);
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 4px;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background-color: var(--dark-brown);
+            transition: var(--transition);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 180px 40px 100px 40px;
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            background-color: var(--light-orange-bg);
+            color: var(--primary-red);
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: 1px solid rgba(232, 84, 58, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--dark-brown);
+            line-height: 1.15;
+            max-width: 900px;
+            margin-bottom: 24px;
+            letter-spacing: -1.5px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero-title span {
+            color: var(--primary-red);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--gray-text);
+            max-width: 640px;
+            margin-bottom: 48px;
+            font-weight: 400;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        /* Arama Arayüzü */
+        .search-container {
+            width: 100%;
+            max-width: 1060px;
+            background-color: var(--pure-white);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--card-border);
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        .search-steps {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .step-box {
+            flex: 1;
+            padding: 12px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            min-width: 0; /* İçeriğin taşmasını önlemek için */
+        }
+
+        .step-box:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 40px;
+            background-color: var(--card-border);
+        }
+
+        .step-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary-red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .step-box select, .step-box input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-brown);
+            background: transparent;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        /* Select alanında uzun metinlerin kırpılması için şık bir dokunuş */
+        .step-box select {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            padding-right: 15px;
+        }
+
+        .step-box select optgroup {
+            font-style: normal;
+            font-weight: 700;
+            color: var(--primary-red);
+            background-color: var(--pure-white);
+        }
+
+        .step-box select option {
+            font-weight: 500;
+            color: var(--dark-brown);
+            background-color: var(--pure-white);
+        }
+
+        .step-box input::placeholder {
+            color: var(--gray-text);
+            font-weight: 500;
+        }
+
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .location-btn {
+            background: none;
+            border: none;
+            color: var(--gray-text);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            transition: var(--transition);
+        }
+
+        .location-btn:hover {
+            color: var(--primary-red);
+        }
+
+        .search-action {
+            padding-left: 12px;
+        }
+
+        .search-submit {
+            background-color: var(--primary-red);
+            color: var(--pure-white);
+            border: none;
+            padding: 18px 36px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(232, 84, 58, 0.2);
+        }
+
+        .search-submit:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 84, 58, 0.3);
+        }
+
+        /* Algoritma ve Metodoloji Alanı */
+        .formula-section {
+            padding: 100px 40px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .manifesto-box {
+            background-color: var(--dark-brown);
+            color: var(--pure-white);
+            border-radius: var(--radius-lg);
+            padding: 60px;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .manifesto-box h3 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .manifesto-box p {
+            font-size: 18px;
+            color: #CFC7C4;
+            max-width: 800px;
+            font-weight: 400;
+        }
+
+        .formula-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .formula-card {
+            background-color: var(--pure-white);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .formula-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .formula-card .icon-wrapper {
+            width: 56px;
+            height: 56px;
+            background-color: var(--light-orange-bg);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .formula-card h4 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark-brown);
+            margin-bottom: 12px;
+        }
+
+        .formula-card p {
+            color: var(--gray-text);
+            font-size: 15px;
+        }
+
+        /* Animasyonlar */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Tasarım */
+        @media (max-width: 1024px) {
+            .hero-title { font-size: 44px; }
+            .formula-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container { padding: 16px 24px; }
+            .menu-toggle { display: flex; }
+            
+            .nav-menu {
+                position: fixed;
+                top: 75px;
+                right: -100%;
+                width: 100%;
+                height: calc(100vh - 75px);
+                background-color: var(--pure-white);
+                flex-direction: column;
+                padding: 40px;
+                gap: 24px;
+                transition: var(--transition);
+                box-shadow: var(--shadow-md);
+                align-items: flex-start;
+            }
+
+            .nav-menu.active {
+                right: 0;
+            }
+
+            .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+            .menu-toggle.active span:nth-child(2) { opacity: 0; }
+            .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+            .hero-section { padding: 140px 24px 60px 24px; }
+            .hero-title { font-size: 36px; }
+            
+            .search-container { padding: 16px; border-radius: var(--radius-md); }
+            .search-steps { flex-direction: column; gap: 16px; }
+            .step-box { width: 100%; padding: 8px 0; }
+            .step-box:not(:last-child)::after { display: none; }
+            
+            .search-action { width: 100%; padding-left: 0; margin-top: 8px; }
+            .search-submit { width: 100%; justify-content: center; }
+
+            .formula-grid { grid-template-columns: 1fr; }
+            .manifesto-box { padding: 32px; }
+            .manifesto-box h3 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navigasyon -->
+    <header>
+        <nav class="nav-container">
+            <a href="#" class="logo">Edu<span>Scor</span></a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" class="nav-link active">Ana Sayfa</a></li>
+                <li><a href="nasil-calisir.html" class="nav-link">Nasıl Çalışır?</a></li>
+                <li><a href="metodoloji.html" class="nav-link">Metodoloji</a></li>
+                <li><a href="kurumlar-icin.html" class="nav-link">Kurumlar İçin</a></li>
+                <li><a href="giris.html" class="nav-link">Giriş Yap</a></li>
+                <li><a href="explorer.html" class="cta-btn">Platformu Keşfet</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Hero Bölümü -->
+    <section class="hero-section">
+        <div class="hero-badge">Veriye Dayalı Bağımsız Analiz</div>
+        <h1 class="hero-title">En Doğru Eğitim Kararını <span>Veriyle</span> Alın</h1>
+        <p class="hero-subtitle">Kulaktan dolma bilgilerle değil, şeffaf kriterler ve bağımsız veri modelleriyle optimize edilmiş objektif başarı skorlarını keşfedin.</p>
+        
+        <!-- Arama Arayüzü -->
+        <div class="search-container">
+            <form action="explorer.html" method="GET" class="search-steps" id="searchForm">
+                
+                <!-- Adım 1: EduScor Kurumsal Eğitim Segmentleri -->
+                <div class="step-box">
+                    <span class="step-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                        Kurum / Segment Tipi
+                    </span>
+                    <div class="custom-select">
+                        <select name="institution_segment" id="institutionSegmentSelect">
+                            <option value="" disabled selected>Segment Seçin</option>
+                            
+                            <!-- K-12 & Temel Eğitim -->
+                            <optgroup label="Temel Eğitim Kademeleri">
+                                <option value="seg-preschool">01. Okul Öncesi / Anaokulu</option>
+                                <option value="seg-primary">02. İlkokul</option>
+                                <option value="seg-middle">03. Ortaokul</option>
+                                <option value="seg-high">04. Lise</option>
+                            </optgroup>
+
+                            <!-- Yükseköğretim & Alternatif Modeller -->
+                            <optgroup label="Yükseköğretim & Dijital">
+                                <option value="seg-university">05. Üniversiteler / Yükseköğretim Kurumları</option>
+                                <option value="seg-distance">06. Açık ve Uzaktan Eğitim Kurumları</option>
+                                <option value="seg-edtech">07. EdTech Platformları & Dijital İçerik Sağlayıcılar</option>
+                            </optgroup>
+
+                            <!-- Sınav, Dil ve Gelişim Odaklı -->
+                            <optgroup label="Özel Kurslar & Gelişim">
+                                <option value="seg-courses">08. Kurslar & Özel Ders Merkezleri</option>
+                                <option value="seg-language">09. Dil Okulları & Yurtdışı Eğitim</option>
+                                <option value="seg-driving">10. Sürücü, Ulaştırma & Havacılık Akademileri</option>
+                                <option value="seg-sports-arts">11. Spor, Sanat & Beceri Akademileri</option>
+                            </optgroup>
+
+                            <!-- Dönemsel & Özel İhtiyaçlar -->
+                            <optgroup label="Özel Alanlar & Kamplar">
+                                <option value="seg-special">12. Özel Gereksinim Eğitim Kurumları</option>
+                                <option value="seg-camps">13. Eğitim, Bilim & Gelişim Kampları</option>
+                                <option value="seg-summer">14. Yaz / Kış Okulları</option>
+                            </optgroup>
+
+                            <!-- Profesyonel, Kurumsal & Sektörel -->
+                            <optgroup label="Kurumsal, Profesyonel & Toplumsal">
+                                <option value="seg-corporate">15. Kurumsal Akademiler & Profesyonel Gelişim</option>
+                                <option value="seg-lifelong">16. Sürekli Eğitim & Yaşam Boyu Öğrenme</option>
+                                <option value="seg-vocational">17. Mesleki & Teknik Eğitim Merkezleri</option>
+                                <option value="seg-stk">18. STK, Vakıf & Topluluk Eğitimleri</option>
+                                <option value="seg-defense">19. Savunma, Güvenlik & Askeri Akademiler</option>
+                                <option value="seg-religious">20. Dini & İlahiyat Eğitim Kurumları</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Adım 2: Konum -->
+                <div class="step-box">
+                    <span class="step-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Bölge / Konum
+                    </span>
+                    <div class="custom-select">
+                        <input type="text" name="location" placeholder="İl, ilçe veya mahalle..." autocomplete="off">
+                    </div>
+                    <button type="button" class="location-btn" id="nearMeBtn">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
+                        Yakınımda Ara
+                    </button>
+                    <select id="radiusSelect" style="font-size:11px; border:1px solid #E2D8D0; border-radius:8px; padding:4px 6px; margin-top:4px; color:#8A7A72;">
+                        <option value="5">5 km içinde</option>
+                        <option value="10" selected>10 km içinde</option>
+                        <option value="20">20 km içinde</option>
+                        <option value="50">50 km içinde</option>
+                        <option value="0">Sınırsız (sadece sırala)</option>
+                    </select>
+                </div>
+
+                <!-- Adım 3: Kurum Adı veya Kriter -->
+                <div class="step-box">
+                    <span class="step-label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Tercih Detayı
+                    </span>
+                    <div class="custom-select">
+                        <input type="text" name="query" placeholder="Kurum adı veya anahtar kelime...">
+                    </div>
+                </div>
+
+                <!-- Arama Butonu -->
+                <div class="search-action">
+                    <button type="submit" class="search-submit">
+                        Sorgula
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Metodoloji ve Algoritma Alanı (Formula Section) -->
+    <section class="formula-section">
+        <div class="manifesto-box">
+            <h3>Eğitim Kararı Şansa Bırakılmaz</h3>
+            <p>EduScor, eğitim kurumlarını ticari kaygılardan uzak, tamamen şeffaf ve bilimsel ağırlıklandırma algoritmalarıyla puanlar. Velilerin ve öğrencilerin doğru veriye ulaşmasını hedefler.</p>
+        </div>
+
+        <div class="formula-grid">
+            <div class="formula-card">
+                <div class="icon-wrapper">1</div>
+                <h4>Akademik Gelişim</h4>
+                <p>Kurumların kitlesel başarı oranları, sınav çıktıları ve proje üretim kapasiteleri objektif metriklerle ölçülür.</p>
+            </div>
+            <div class="formula-card">
+                <div class="icon-wrapper">2</div>
+                <h4>Sosyal & Sosyo-Kültürel</h4>
+                <p>Sanat, spor and kulüp faaliyetlerinin çeşitliliği ile öğrencilerin sosyal ekosisteme katılım endeksleri puanlanır.</p>
+            </div>
+            <div class="formula-card">
+                <div class="icon-wrapper">3</div>
+                <h4>Fiziksel Donanım</h4>
+                <p>Sınıf mevcudiyet standartları, teknolojik altyapı, laboratuvar ve yeşil alan rasyoları analiz edilir.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript - Mobil Menü Kontrolü -->
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Menü açıkken dışarı tıklanırsa kapatma mekanizması
+        document.addEventListener('click', (e) => {
+            if (!navMenu.contains(e.target) && !menuToggle.contains(e.target) && navMenu.classList.contains('active')) {
+                menuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        });
+
+        // ---- Arama formunu explorer.html'e bağlama ----
+        // Segment seçenekleri veritabanımızdaki kategori slug'larıyla birebir
+        // örtüşmüyor (20 segment var, bizim 12 kategorimiz var) - bu yüzden
+        // en yakın eşleşmeye çeviriyoruz. Tam eşleşmesi olmayanlar için en
+        // mantıklı kategoriye yönlendiriyoruz (ör. "Sürücü Akademileri" ->
+        // "mesleki-teknik").
+        const SEGMENT_TO_CATEGORY = {
+            'seg-preschool': 'okul-oncesi-k12',
+            'seg-primary': 'okul-oncesi-k12',
+            'seg-middle': 'okul-oncesi-k12',
+            'seg-high': 'okul-oncesi-k12',
+            'seg-university': 'yuksekogretim',
+            'seg-distance': 'online-uzaktan',
+            'seg-edtech': 'online-uzaktan',
+            'seg-courses': 'sanat-spor-hobi',
+            'seg-language': 'dil-egitimi',
+            'seg-driving': 'mesleki-teknik',
+            'seg-sports-arts': 'sanat-spor-hobi',
+            'seg-special': 'ozel-egitim-kapsayici',
+            'seg-camps': 'yaz-kisa-sureli',
+            'seg-summer': 'yaz-kisa-sureli',
+            'seg-corporate': 'yetiskin-yasam-boyu',
+            'seg-lifelong': 'yetiskin-yasam-boyu',
+            'seg-vocational': 'mesleki-teknik',
+            'seg-stk': 'yetiskin-yasam-boyu',
+            'seg-defense': 'mesleki-teknik',
+            'seg-religious': 'okul-oncesi-k12',
+        };
+
+        // "Lise" segmenti seçilirse doğrudan Lise Skoru Hesaplayıcı'ya yönlendir
+        // (o segment için ayrı, daha zengin bir deneyimimiz var).
+        const SEGMENT_TO_DEDICATED_PAGE = {
+            'seg-high': 'lise-skoru.html',
+        };
+
+        let nearMeLat = null, nearMeLng = null;
+        let wantsNearMe = false;
+
+        const nearMeBtn = document.getElementById('nearMeBtn');
+        function getPositionPromise() {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject);
+            });
+        }
+
+        if (nearMeBtn) {
+            nearMeBtn.addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    nearMeBtn.textContent = 'Konum desteklenmiyor';
+                    return;
+                }
+                wantsNearMe = true;
+                nearMeLat = null;
+                nearMeLng = null;
+                nearMeBtn.textContent = '📍 Yakınımda Ara (seçili)';
+                document.querySelector('input[name="location"]').value = '';
+                document.querySelector('input[name="location"]').placeholder = 'Konumunuz kullanılacak';
+                document.querySelector('input[name="location"]').required = false;
+            });
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = searchForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn ? submitBtn.textContent : '';
+
+                // ÖNEMLİ: "Yakınımda Ara" seçiliyse, konum GERÇEKTEN alınana kadar
+                // bekliyoruz - önceden burada beklemediğimiz için kullanıcı hemen
+                // "Sorgula"ya basınca form konumsuz (filtre uygulanmadan) gönderiliyordu.
+                if (wantsNearMe && (!nearMeLat || !nearMeLng)) {
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Konumunuz alınıyor...'; }
+                    try {
+                        const pos = await getPositionPromise();
+                        nearMeLat = pos.coords.latitude;
+                        nearMeLng = pos.coords.longitude;
+                        if (nearMeBtn) nearMeBtn.textContent = '✓ Konum alındı';
+                    } catch (err) {
+                        if (nearMeBtn) nearMeBtn.textContent = 'İzin verilmedi';
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+                        alert('Konum izni alınamadı. "Yakınımda Ara" olmadan devam etmek için önce o seçimi kaldırıp tekrar Sorgula\'ya basabilirsiniz.');
+                        return;
+                    }
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+                }
+
+                const segment = document.getElementById('institutionSegmentSelect').value;
+                const location = document.querySelector('input[name="location"]').value.trim();
+                const query = document.querySelector('input[name="query"]').value.trim();
+
+                const dedicatedPage = SEGMENT_TO_DEDICATED_PAGE[segment];
+                const targetPage = dedicatedPage || 'explorer.html';
+
+                const params = new URLSearchParams();
+                const category = SEGMENT_TO_CATEGORY[segment];
+                if (category && !dedicatedPage) params.set('category', category);
+
+                const qParts = [location, query].filter(Boolean);
+                if (qParts.length) params.set('q', qParts.join(' '));
+
+                if (nearMeLat && nearMeLng) {
+                    params.set('lat', nearMeLat);
+                    params.set('lng', nearMeLng);
+                    const radius = document.getElementById('radiusSelect').value;
+                    if (radius && radius !== '0') params.set('radius', radius);
+                }
+
+                const qs = params.toString();
+                window.location.href = targetPage + (qs ? '?' + qs : '');
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        (async function () {
+            try {
+                const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
+
+                // IP adresinin KENDİSİ hiçbir zaman saklanmıyor - sadece ondan
+                // türetilen genel ülke bilgisi (KVKK uyumu için). Şehir bilgisini
+                // KASITLI OLARAK almıyoruz - ücretsiz IP-konum servisleri özellikle
+                // mobil operatör bağlantılarında şehir düzeyinde sık yanılıyor
+                // (örn. gerçek konum Ankara iken operatör kaydına göre başka bir
+                // il/ilçe gösterebiliyor). Yanıltıcı veri göstermektense hiç göstermiyoruz.
+                let country = null;
+                try {
+                    const geoResp = await fetch('https://ipapi.co/json/');
+                    const geo = await geoResp.json();
+                    country = geo.country_name || null;
+                } catch (geoErr) { /* konum servisine erişilemezse sessizce devam et */ }
+
+                sb.from('page_views').insert({
+                    page_path: 'index.html',
+                    referrer: document.referrer || 'direkt',
+                    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                    query_params: window.location.search || null,
+                    country: country,
+                }).then(() => {});
+            } catch (e) {}
+        })();
+    </script>
+</body>
+</html>
