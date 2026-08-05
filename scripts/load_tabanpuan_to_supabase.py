@@ -46,11 +46,21 @@ def normalize_name(name: str) -> str:
     return " ".join(n.split())
 
 
+def normalize_name_lenient(name: str) -> str:
+    """normalize_name gibi ama İ/I ayrımını YOK SAYAR (ikisini de 'i' yapar).
+    tabanpuanlari.net kaynağında bazı kelimeler yanlış büyük/küçük harfle
+    geliyor (örn. 'İleri' yerine 'Ileri') - bu, standart Türkçe karşılaştırmayı
+    bozuyor. Eşleştirme (matching) İÇİN, bu daha toleranslı versiyonu kullanıyoruz."""
+    n = name.strip().replace("İ", "i").replace("I", "i").lower()
+    n = n.replace("özel", "").strip()
+    return " ".join(n.split())
+
+
 def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
-    target = normalize_name(new_name)
+    target = normalize_name_lenient(new_name)
     best = None
     for row in existing:
-        existing_norm = normalize_name(row["name"])
+        existing_norm = normalize_name_lenient(row["name"])
         if target == existing_norm:
             return row  # tam eşleşme - hemen dön
         if (target in existing_norm or existing_norm in target) and best is None:
