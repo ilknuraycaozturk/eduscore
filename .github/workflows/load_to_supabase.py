@@ -94,6 +94,43 @@ def turkish_lower(s: str) -> str:
     return s.replace("İ", "i").replace("I", "ı").lower()
 
 
+def turkish_title(s: str) -> str:
+    """Python'un standart .title() metodu Türkçe İ/I harflerini bozar
+    (örn. 'AĞRI'.title() -> 'Ağri' olur, 'Ağrı' olması gerekirken). Bu
+    fonksiyon ilk harfi olduğu gibi bırakır (kaynak zaten büyük harf ve
+    İ/I ayrımı doğru), kalan harfleri Türkçe kurallarına göre küçültür."""
+    def lower_char(c: str) -> str:
+        if c == "I":
+            return "ı"
+        if c == "İ":
+            return "i"
+        return c.lower()
+
+    words = s.strip().split(" ")
+    result = []
+    for w in words:
+        if not w:
+            continue
+        result.append(w[0] + "".join(lower_char(c) for c in w[1:]))
+    return " ".join(result)
+
+
+def turkish_capitalize_words(s: str) -> str:
+    """Zaten TAMAMEN KÜÇÜK HARF olan bir metni Türkçe kurallarına göre
+    başlık formatına çevirir (her kelimenin ilk harfi büyütülür).
+    Python'un .title()'ı 'i' harfini yanlışlıkla 'I' yapar (İ olması
+    gerekirken); bu fonksiyon bunu düzeltir."""
+    def upper_first(c: str) -> str:
+        if c == "i":
+            return "İ"
+        if c == "ı":
+            return "I"
+        return c.upper()
+
+    words = s.strip().split(" ")
+    return " ".join((upper_first(w[0]) + w[1:]) if w else w for w in words)
+
+
 def normalize_name(name: str) -> str:
     """MEB isimlerindeki 'İL - İLÇE - ' önekini ve 'Özel' gibi kelimeleri
     temizleyerek karşılaştırılabilir bir isim üretir.
@@ -169,12 +206,12 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     dedup yapıyoruz. Aksi halde farklı konum granülerliğinde (mahalle vs
     ilçe) kaydedilmiş aynı okul mükerrer eklenebilir (bu bug'ı canlıda
     yaşadık ve LGS scriptinde düzelttik, aynı düzeltmeyi burada da uyguluyoruz)."""
-    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng")
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website")
 
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
                             location_cache: dict, dry_run: bool) -> str | None:
-    key = ilce_adi.strip().title()
+    key = turkish_title(ilce_adi.strip())
     if key in location_cache:
         return location_cache[key]
 
@@ -209,6 +246,12 @@ def main():
                               "Belirtilmezse her kayıt kendi ilçesine (--all-ilceler çıktısındaki 'ilce_ad') göre otomatik konumlandırılır.")
     parser.add_argument("--category-slug", default="okul-oncesi-k12")
     parser.add_argument("--dry-run", action="store_true", help="Sadece ne ekleneceğini yazdır, Supabase'e yazma")
+    parser.add_argument("--max-geocode", type=int, default=400,
+                         help="ÖNEMLİ: GitHub Actions'ın 6 saatlik zaman aşımına takılmamak için, bu "
+                              "çalıştırmada YENİ coğrafi kodlama (geocode) çağrısı sayısını sınırlar. "
+                              "Zaten işlenmiş/eşleşen kayıtlar bu sınıra dahil değildir (hızlıca atlanır). "
+                              "Sınıra ulaşılınca script durur - workflow'u tekrar çalıştırınca kaldığı "
+                              "yerden devam eder (aynı kayıtlar tekrar coğrafi kodlanmaz).")
     args = parser.parse_args()
 
     supabase_url = os.environ.get("SUPABASE_URL")
@@ -225,10 +268,53 @@ def main():
                or args.filter_mahalle.lower() in (r.get("raw_name") or "").lower()]
         print(f"'{args.filter_mahalle}' filtresinden sonra {len(raw)} kayıt kaldı.")
 
-    prepared = []
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+    }
+
+    type_lookup = {}
+    location_lookup = {}
+    category_lookup = {}
+    fixed_location_id = None
+    location_cache: dict[str, str] = {}
+    ankara_id = None
+    existing = []
+
+    if not args.dry_run:
+        type_lookup = get_lookup(supabase_url, headers, "institution_types")
+        location_lookup = get_lookup(supabase_url, headers, "locations")
+        category_lookup = get_lookup(supabase_url, headers, "categories")
+
+        if args.location_name:
+            fixed_location_id = location_lookup.get(args.location_name)
+            if not fixed_location_id:
+                print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
+                sys.exit(1)
+        else:
+            resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
+            resp.raise_for_status()
+            ankara_rows = resp.json()
+            if not ankara_rows:
+                print("HATA: 'Ankara' locations tablosunda bulunamadı.")
+                sys.exit(1)
+            ankara_id = ankara_rows[0]["id"]
+
+        # ÖNEMLİ: dedup kontrolünü coğrafi kodlamadan ÖNCE yapıyoruz - böylece
+        # daha önceki bir çalıştırmada zaten işlenmiş kayıtlar için gereksiz
+        # yere Nominatim'e istek atılmıyor (önceki sürümün 6 saatlik zaman
+        # aşımına tekrar tekrar takılmasının asıl sebebi buydu).
+        existing = get_existing_institutions(supabase_url, headers, None)
+        print(f"Global dedup kontrolü için {len(existing)} mevcut kurum yüklendi.")
+
     skipped = 0
     skipped_admin = 0
     skipped_unknown_names = []
+    inserted, enriched, skipped_dupe, geocode_calls = 0, 0, 0, 0
+    stopped_early = False
+
     for r in raw:
         name_lower = turkish_lower(r["raw_name"])
         if any(pat in name_lower for pat in ADMINISTRATIVE_UNIT_PATTERNS):
@@ -241,28 +327,57 @@ def main():
             skipped_unknown_names.append(r["raw_name"])
             continue
 
-        # --all-ilceler modunda scrape_meb_schools.py her satıra 'ilce_ad' ekler.
-        # Tek ilçe modunda (--location-name ile) bu alan olmayabilir, o zaman
-        # args.location_name'i coğrafi bağlam olarak kullanırız.
         ilce_ad = r.get("ilce_ad") or args.location_name or ""
-
-        lat, lng = r.get("lat"), r.get("lng")
+        raw_name = r["raw_name"].strip()
         address = r.get("raw_info")
+        lat, lng = r.get("lat"), r.get("lng")
+        website = r.get("website")
+
+        # dry-run modunda gerçek dedup verisi olmadığı için her zaman ilk 5
+        # kaydı önizleme amaçlı işleriz (Nominatim'e de gerçekten istek atarız,
+        # ama sınırlı sayıda - performans için)
+        match = find_existing_match(raw_name, existing) if existing else None
+
+        if match and match.get("lat"):
+            # ÖNEMLİ: Koordinatı zaten varsa BİR DAHA coğrafi kodlama yapma
+            # (Nominatim'e boşuna istek atıp bütçeyi tüketmeyelim - önceden
+            # adres/web sitesi de dolu olmasını şart koşuyorduk ama bu alanlar
+            # bazı kayıtlarda kaynakta hiç yok, bu da aynı kayıtların her
+            # çalıştırmada sonsuza dek tekrar denenmesine yol açıyordu).
+            # Yine de web sitesi/adres gibi ÜCRETSİZ (API gerektirmeyen)
+            # alanları, elimizde varsa güncelleyelim.
+            needs_update = {}
+            if not match.get("address") and address:
+                needs_update["address"] = address
+            if not match.get("website") and website:
+                needs_update["website"] = website
+            if needs_update and not args.dry_run:
+                resp = requests.patch(
+                    f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
+                    headers=headers, json=needs_update,
+                )
+                if resp.status_code in (200, 204):
+                    enriched += 1
+                else:
+                    print(f"UYARI: '{raw_name}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
+            else:
+                skipped_dupe += 1
+            continue
+
+        if geocode_calls >= args.max_geocode:
+            stopped_early = True
+            break
 
         if not lat or not lng:
-            # ÖNEMLİ: Önceki sürüm 3 aşamalı deneme yapıyordu (isim+ilçe, isim+il,
-            # ilçe merkezi) - bu, tüm Ankara gibi büyük çalıştırmalarda GitHub
-            # Actions'ın 6 saatlik sınırını aşmasına yol açtı (25 ilçe x binlerce
-            # okul x 3 istek x 1sn bekleme). Artık tek deneme + doğrudan ilçe
-            # merkezi yedeğine düşüyoruz - süreyi ~%35 kısaltıyor.
-            clean_name = normalize_name(r["raw_name"]).title()
+            clean_name = turkish_capitalize_words(normalize_name(raw_name))
             geocode_query = f"{clean_name}, {ilce_ad}, Ankara, Türkiye"
             lat, lng = geocode(geocode_query)
+            geocode_calls += 1
             is_approx_location = False
             if not lat:
+                time.sleep(1)
                 # Bina OSM'de haritalanmamış olabilir (küçük/yeni okullarda sık görülür).
                 # Son çare: ilçe merkezini kullan, yaklaşık konum olarak işaretle.
-                time.sleep(1)
                 ilce_query = f"{ilce_ad}, Ankara, Türkiye"
                 lat, lng = geocode(ilce_query)
                 is_approx_location = bool(lat)
@@ -277,82 +392,36 @@ def main():
                 f"'{ilce_ad}' ilçe merkezine yaklaşık olarak yerleştirilmiştir."
             )
 
-        prepared.append({
-            "name": r["raw_name"].strip(),
-            "ilce": ilce_ad,
-            "institution_type_slug": type_slug,
-            "address": address,
-            "lat": lat,
-            "lng": lng,
-            "is_public": True,  # bu uç nokta resmi MEB okulları için; özel kurumlar ayrı script (ookgm) ile işlenir
-            "is_verified": False,
-            "description": description,
-        })
+        item = {
+            "name": raw_name, "ilce": ilce_ad, "institution_type_slug": type_slug,
+            "address": address, "website": website, "lat": lat, "lng": lng,
+            "is_public": True, "is_verified": False, "description": description,
+        }
 
-    print(f"{len(prepared)} kayıt tipi tanınarak hazırlandı, {skipped} kayıt tipi tanınamadığı için atlandı, {skipped_admin} idari birim olduğu için atlandı.")
-    if skipped_unknown_names:
-        print(f"--- Tipi tanınamayan {len(skipped_unknown_names)} kayıt ---")
-        for n in skipped_unknown_names:
-            print(f"  ? {n}")
+        if args.dry_run:
+            print(json.dumps(item, ensure_ascii=False))
+            if geocode_calls >= 5:
+                print("... (dry-run önizlemesi ilk birkaç kayıtla sınırlandı)")
+                break
+            continue
 
-    if args.dry_run:
-        print(json.dumps(prepared[:5], ensure_ascii=False, indent=2))
-        print("... (dry-run, Supabase'e yazılmadı)")
-        return
-
-    headers = {
-        "apikey": service_key,
-        "Authorization": f"Bearer {service_key}",
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal",
-    }
-
-    type_lookup = get_lookup(supabase_url, headers, "institution_types")
-    location_lookup = get_lookup(supabase_url, headers, "locations")
-    category_lookup = get_lookup(supabase_url, headers, "categories")
-
-    fixed_location_id = None
-    location_cache: dict[str, str] = {}
-    ankara_id = None
-
-    if args.location_name:
-        fixed_location_id = location_lookup.get(args.location_name)
-        if not fixed_location_id:
-            print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
-            sys.exit(1)
-    else:
-        resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
-        resp.raise_for_status()
-        ankara_rows = resp.json()
-        if not ankara_rows:
-            print("HATA: 'Ankara' locations tablosunda bulunamadı.")
-            sys.exit(1)
-        ankara_id = ankara_rows[0]["id"]
-
-    existing = get_existing_institutions(supabase_url, headers, None)
-    print(f"Global dedup kontrolü için {len(existing)} mevcut kurum yüklendi.")
-
-    inserted, enriched, skipped_dupe = 0, 0, 0
-    for item in prepared:
         if fixed_location_id:
             location_id = fixed_location_id
         else:
-            location_id = get_or_create_location(supabase_url, headers, item["ilce"], ankara_id, location_cache, args.dry_run)
+            location_id = get_or_create_location(supabase_url, headers, ilce_ad, ankara_id, location_cache, args.dry_run)
             if not location_id:
                 continue
 
-        match = find_existing_match(item["name"], existing)
-
         if match:
-            # Aynı okul zaten var — sadece eksik alanları (adres/koordinat) doldur, yeni satır açma
             needs_update = {}
-            if not match.get("address") and item["address"]:
-                needs_update["address"] = item["address"]
-            if not match.get("lat") and item["lat"]:
-                needs_update["lat"] = item["lat"]
-            if not match.get("lng") and item["lng"]:
-                needs_update["lng"] = item["lng"]
-
+            if not match.get("address") and address:
+                needs_update["address"] = address
+            if not match.get("lat") and lat:
+                needs_update["lat"] = lat
+            if not match.get("lng") and lng:
+                needs_update["lng"] = lng
+            if not match.get("website") and website:
+                needs_update["website"] = website
             if needs_update:
                 resp = requests.patch(
                     f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
@@ -361,35 +430,50 @@ def main():
                 if resp.status_code in (200, 204):
                     enriched += 1
                 else:
-                    print(f"UYARI: '{item['name']}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
+                    print(f"UYARI: '{raw_name}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
             else:
                 skipped_dupe += 1
             continue
 
-        type_id = type_lookup.get(item["institution_type_slug"])
+        type_id = type_lookup.get(type_slug)
         if not type_id:
             continue
         payload = {
-            "name": item["name"],
+            "name": raw_name,
             "institution_type_id": type_id,
             "category_id": category_lookup.get(args.category_slug),
             "location_id": location_id,
-            "is_public": item["is_public"],
-            "address": item["address"],
-            "lat": item["lat"],
-            "lng": item["lng"],
-            "is_verified": item["is_verified"],
-            "description": item["description"],
+            "is_public": True,
+            "address": address,
+            "website": website,
+            "lat": lat,
+            "lng": lng,
+            "is_verified": False,
+            "description": description,
         }
         resp = requests.post(f"{supabase_url}/rest/v1/institutions", headers={**headers, "Prefer": "return=representation"}, json=payload)
         if resp.status_code in (200, 201):
             inserted += 1
             new_row = resp.json()[0]
-            existing.append({"id": new_row["id"], "name": item["name"], "address": item["address"], "lat": item["lat"], "lng": item["lng"]})
+            existing.append({"id": new_row["id"], "name": raw_name, "address": address, "lat": lat, "lng": lng, "website": website})
         else:
-            print(f"UYARI: '{item['name']}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
+            print(f"UYARI: '{raw_name}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
 
-    print(f"Tamamlandı: {inserted} yeni kurum eklendi, {enriched} mevcut kurum zenginleştirildi, {skipped_dupe} zaten var olduğu için atlandı.")
+    print(f"{skipped} kayıt tipi tanınamadığı için atlandı, {skipped_admin} idari birim olduğu için atlandı.")
+    if skipped_unknown_names:
+        print(f"--- Tipi tanınamayan {len(skipped_unknown_names)} kayıt ---")
+        for n in skipped_unknown_names:
+            print(f"  ? {n}")
+
+    if args.dry_run:
+        print("... (dry-run, Supabase'e yazılmadı)")
+        return
+
+    print(f"Tamamlandı: {inserted} yeni kurum eklendi, {enriched} mevcut kurum zenginleştirildi, {skipped_dupe} zaten var olduğu için atlandı, {geocode_calls} yeni coğrafi kodlama yapıldı.")
+    if stopped_early:
+        print(f"\n⚠️ PARTİ SINIRINA ULAŞILDI ({args.max_geocode} yeni coğrafi kodlama). "
+              f"İşlenmemiş kayıtlar kaldı - workflow'u TEKRAR ÇALIŞTIRIN, kaldığı yerden devam edecek "
+              f"(zaten eklenen kayıtlar tekrar işlenmeyecek, hızlıca atlanacak).")
 
 
 if __name__ == "__main__":
