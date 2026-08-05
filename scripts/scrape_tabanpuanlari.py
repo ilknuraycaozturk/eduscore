@@ -1,14 +1,10 @@
 """
 tabanpuanlari.net sitesinden il bazında LGS taban puanı / kontenjan verisini çeker.
 
-Bu site MEB'in resmi verilerinden derlenmiş bilgiyi tek bir tabloda (il başına)
-sunuyor: okul adı, program adı, 2026/2025 kontenjan, taban puan (LGS Puanı/OBP),
-2025 yüzdelik dilim, dil, pansiyon durumu.
-
-NOT: "LGS Puanı" sütunu, 2026 sonuçları yayınlandıktan hemen sonra bu üçüncü
-taraf site tarafından henüz güncellenmemiş olabilir (o zaman 2025 verisini
-gösterir) - script bunu olduğu gibi kaydeder, güncellendiğinde otomatik doğru
-veri gelir.
+ÖNEMLİ: Bu site sanal kaydırma (virtual scrolling) kullanıyor - DOM'da her an
+sadece görünen satırlar (+ biraz tampon) render ediliyor. Bu yüzden sayfayı
+adım adım kaydırıp, her adımda görünen satırları program_id'ye göre
+tekilleştirerek (dedup) topluyoruz.
 
 Kullanım:
     python scrape_tabanpuanlari.py --il ankara --output data/tabanpuan_raw.json
@@ -31,7 +27,6 @@ DIL_KEYWORDS = ["İngilizce", "Almanca", "Fransızca", "Arapça", "Çince", "Rus
 
 
 def parse_ozellikler(text: str) -> dict:
-    """'Kız/Erkek\\nİngilizce\\n4 yıl\\nPansiyon Var' gibi çok satırlı metni ayrıştırır."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
     result = {"cinsiyet": None, "dil": None, "sure": None, "pansiyon": None}
     for line in lines:
@@ -68,9 +63,45 @@ def parse_int(text: str) -> int | None:
         return None
 
 
+def extract_row(row) -> dict | None:
+    cells = row.query_selector_all("td")
+    if len(cells) < 7:
+        return None
+
+    lise_cell_lines = [l.strip() for l in cells[0].inner_text().strip().split("\n") if l.strip()]
+    okul_adi = lise_cell_lines[0] if lise_cell_lines else None
+    program_adi = lise_cell_lines[1] if len(lise_cell_lines) > 1 else None
+    if not okul_adi:
+        return None
+
+    link_el = cells[0].query_selector("a[href*='/programs/']")
+    program_id = None
+    if link_el:
+        href = link_el.get_attribute("href") or ""
+        m = re.search(r"/programs/(\d+)", href)
+        if m:
+            program_id = m.group(1)
+
+    ozellikler = parse_ozellikler(cells[5].inner_text())
+
+    return {
+        "okul_adi": okul_adi,
+        "program_adi": program_adi,
+        "program_id": program_id,
+        "kontenjan_2026": parse_int(cells[1].inner_text()),
+        "kontenjan_2025": parse_int(cells[2].inner_text()),
+        "lgs_puani": parse_number(cells[3].inner_text()),
+        "yuzdelik_2025": parse_number(cells[4].inner_text()),
+        "cinsiyet": ozellikler["cinsiyet"],
+        "dil": ozellikler["dil"],
+        "sure": ozellikler["sure"],
+        "pansiyon_var": ozellikler["pansiyon"],
+    }
+
+
 def scrape_il(il_slug: str, timeout_ms: int = 30000) -> list[dict]:
     url = f"{BASE_URL}/{il_slug}"
-    results: list[dict] = []
+    collected: dict[str, dict] = {}  # program_id (ya da okul+program adı) -> satır
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -91,51 +122,64 @@ def scrape_il(il_slug: str, timeout_ms: int = 30000) -> list[dict]:
         if not target_table:
             print("HATA: Hiçbir <table> bulunamadı.")
             browser.close()
-            return results
+            return []
 
-        rows = target_table.query_selector_all("tr")
-        print(f"{len(rows)} satır bulundu, ayrıştırılıyor...")
+        # Kaydırılabilir konteyner tabloyu içeren en yakın scroll edilebilir
+        # ata olabilir - bulamazsak sayfanın kendisini (window) kaydırırız.
+        scroll_container = target_table.evaluate_handle(
+            """(table) => {
+                let el = table;
+                while (el && el !== document.body) {
+                    const style = window.getComputedStyle(el);
+                    if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+                        return el;
+                    }
+                    el = el.parentElement;
+                }
+                return window;
+            }"""
+        )
 
-        for row in rows:
-            cells = row.query_selector_all("td")
-            if len(cells) < 7:
-                continue  # başlık satırı ya da eksik satır
+        max_scrolls = 400
+        stable_count = 0
+        prev_total = 0
 
-            lise_cell_lines = [l.strip() for l in cells[0].inner_text().strip().split("\n") if l.strip()]
-            okul_adi = lise_cell_lines[0] if lise_cell_lines else None
-            program_adi = lise_cell_lines[1] if len(lise_cell_lines) > 1 else None
-            if not okul_adi:
-                continue
+        for i in range(max_scrolls):
+            rows = target_table.query_selector_all("tr")
+            for row in rows:
+                data = extract_row(row)
+                if not data:
+                    continue
+                key = data["program_id"] or f"{data['okul_adi']}|{data['program_adi']}"
+                # Kontenjan bilgisi eksikse ve daha önce doluysa üzerine yazma
+                if key in collected and collected[key].get("kontenjan_2026") and not data.get("kontenjan_2026"):
+                    continue
+                collected[key] = data
 
-            # Program sayfası linkinden benzersiz program ID'sini de alalım (referans için)
-            link_el = cells[0].query_selector("a[href*='/programs/']")
-            program_id = None
-            if link_el:
-                href = link_el.get_attribute("href") or ""
-                m = re.search(r"/programs/(\d+)", href)
-                if m:
-                    program_id = m.group(1)
+            if len(collected) == prev_total:
+                stable_count += 1
+            else:
+                stable_count = 0
+            prev_total = len(collected)
 
-            ozellikler = parse_ozellikler(cells[5].inner_text())
+            if stable_count >= 8:  # 8 kaydırma boyunca yeni satır gelmediyse bitti say
+                print(f"  Kaydırma {i}: {len(collected)} benzersiz satır (sabitlendi, durduruluyor).")
+                break
 
-            results.append({
-                "il_slug": il_slug,
-                "okul_adi": okul_adi,
-                "program_adi": program_adi,
-                "program_id": program_id,
-                "kontenjan_2026": parse_int(cells[1].inner_text()),
-                "kontenjan_2025": parse_int(cells[2].inner_text()),
-                "lgs_puani": parse_number(cells[3].inner_text()),
-                "yuzdelik_2025": parse_number(cells[4].inner_text()),
-                "cinsiyet": ozellikler["cinsiyet"],
-                "dil": ozellikler["dil"],
-                "sure": ozellikler["sure"],
-                "pansiyon_var": ozellikler["pansiyon"],
-            })
+            scroll_container.evaluate(
+                """(el) => {
+                    if (el === window) { window.scrollBy(0, 400); }
+                    else { el.scrollTop += 400; }
+                }"""
+            )
+            page.wait_for_timeout(150)
+
+            if i % 20 == 0:
+                print(f"  Kaydırma {i}: şu ana kadar {len(collected)} benzersiz satır toplandı.")
 
         browser.close()
 
-    return results
+    return list(collected.values())
 
 
 def main():
@@ -151,9 +195,11 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    eksik_kontenjan = sum(1 for r in results if not r.get("kontenjan_2026"))
     print(f"\nTOPLAM {len(results)} program kaydı -> {out_path}")
+    print(f"Kontenjan bilgisi eksik olan satır: {eksik_kontenjan} / {len(results)}")
     if results:
-        print("--- İlk 3 örnek (ayrıştırılmış) ---")
+        print("--- İlk 3 örnek ---")
         print(json.dumps(results[:3], ensure_ascii=False, indent=2))
 
 
