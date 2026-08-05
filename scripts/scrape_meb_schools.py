@@ -56,6 +56,22 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
             browser.close()
             return results
 
+        # Sayfa başına kayıt sayısını mümkünse büyütmeyi dene (100) - bu, tıklanacak
+        # 'sonraki sayfa' sayısını ~4'e katına düşürüp scraping'i hızlandırır.
+        # Bulunamazsa/başarısız olursa sessizce varsayılan (genelde 25) ile devam eder.
+        try:
+            length_select = page.query_selector("select[name*='LENGTH' i]") or page.query_selector("select[name*='length' i]")
+            if length_select:
+                for val in ("100", "-1"):
+                    try:
+                        length_select.select_option(value=val)
+                        page.wait_for_timeout(1000)
+                        break
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
         # Sayfa sayısı için güvenli bir üst sınır (sonsuz döngüye girmeyi önler)
         max_pages = 200
         page_num = 1
@@ -298,35 +314,27 @@ def main():
     args = parser.parse_args()
 
     if args.all_ilceler:
-        print(f"Tüm ilçeler modu: il={args.il_kodu}")
-        ilceler = discover_ilceler(args.il_kodu)
-        if not ilceler:
-            print("HATA: Hiç ilçe bulunamadı, çıkılıyor.")
-            sys.exit(1)
-        if len(ilceler) > 50:
-            print(f"HATA: {len(ilceler)} 'ilçe' bulundu - bu sayı gerçekçi değil (bir ilin en fazla "
-                  f"~40 ilçesi olur, 50+ demek muhtemelen yanlışlıkla İL listesi (81 il) yakalandı). "
-                  f"Güvenlik için çıkılıyor. Bulunanlar: {[i['ad'] for i in ilceler[:10]]}...")
-            sys.exit(1)
+        # ÖNEMLİ (Ağustos 2026 güncellemesi): MEB sitesi yeniden tasarlandı ve
+        # ilçe seçim kutusunu KALDIRDI - artık bir il için TÜM kurumlar tek bir
+        # sayfalı tabloda listeleniyor (isim zaten "İL - İLÇE - Kurum Adı"
+        # formatında). Bu yüzden ilçe döngüsüne hiç gerek yok; tek bir çağrı
+        # tüm ili (sayfalayarak) çeker, ilçe adını da isimden çıkarıyoruz.
+        print(f"Tüm il modu (ilçe filtresi yok - MEB artık desteklemiyor): il={args.il_kodu}")
+        all_data = scrape_okullar(args.il_kodu, None)
 
-        all_data: list[dict] = []
+        for row in all_data:
+            parts = [p.strip() for p in row["raw_name"].split(" - ", 2)]
+            if len(parts) >= 2:
+                row["ilce_ad"] = parts[1]
+                row["raw_name"] = parts[2] if len(parts) > 2 else parts[1]
+            else:
+                row["ilce_ad"] = None
+
         out_path = Path(args.output)
         out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        for i, ilce in enumerate(ilceler, 1):
-            print(f"\n=== [{i}/{len(ilceler)}] İlçe: {ilce['ad']} (kod={ilce['kod']}) ===")
-            data = scrape_okullar(args.il_kodu, ilce["kod"])
-            for row in data:
-                row["ilce_ad"] = ilce["ad"]  # ilçe adını da ekleyelim, sonraki adım için kolaylık
-            all_data.extend(data)
-            print(f"  Bu ilçede {len(data)} kayıt, toplamda şimdiye kadar {len(all_data)} kayıt.")
-
-            # Ara kayıt: 25 ilçe saatler sürebileceği için, yarıda kesilirse
-            # (timeout, hata vb.) o ana kadarki veri kaybolmasın diye her
-            # ilçeden sonra dosyayı güncelliyoruz.
-            out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-        print(f"\nTOPLAM {len(all_data)} kayıt ({len(ilceler)} ilçe) -> {out_path}")
+        print(f"\nTOPLAM {len(all_data)} kayıt -> {out_path}")
         return
 
     print(f"MEB verisi çekiliyor: il={args.il_kodu} ilçe={args.ilce_kodu}")
