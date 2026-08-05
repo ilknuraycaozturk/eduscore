@@ -753,8 +753,8 @@
                 const category = SEGMENT_TO_CATEGORY[segment];
                 if (category && !dedicatedPage) params.set('category', category);
 
-                const qParts = [location, query].filter(Boolean);
-                if (qParts.length) params.set('q', qParts.join(' '));
+                if (location) params.set('loc', location);
+                if (query) params.set('q', query);
 
                 if (nearMeLat && nearMeLng) {
                     params.set('lat', nearMeLat);
