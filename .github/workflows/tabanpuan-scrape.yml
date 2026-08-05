@@ -1,0 +1,36 @@
+name: LGS Taban Puanları - Teşhis (Aksiyon 1.2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      il:
+        description: "İl slug'ı (örn. ankara)"
+        required: true
+        default: "ankara"
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: |
+          pip install -r scripts/requirements.txt
+          playwright install --with-deps chromium
+
+      - name: tabanpuanlari.net yapısını teşhis et
+        run: |
+          python scripts/scrape_tabanpuanlari.py --il "${{ inputs.il }}" --output data/tabanpuan_raw.json
+
+      - name: Ham veriyi artifact olarak kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabanpuan-raw-data
+          path: data/tabanpuan_raw.json
+          retention-days: 7
