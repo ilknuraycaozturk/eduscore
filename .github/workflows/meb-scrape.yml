@@ -28,10 +28,7 @@ on:
         required: true
         default: "false"
   schedule:
-    # GEÇİCİ: Ankara verisinin tamamı (koordinat+web sitesi) zenginleşene kadar
-    # her 20 dakikada bir otomatik çalışır (her çalıştırma ~400 kayıt işler).
-    # İş bitince bunu tekrar "0 0 1 * *" (ayda bir) yapmayı UNUTMAYIN.
-    - cron: "*/20 * * * *"
+    - cron: "0 0 1 * *"
 
 jobs:
   # ÖNEMLİ: Scraping ve Supabase'e yükleme artık İKİ AYRI İŞ (job).
