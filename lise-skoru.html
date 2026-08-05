@@ -135,6 +135,7 @@
                     const { data: page, error } = await sb.from('institutions')
                         .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
                         .in('institution_type_id', typeIds)
+                        .order('id')
                         .range(from, from + PAGE_SIZE - 1);
                     if (error) throw error;
                     instRows = instRows.concat(page || []);
