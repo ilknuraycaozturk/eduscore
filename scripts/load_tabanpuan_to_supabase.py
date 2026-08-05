@@ -174,7 +174,7 @@ def main():
                 f"üzerinden hesaplanmıştır (skor = 100 - yüzdelik dilim)."
             )
             resp = requests.post(
-                f"{supabase_url}/rest/v1/institution_criteria_scores",
+                f"{supabase_url}/rest/v1/institution_criteria_scores?on_conflict=institution_id,criteria_id",
                 headers={**headers, "Prefer": "resolution=merge-duplicates"},
                 json={
                     "institution_id": institution_id,
@@ -195,7 +195,7 @@ def main():
                "Programın süresi 4 yıl (hazırlık sınıfı yok, standart müfredat yabancı dil dersi).")
         )
         resp2 = requests.post(
-            f"{supabase_url}/rest/v1/institution_criteria_scores",
+            f"{supabase_url}/rest/v1/institution_criteria_scores?on_conflict=institution_id,criteria_id",
             headers={**headers, "Prefer": "resolution=merge-duplicates"},
             json={
                 "institution_id": institution_id,
