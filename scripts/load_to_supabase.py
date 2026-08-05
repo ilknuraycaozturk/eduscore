@@ -338,9 +338,30 @@ def main():
         # ama sınırlı sayıda - performans için)
         match = find_existing_match(raw_name, existing) if existing else None
 
-        if match and match.get("lat") and match.get("address") and (match.get("website") or not website):
-            # Zaten tam dolu bir kayıt - hiçbir şey yapmaya gerek yok, HIZLICA atla
-            skipped_dupe += 1
+        if match and match.get("lat"):
+            # ÖNEMLİ: Koordinatı zaten varsa BİR DAHA coğrafi kodlama yapma
+            # (Nominatim'e boşuna istek atıp bütçeyi tüketmeyelim - önceden
+            # adres/web sitesi de dolu olmasını şart koşuyorduk ama bu alanlar
+            # bazı kayıtlarda kaynakta hiç yok, bu da aynı kayıtların her
+            # çalıştırmada sonsuza dek tekrar denenmesine yol açıyordu).
+            # Yine de web sitesi/adres gibi ÜCRETSİZ (API gerektirmeyen)
+            # alanları, elimizde varsa güncelleyelim.
+            needs_update = {}
+            if not match.get("address") and address:
+                needs_update["address"] = address
+            if not match.get("website") and website:
+                needs_update["website"] = website
+            if needs_update and not args.dry_run:
+                resp = requests.patch(
+                    f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
+                    headers=headers, json=needs_update,
+                )
+                if resp.status_code in (200, 204):
+                    enriched += 1
+                else:
+                    print(f"UYARI: '{raw_name}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
+            else:
+                skipped_dupe += 1
             continue
 
         if geocode_calls >= args.max_geocode:
