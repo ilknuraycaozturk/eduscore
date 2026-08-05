@@ -83,7 +83,8 @@
         ];
 
         const urlParams = new URLSearchParams(window.location.search);
-        const qParam = urlParams.get('q') || '';
+        const locParam = urlParams.get('loc') || '';
+        const qParam = [locParam, urlParams.get('q') || ''].filter(Boolean).join(' ');
         const categoryParam = urlParams.get('category') || '';
         const userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
         const userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
