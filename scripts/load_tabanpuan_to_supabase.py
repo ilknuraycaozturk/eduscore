@@ -103,7 +103,10 @@ def main():
 
     schools = []
     for name, rows in grouped.items():
-        yuzdelikler = [r["yuzdelik_2025"] for r in rows if r["yuzdelik_2025"] is not None]
+        yuzdelikler = [r["yuzdelik_2026"] if r.get("yuzdelik_2026") is not None else r.get("yuzdelik_2025")
+                       for r in rows]
+        yuzdelikler = [y for y in yuzdelikler if y is not None]
+        veri_yili = "2026" if any(r.get("yuzdelik_2026") is not None for r in rows) else "2025"
         avg_yuzdelik = round(sum(yuzdelikler) / len(yuzdelikler), 2) if yuzdelikler else None
         toplam_kontenjan_2026 = sum(r["kontenjan_2026"] for r in rows if r["kontenjan_2026"])
         toplam_kontenjan_2025 = sum(r["kontenjan_2025"] for r in rows if r["kontenjan_2025"])
@@ -111,6 +114,7 @@ def main():
         schools.append({
             "name": name,
             "avg_yuzdelik": avg_yuzdelik,
+            "veri_yili": veri_yili,
             "kontenjan_2026": toplam_kontenjan_2026 or None,
             "kontenjan_2025": toplam_kontenjan_2025 or None,
             "hazirlik_var": hazirlik_var,
@@ -165,11 +169,9 @@ def main():
         if school["avg_yuzdelik"] is not None:
             academic_score = round(100 - school["avg_yuzdelik"], 2)
             source_note = (
-                f"Kaynak: tabanpuanlari.net (MEB resmi LGS yerleştirme verilerinden derlenmiştir). "
+                f"Kaynak: tabanpuanlari.net (MEB resmi LGS yerleştirme verilerinden derlenmiştir, {school['veri_yili']} verisi). "
                 f"{school['program_count']} programın ortalama yüzdelik dilimi ({school['avg_yuzdelik']}) "
-                f"üzerinden hesaplanmıştır (skor = 100 - yüzdelik dilim). "
-                f"NOT: Bu üçüncü taraf sitedeki 'LGS Puanı' sütunu, 2026 sonuçları yeni açıklandığı için "
-                f"henüz güncellenmemiş olabilir - o durumda 2025 verisini yansıtır."
+                f"üzerinden hesaplanmıştır (skor = 100 - yüzdelik dilim)."
             )
             resp = requests.post(
                 f"{supabase_url}/rest/v1/institution_criteria_scores",
