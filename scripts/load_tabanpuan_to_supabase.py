@@ -36,6 +36,20 @@ from pathlib import Path
 import requests
 
 
+TYPE_KEYWORDS = [
+    # ÖNEMLİ: Sıralama önemli - daha spesifik olanlar önce gelmeli.
+    ("fen-lisesi", ["fen lisesi"]),
+    ("sosyal-bilimler-lisesi", ["sosyal bilimler lisesi"]),
+    ("anadolu-imam-hatip-lisesi", ["imam hatip lisesi", "imam-hatip lisesi"]),
+    ("mesleki-teknik-anadolu-lisesi", [
+        "mesleki ve teknik anadolu lisesi", "ticaret mesleki",
+        "teknik anadolu lisesi", "meslek lisesi",
+    ]),
+    ("anadolu-lisesi", ["anadolu lisesi"]),
+    ("lise", ["lisesi", " lise "]),
+]
+
+
 def turkish_lower(s: str) -> str:
     return s.replace("İ", "i").replace("I", "ı").lower()
 
@@ -54,6 +68,14 @@ def normalize_name_lenient(name: str) -> str:
     n = name.strip().replace("İ", "i").replace("I", "i").lower()
     n = n.replace("özel", "").strip()
     return " ".join(n.split())
+
+
+def guess_type(name: str) -> str:
+    lower = turkish_lower(name)
+    for slug, keywords in TYPE_KEYWORDS:
+        if any(k in lower for k in keywords):
+            return slug
+    return "lise"  # bu script sadece LGS liste sayfasından geliyor, hepsi lise türevi
 
 
 def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
@@ -95,6 +117,8 @@ def fetch_all_paginated(base_url: str, headers: dict, path_with_query: str, page
 def main():
     parser = argparse.ArgumentParser(description="tabanpuanlari.net verisini Supabase'e yükler (sadece mevcut kurumları günceller).")
     parser.add_argument("--input", required=True)
+    parser.add_argument("--il", default="Ankara", help="Yeni eklenecek (eşleşmeyen) kurumlar için il adı")
+    parser.add_argument("--category-slug", default="okul-oncesi-k12")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -147,20 +171,23 @@ def main():
     }
 
     criteria_lookup = get_lookup(supabase_url, headers, "scoring_criteria", "key")
+    type_lookup = get_lookup(supabase_url, headers, "institution_types", "slug")
+    category_lookup = get_lookup(supabase_url, headers, "categories", "slug")
+
+    # Yeni kurum eklenecekse hangi il/konum altına ekleneceğini bul (ilçe bilgisi
+    # bu kaynakta yok, bu yüzden İL DÜZEYİNDE konumlandırılıyor - "Profilini
+    # Sahiplen" ya da bir sonraki MEB taramasıyla ilçe bilgisi netleşebilir).
+    resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.{args.il.title()}", headers=headers)
+    resp.raise_for_status()
+    il_rows = resp.json()
+    il_location_id = il_rows[0]["id"] if il_rows else None
+    if not il_location_id:
+        print(f"UYARI: '{args.il}' il konumu bulunamadı - eşleşmeyen okullar eklenemeyecek, sadece atlanacak.")
 
     all_institutions = fetch_all_paginated(supabase_url, headers, "/rest/v1/institutions?select=id,name")
     print(f"Eşleştirme için {len(all_institutions)} mevcut kurum yüklendi.")
 
-    updated, unmatched = 0, []
-
-    for school in schools:
-        match = find_existing_match(school["name"], all_institutions)
-        if not match:
-            unmatched.append(school["name"])
-            continue
-
-        institution_id = match["id"]
-
+    def write_scores_and_kontenjan(institution_id: str, school: dict):
         kontenjan_parts = []
         if school["kontenjan_2026"]:
             kontenjan_parts.append(f"2026: {school['kontenjan_2026']}")
@@ -218,12 +245,55 @@ def main():
         if resp2.status_code not in (200, 201, 204):
             print(f"UYARI: '{school['name']}' yabancı dil skoru yazılamadı -> {resp2.status_code} {resp2.text[:200]}")
 
-        updated += 1
+    updated, inserted, skipped = 0, 0, []
 
-    print(f"\nTamamlandı: {updated} kurum güncellendi, {len(unmatched)} okul eşleşmedi (veritabanında bulunamadı).")
-    if unmatched:
-        print("--- Eşleşmeyen ilk 20 okul ---")
-        for name in unmatched[:20]:
+    for school in schools:
+        match = find_existing_match(school["name"], all_institutions)
+
+        if match:
+            write_scores_and_kontenjan(match["id"], school)
+            updated += 1
+            continue
+
+        if not il_location_id:
+            skipped.append(school["name"])
+            continue
+
+        type_slug = guess_type(school["name"])
+        type_id = type_lookup.get(type_slug)
+        full_name = f"{args.il.upper()} - {school['name']}"
+        payload = {
+            "name": full_name,
+            "institution_type_id": type_id,
+            "category_id": category_lookup.get(args.category_slug),
+            "location_id": il_location_id,
+            "is_public": True,
+            "is_verified": False,
+            "description": (
+                "Bu kurum tabanpuanlari.net kaynağından (MEB resmi LGS verilerinden derlenmiştir) "
+                "otomatik olarak eklenmiştir. Not: Bu kaynakta ilçe bilgisi bulunmadığı için kurum "
+                f"şimdilik il düzeyinde ({args.il}) konumlandırılmıştır; kesin ilçe/koordinat bilgisi "
+                "MEB taramasıyla veya 'Profilini Sahiplen' ile netleşecektir."
+            ),
+        }
+        resp = requests.post(
+            f"{supabase_url}/rest/v1/institutions",
+            headers={**headers, "Prefer": "return=representation"}, json=payload,
+        )
+        if resp.status_code not in (200, 201):
+            print(f"UYARI: '{full_name}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
+            skipped.append(school["name"])
+            continue
+
+        new_institution_id = resp.json()[0]["id"]
+        all_institutions.append({"id": new_institution_id, "name": full_name})
+        write_scores_and_kontenjan(new_institution_id, school)
+        inserted += 1
+
+    print(f"\nTamamlandı: {updated} kurum güncellendi, {inserted} yeni kurum eklendi, {len(skipped)} okul atlandı.")
+    if skipped:
+        print("--- Atlanan okullar ---")
+        for name in skipped[:20]:
             print(f"  ? {name}")
 
 
