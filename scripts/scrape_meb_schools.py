@@ -69,8 +69,27 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
                         break
                     except Exception:
                         continue
-        except Exception:
-            pass
+                print(f"TEŞHİS: Sayfa boyutu kutusunun son değeri: '{length_select.input_value()}'")
+        except Exception as e:
+            print(f"TEŞHİS: Sayfa boyutu kutusu ayarlanamadı: {e}")
+
+        # TEŞHİS: Sayfalama kontrollerinin gerçek yapısını logla - böylece
+        # _go_to_next_page() doğru elemanı bulamıyorsa neden olduğunu görebiliriz.
+        try:
+            pag_candidates = page.query_selector_all(
+                "a.paginate_button, li.paginate_button, [class*='pagin' i] a, "
+                "nav a, .dataTables_paginate a, .dataTables_paginate button"
+            )
+            print(f"TEŞHİS: Sayfalama alanında {len(pag_candidates)} olası eleman bulundu:")
+            for el in pag_candidates[:15]:
+                try:
+                    txt = el.inner_text().strip()
+                    cls = el.get_attribute("class") or ""
+                    print(f"  metin='{txt}' class='{cls}'")
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f"TEŞHİS: Sayfalama alanı taranamadı: {e}")
 
         # Sayfa sayısı için güvenli bir üst sınır (sonsuz döngüye girmeyi önler)
         max_pages = 200
@@ -175,6 +194,7 @@ def _go_to_next_page(page, timeout_ms: int) -> bool:
         except Exception:
             continue
 
+    print("TEŞHİS: _go_to_next_page hiçbir aday seçiciyle eşleşen tıklanabilir eleman bulamadı.")
     return False
 
 
