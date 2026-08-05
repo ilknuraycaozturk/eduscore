@@ -10,7 +10,7 @@ on:
       all_ilceler:
         description: "true ise ildeki TÜM ilçeleri otomatik keşfedip çeker (ilce_kodu/location_name/filter_mahalle görmezden gelinir)"
         required: true
-        default: "false"
+        default: "true"
       ilce_kodu:
         description: "İlçe kodu (Etimesgut=27) - sadece all_ilceler=false iken kullanılır"
         required: false
@@ -26,9 +26,12 @@ on:
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
-        default: "true"
+        default: "false"
   schedule:
-    - cron: "0 0 1 * *"
+    # GEÇİCİ: Ankara verisinin tamamı (koordinat+web sitesi) zenginleşene kadar
+    # her 20 dakikada bir otomatik çalışır (her çalıştırma ~400 kayıt işler).
+    # İş bitince bunu tekrar "0 0 1 * *" (ayda bir) yapmayı UNUTMAYIN.
+    - cron: "*/20 * * * *"
 
 jobs:
   # ÖNEMLİ: Scraping ve Supabase'e yükleme artık İKİ AYRI İŞ (job).
