@@ -106,6 +106,7 @@
         let criteria = [];
         let institutions = [];
         let scoresByInstitution = {}; // institution_id -> { criteria_key: score }
+        let scoreSourceByInstitution = {}; // institution_id -> { criteria_key: source_note }
         let userLat = null, userLng = null, radiusParam = null;
         let sortMode = 'score'; // 'score' | 'distance'
 
@@ -239,17 +240,20 @@
             let scoreRows = [];
             if (institutions.length > 0) {
                 const resp = await sb.from('institution_criteria_scores')
-                    .select('institution_id, score, criteria_id, scoring_criteria ( key )')
+                    .select('institution_id, score, source_note, criteria_id, scoring_criteria ( key )')
                     .in('institution_id', institutions.map(i => i.id));
                 scoreRows = resp.data || [];
             }
 
             scoresByInstitution = {};
+            scoreSourceByInstitution = {};
             scoreRows.forEach(r => {
                 const key = r.scoring_criteria ? r.scoring_criteria.key : null;
                 if (!key) return;
                 if (!scoresByInstitution[r.institution_id]) scoresByInstitution[r.institution_id] = {};
                 scoresByInstitution[r.institution_id][key] = r.score;
+                if (!scoreSourceByInstitution[r.institution_id]) scoreSourceByInstitution[r.institution_id] = {};
+                scoreSourceByInstitution[r.institution_id][key] = r.source_note || null;
             });
 
             renderSurvey();
@@ -398,7 +402,12 @@
                     : '';
                 const breakdown = withData.map(c => {
                     const s = r.scores[c.key];
-                    return s != null ? `<span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded">${c.name_tr.split(' ')[0]}: ${s}</span>` : '';
+                    if (s == null) return '';
+                    const note = (scoreSourceByInstitution[r.inst.id] || {})[c.key] || '';
+                    const yearMatch = note.match(/20\d{2}/);
+                    const yearTag = yearMatch ? ` <span class="opacity-60">'${yearMatch[0].slice(2)}</span>` : '';
+                    const titleAttr = note ? ` title="${note.replace(/"/g, '&quot;')}"` : '';
+                    return `<span class="text-[10px] bg-slate-100 text-brandGray px-2 py-0.5 rounded cursor-help"${titleAttr}>${c.name_tr.split(' ')[0]}: ${s}${yearTag}</span>`;
                 }).join(' ');
                 const verifiedBadge = r.inst.is_verified
                     ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
