@@ -410,7 +410,7 @@
                 .select('score, source_note, scoring_criteria ( name_tr, default_weight, display_order )')
                 .eq('institution_id', instId);
 
-            renderInstitution(inst, scores || []);
+            renderInstitution(inst, scores || [], ilAdi);
             setupClaimSection(instId, inst);
             setupReviewsSection(instId);
             loadSimilarInstitutions(inst);
@@ -560,7 +560,7 @@
             document.getElementById('notFoundState').classList.remove('hidden');
         }
 
-        function renderInstitution(inst, scores) {
+        function renderInstitution(inst, scores, ilAdi) {
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
 
