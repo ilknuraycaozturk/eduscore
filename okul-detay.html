@@ -32,6 +32,17 @@
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
 
+    <div id="debugErrorBox" style="display:none; background:#fee2e2; border:2px solid #dc2626; color:#991b1b; padding:12px; margin:12px; border-radius:8px; font-family:monospace; font-size:12px; white-space:pre-wrap; word-break:break-all;"></div>
+    <script>
+        function showDebugError(msg) {
+            const box = document.getElementById('debugErrorBox');
+            box.style.display = 'block';
+            box.textContent = '⚠️ HATA (bu kutuyu Claude\'a gönderin):\n' + msg;
+        }
+        window.addEventListener('error', (e) => showDebugError(e.message + '\n' + (e.error && e.error.stack || '')));
+        window.addEventListener('unhandledrejection', (e) => showDebugError('Promise hatası: ' + (e.reason && (e.reason.message || JSON.stringify(e.reason)))));
+    </script>
+
     <header class="w-full bg-white border-b border-slate-200/80 px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-y-2">
         <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
         <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold">
@@ -846,7 +857,7 @@
             });
         }
 
-        load();
+        load().catch(err => showDebugError('load() hatası: ' + err.message + '\n' + (err.stack || '')));
     </script>
 </body>
 </html>
