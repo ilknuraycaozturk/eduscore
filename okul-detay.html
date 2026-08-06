@@ -382,6 +382,19 @@
 
             if (error || !inst) { showNotFound(); return; }
 
+            // ÖNEMLİ: İlçenin gerçek İLİNİ bulmak için ayrı bir sorgu yapıyoruz
+            // (önceden ", Ankara" sabit metin olarak yazılıyordu - bu, tüm
+            // Türkiye'ye yayıldığımızdan beri diğer illerdeki kurumlar için
+            // YANLIŞ bilgi gösteriyordu).
+            let ilAdi = 'Ankara';
+            if (inst.location_id) {
+                const { data: districtRow } = await sb.from('locations').select('parent_id').eq('id', inst.location_id).single();
+                if (districtRow && districtRow.parent_id) {
+                    const { data: provinceRow } = await sb.from('locations').select('name').eq('id', districtRow.parent_id).single();
+                    if (provinceRow) ilAdi = provinceRow.name;
+                }
+            }
+
             const { data: scores } = await sb.from('institution_criteria_scores')
                 .select('score, source_note, scoring_criteria ( name_tr, default_weight, display_order )')
                 .eq('institution_id', instId);
@@ -550,7 +563,7 @@
 
             document.getElementById('typeBadge').textContent = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
             document.getElementById('instName').textContent = inst.name;
-            document.querySelector('#instLocation span').textContent = (inst.locations ? inst.locations.name : '') + ', Ankara';
+            document.querySelector('#instLocation span').textContent = (inst.locations ? inst.locations.name : '') + ', ' + ilAdi;
             document.getElementById('instAddress').textContent = inst.address || '';
 
             const publicBadge = document.getElementById('publicBadge');
@@ -571,7 +584,7 @@
                 verifiedBadge.className = 'bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded';
             }
 
-            const mapsUrl = inst.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(inst.name + ' ' + (inst.address || 'Ankara'))}`;
+            const mapsUrl = inst.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(inst.name + ' ' + (inst.address || ilAdi))}`;
             document.getElementById('mapsLink').href = mapsUrl;
 
             if (inst.website) {
