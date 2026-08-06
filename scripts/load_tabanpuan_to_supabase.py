@@ -115,9 +115,8 @@ def fetch_all_paginated(base_url: str, headers: dict, path_with_query: str, page
 
 
 def main():
-    parser = argparse.ArgumentParser(description="tabanpuanlari.net verisini Supabase'e yükler (sadece mevcut kurumları günceller).")
+    parser = argparse.ArgumentParser(description="tabanpuanlari.net verisini Supabase'e yükler (mevcut kurumları günceller, eşleşmeyenleri yeni ekler).")
     parser.add_argument("--input", required=True)
-    parser.add_argument("--il", default="Ankara", help="Yeni eklenecek (eşleşmeyen) kurumlar için il adı")
     parser.add_argument("--category-slug", default="okul-oncesi-k12")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -131,12 +130,15 @@ def main():
     raw = json.loads(Path(args.input).read_text(encoding="utf-8"))
     print(f"{len(raw)} ham program satırı okundu.")
 
-    grouped: dict[str, list[dict]] = defaultdict(list)
+    # ÖNEMLİ: (il, okul_adi) ikilisine göre grupla - sadece okul_adi'na göre
+    # gruplamak, farklı illerdeki aynı isimli okulları (örn. "Atatürk Anadolu
+    # Lisesi" onlarca ilde var) yanlışlıkla birleştirirdi.
+    grouped: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for r in raw:
-        grouped[r["okul_adi"]].append(r)
+        grouped[(r.get("il_adi", "Ankara"), r["okul_adi"])].append(r)
 
     schools = []
-    for name, rows in grouped.items():
+    for (il_adi, name), rows in grouped.items():
         yuzdelikler = [r["yuzdelik_2026"] if r.get("yuzdelik_2026") is not None else r.get("yuzdelik_2025")
                        for r in rows]
         yuzdelikler = [y for y in yuzdelikler if y is not None]
@@ -147,6 +149,7 @@ def main():
         hazirlik_var = any((r.get("sure") or "").strip() == "5 yıl" for r in rows)
         schools.append({
             "name": name,
+            "il_adi": il_adi,
             "avg_yuzdelik": avg_yuzdelik,
             "veri_yili": veri_yili,
             "kontenjan_2026": toplam_kontenjan_2026 or None,
@@ -174,18 +177,31 @@ def main():
     type_lookup = get_lookup(supabase_url, headers, "institution_types", "slug")
     category_lookup = get_lookup(supabase_url, headers, "categories", "slug")
 
-    # Yeni kurum eklenecekse hangi il/konum altına ekleneceğini bul (ilçe bilgisi
-    # bu kaynakta yok, bu yüzden İL DÜZEYİNDE konumlandırılıyor - "Profilini
-    # Sahiplen" ya da bir sonraki MEB taramasıyla ilçe bilgisi netleşebilir).
-    resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.{args.il.title()}", headers=headers)
-    resp.raise_for_status()
-    il_rows = resp.json()
-    il_location_id = il_rows[0]["id"] if il_rows else None
-    if not il_location_id:
-        print(f"UYARI: '{args.il}' il konumu bulunamadı - eşleşmeyen okullar eklenemeyecek, sadece atlanacak.")
+    # Tüm il konumlarını çek (yeni kurum eklerken hangi ile bağlanacağını
+    # bulmak için). İlçe bilgisi bu kaynakta yok, bu yüzden yeni kurumlar
+    # İL DÜZEYİNDE konumlandırılıyor.
+    resp2 = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name,parent_id", headers=headers)
+    resp2.raise_for_status()
+    all_locations = resp2.json()
+    location_by_id = {l["id"]: l for l in all_locations}
+    # Basitleştirilmiş: parent'ı 'Türkiye' olan satırlar il'dir
+    turkiye_id = next((l["id"] for l in all_locations if l["name"] == "Türkiye"), None)
+    province_id_by_name = {l["name"]: l["id"] for l in all_locations if l.get("parent_id") == turkiye_id}
 
-    all_institutions = fetch_all_paginated(supabase_url, headers, "/rest/v1/institutions?select=id,name")
+    def province_of_institution(inst: dict) -> str | None:
+        loc_id = inst.get("location_id")
+        if not loc_id or loc_id not in location_by_id:
+            return None
+        district = location_by_id[loc_id]
+        if district.get("parent_id") == turkiye_id:
+            return district["name"]  # kurum doğrudan il seviyesinde bağlı
+        province = location_by_id.get(district.get("parent_id"))
+        return province["name"] if province else None
+
+    all_institutions = fetch_all_paginated(supabase_url, headers, "/rest/v1/institutions?select=id,name,location_id")
     print(f"Eşleştirme için {len(all_institutions)} mevcut kurum yüklendi.")
+    for inst in all_institutions:
+        inst["_province"] = province_of_institution(inst)
 
     def write_scores_and_kontenjan(institution_id: str, school: dict):
         kontenjan_parts = []
@@ -248,20 +264,26 @@ def main():
     updated, inserted, skipped = 0, 0, []
 
     for school in schools:
-        match = find_existing_match(school["name"], all_institutions)
+        same_province = [i for i in all_institutions if i.get("_province") == school["il_adi"]]
+        # Eğer il bilgisi hiçbir kurumda çözülemiyorsa (örn. veri henüz o il
+        # için hiç yoksa), güvenlik için TÜM kurumlar arasında arama YAPMA -
+        # yanlış ile eşleşme riskini önlemek için doğrudan "yeni kurum" say.
+        match = find_existing_match(school["name"], same_province) if same_province else None
 
         if match:
             write_scores_and_kontenjan(match["id"], school)
             updated += 1
             continue
 
+        il_location_id = province_id_by_name.get(school["il_adi"])
         if not il_location_id:
+            print(f"UYARI: '{school['il_adi']}' il konumu bulunamadı - '{school['name']}' atlanıyor.")
             skipped.append(school["name"])
             continue
 
         type_slug = guess_type(school["name"])
         type_id = type_lookup.get(type_slug)
-        full_name = f"{args.il.upper()} - {school['name']}"
+        full_name = f"{school['il_adi'].upper()} - {school['name']}"
         payload = {
             "name": full_name,
             "institution_type_id": type_id,
@@ -272,8 +294,8 @@ def main():
             "description": (
                 "Bu kurum tabanpuanlari.net kaynağından (MEB resmi LGS verilerinden derlenmiştir) "
                 "otomatik olarak eklenmiştir. Not: Bu kaynakta ilçe bilgisi bulunmadığı için kurum "
-                f"şimdilik il düzeyinde ({args.il}) konumlandırılmıştır; kesin ilçe/koordinat bilgisi "
-                "MEB taramasıyla veya 'Profilini Sahiplen' ile netleşecektir."
+                f"şimdilik il düzeyinde ({school['il_adi']}) konumlandırılmıştır; kesin ilçe/koordinat "
+                "bilgisi MEB taramasıyla veya 'Profilini Sahiplen' ile netleşecektir."
             ),
         }
         resp = requests.post(
@@ -286,7 +308,7 @@ def main():
             continue
 
         new_institution_id = resp.json()[0]["id"]
-        all_institutions.append({"id": new_institution_id, "name": full_name})
+        all_institutions.append({"id": new_institution_id, "name": full_name, "_province": school["il_adi"]})
         write_scores_and_kontenjan(new_institution_id, school)
         inserted += 1
 
