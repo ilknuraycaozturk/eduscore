@@ -162,6 +162,11 @@
             if (r.class_size_avg) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">👥 ${r.class_size_avg}</span>`);
             if (r.fee_info) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">💰 ${r.fee_info}</span>`);
 
+            const scores = r._scores || {};
+            if (scores.akademik_basari != null) extraBadges.push(`<span class="bg-brandRed/10 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">🎓 LGS: ${scores.akademik_basari}</span>`);
+            if (scores.universite_yerlestirme != null) extraBadges.push(`<span class="bg-brandRed/10 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">🏛️ YKS: ${scores.universite_yerlestirme}</span>`);
+            if (scores.yabanci_dil != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🌐 Dil: ${scores.yabanci_dil}</span>`);
+
             const campusFacts = [];
             const ci = r.campus_info || {};
             if (ci.laboratuvar) campusFacts.push('🔬');
@@ -184,7 +189,7 @@
                                 ${campusFacts.length ? `<span class="text-xs">${campusFacts.join(' ')}</span>` : ''}
                             </div>
                             <h3 class="font-bold text-base text-[#241A16]">${r.name}</h3>
-                            <p class="text-xs text-[#8A7A72] mt-1">${r.address || 'Ankara'}</p>
+                            <p class="text-xs text-[#8A7A72] mt-1">${r.address || r._ilAdi || 'Ankara'}</p>
                             ${(r._dist != null && isFinite(r._dist)) ? `<p id="dist-${r.id}" class="text-[11px] text-brandRed font-semibold mt-1">📏 ${r._dist.toFixed(1)} km (kuş uçuşu)</p>` : ''}
                         </div>
                         ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">Web sitesi →</a>` : ''}
@@ -233,6 +238,37 @@
                 const ratingById = {};
                 (ratings || []).forEach(r => { ratingById[r.institution_id] = r; });
                 results = results.map(r => ({ ...r, _rating: ratingById[r.id] || null }));
+            }
+
+            // Kriter skorlarını (Akademik Başarı, Yabancı Dil, Üniversite Yerleştirme) çek
+            if (results.length > 0) {
+                const { data: scoreRows } = await sb.from('institution_criteria_scores')
+                    .select('institution_id, score, scoring_criteria ( key )')
+                    .in('institution_id', results.map(r => r.id));
+                const scoresById = {};
+                (scoreRows || []).forEach(sr => {
+                    const key = sr.scoring_criteria ? sr.scoring_criteria.key : null;
+                    if (!key) return;
+                    if (!scoresById[sr.institution_id]) scoresById[sr.institution_id] = {};
+                    scoresById[sr.institution_id][key] = sr.score;
+                });
+                results = results.map(r => ({ ...r, _scores: scoresById[r.id] || {} }));
+            }
+
+            // Gerçek il adını çek (ilçenin üst konumu) - "Ankara" sabit yazısı
+            // yerine, tüm Türkiye'yi kapsayan doğru il adını göstermek için.
+            if (results.length > 0) {
+                const locIds = [...new Set(results.map(r => r.location_id).filter(Boolean))];
+                const { data: districts } = await sb.from('locations').select('id, parent_id').in('id', locIds);
+                const parentIds = [...new Set((districts || []).map(d => d.parent_id).filter(Boolean))];
+                const { data: provinces } = parentIds.length
+                    ? await sb.from('locations').select('id, name').in('id', parentIds)
+                    : { data: [] };
+                const provinceById = {};
+                (provinces || []).forEach(p => { provinceById[p.id] = p.name; });
+                const districtToProvince = {};
+                (districts || []).forEach(d => { districtToProvince[d.id] = provinceById[d.parent_id] || null; });
+                results = results.map(r => ({ ...r, _ilAdi: districtToProvince[r.location_id] || 'Ankara' }));
             }
 
             if (userLat && userLng) {
