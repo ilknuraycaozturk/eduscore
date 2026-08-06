@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       il:
-        description: "İl slug'ı (örn. ankara)"
+        description: "İl adı (örn. Ankara). 'tumu' yazarsanız 81 ilin hepsi sırayla çekilir."
         required: true
-        default: "ankara"
+        default: "Ankara"
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
@@ -15,7 +15,7 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +30,11 @@ jobs:
 
       - name: tabanpuanlari.net'ten veri çek
         run: |
-          python scripts/scrape_tabanpuanlari.py --il "${{ inputs.il }}" --output data/tabanpuan_raw.json
+          if [ "${{ inputs.il }}" = "tumu" ]; then
+            python scripts/scrape_tabanpuanlari.py --tumu --output data/tabanpuan_raw.json
+          else
+            python scripts/scrape_tabanpuanlari.py --il "${{ inputs.il }}" --output data/tabanpuan_raw.json
+          fi
 
       - name: Ham veriyi artifact olarak kaydet
         uses: actions/upload-artifact@v4
@@ -42,7 +46,7 @@ jobs:
   load:
     needs: scrape
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -65,7 +69,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --il "${{ inputs.il }}" --dry-run
+            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --dry-run
           else
-            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --il "${{ inputs.il }}"
+            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json
           fi
