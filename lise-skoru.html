@@ -125,19 +125,58 @@
             const { data: typeRows } = await sb.from('institution_types').select('id, slug').in('slug', liseSlugs);
             const typeIds = (typeRows || []).map(t => t.id);
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const qParam = (urlParams.get('q') || '').trim();
+            const locParam = (urlParams.get('loc') || '').trim();
+            userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
+            userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
+            radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
+
+            // ÖNEMLİ (PERFORMANS): Bir arama (loc/q) varsa, tüm Türkiye'yi (2100+
+            // kurum) çekip TARAYICIDA filtrelemek yerine, mümkün olduğunca
+            // SUNUCU TARAFINDA filtreleyip çok daha az veri çekiyoruz. Bu, arama
+            // yapıldığında sayfanın önemli ölçüde daha hızlı yüklenmesini sağlar.
+            let matchingLocationIds = null;
+            if (locParam) {
+                const { data: matchingLocations } = await sb.from('locations')
+                    .select('id')
+                    .ilike('name', `%${locParam}%`);
+                matchingLocationIds = (matchingLocations || []).map(l => l.id);
+                // İlin kendisi eşleşiyorsa, o ilin TÜM ilçelerini de dahil etmemiz gerekir
+                const { data: childLocations } = matchingLocationIds.length
+                    ? await sb.from('locations').select('id').in('parent_id', matchingLocationIds)
+                    : { data: [] };
+                matchingLocationIds = [...new Set([...matchingLocationIds, ...(childLocations || []).map(l => l.id)])];
+            }
+
+            let instQuery = sb.from('institutions')
+                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
+                .in('institution_type_id', typeIds);
+
+            if (qParam) {
+                instQuery = instQuery.or(`name.ilike.%${qParam}%,address.ilike.%${qParam}%`);
+            } else if (locParam) {
+                const orParts = [`address.ilike.%${locParam}%`];
+                if (matchingLocationIds && matchingLocationIds.length) {
+                    orParts.push(`location_id.in.(${matchingLocationIds.join(",")})`);
+                }
+                instQuery = instQuery.or(orParts.join(","));
+            }
+
             // ÖNEMLİ: Supabase varsayılan olarak tek sorguda en fazla 1000 satır
-            // döndürür. 2500+ lise (tüm Türkiye) bu sınırı aştığı için, tüm
-            // kayıtları alana kadar sayfalama (pagination) ile çekiyoruz.
+            // döndürür. Filtre yoksa (tüm Türkiye, 2100+ kurum) bu sınırı aşabilir,
+            // bu yüzden sayfalama (pagination) ile tüm kayıtları alıyoruz. Filtre
+            // varsa sonuç zaten küçük olacağı için tek sorgu yeterli olur.
             let instRows = [];
-            {
+            if (qParam || locParam) {
+                const { data, error } = await instQuery.order('id').limit(1000);
+                if (error) throw error;
+                instRows = data || [];
+            } else {
                 const PAGE_SIZE = 1000;
                 let from = 0;
                 while (true) {
-                    const { data: page, error } = await sb.from('institutions')
-                        .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
-                        .in('institution_type_id', typeIds)
-                        .order('id')
-                        .range(from, from + PAGE_SIZE - 1);
+                    const { data: page, error } = await instQuery.order('id').range(from, from + PAGE_SIZE - 1);
                     if (error) throw error;
                     instRows = instRows.concat(page || []);
                     if (!page || page.length < PAGE_SIZE) break;
@@ -147,10 +186,22 @@
 
             // ÖNEMLİ: Supabase'in kendine-referanslı (self-join) embed söz dizimi
             // güvenilmez davranabildiği için il adını AYRI bir sorguyla çekip
-            // JS tarafında birleştiriyoruz (ilçe.parent_id -> il.name).
-            const { data: allLocations } = await sb.from('locations').select('id, name, parent_id');
+            // JS tarafında birleştiriyoruz (ilçe.parent_id -> il.name). Sadece
+            // BULUNAN kurumların konumlarına ihtiyacımız var, tüm Türkiye'yi
+            // çekmeye gerek yok.
+            const neededLocationIds = [...new Set(instRows.map(i => i.location_id).filter(Boolean))];
+            let allLocations = [];
+            if (neededLocationIds.length) {
+                const { data: locs1 } = await sb.from('locations').select('id, name, parent_id').in('id', neededLocationIds);
+                allLocations = locs1 || [];
+                const parentIds = [...new Set(allLocations.map(l => l.parent_id).filter(Boolean))];
+                if (parentIds.length) {
+                    const { data: locs2 } = await sb.from('locations').select('id, name, parent_id').in('id', parentIds);
+                    allLocations = allLocations.concat(locs2 || []);
+                }
+            }
             const locationById = {};
-            (allLocations || []).forEach(loc => { locationById[loc.id] = loc; });
+            allLocations.forEach(loc => { locationById[loc.id] = loc; });
 
             let ratingById = {};
             if ((instRows || []).length > 0) {
@@ -159,13 +210,6 @@
                     .in('institution_id', instRows.map(i => i.id));
                 (ratings || []).forEach(r => { ratingById[r.institution_id] = r; });
             }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const qParam = (urlParams.get('q') || '').trim();
-            const locParam = (urlParams.get('loc') || '').trim();
-            userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
-            userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
-            radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
 
             function distKm(lat1, lng1, lat2, lng2) {
                 const R = 6371;
@@ -189,6 +233,10 @@
             // loc SADECE coğrafi alanlarda (il/ilçe/adres) aranır - okul isminde
             // geçen "Borsa İstanbul" gibi sponsor isimleri yanlışlıkla eşleşmesin
             // diye inst.name buraya dahil edilmez. q ise okul ismini de içerir.
+            // NOT: Sunucu tarafında zaten filtrelendiği için burada yalnızca
+            // (nadir kalan) yanlış-pozitifleri elemek amacıyla ikinci bir
+            // istemci-taraflı süzgeç uyguluyoruz - bu artık çok daha az satır
+            // üzerinde çalıştığı için hızlıdır.
             if (locParam) {
                 const needle = locParam.toLocaleLowerCase('tr');
                 institutions = institutions.filter(inst => {
