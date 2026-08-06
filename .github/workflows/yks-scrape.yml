@@ -12,10 +12,24 @@ on:
         required: true
         default: "true"
 
+# ÖNEMLİ: Bu, aynı anda SADECE BİR çalıştırmaya izin verir. Yeni bir tetikleme
+# (elle ya da otomatik zincirleme) gelirse, öncekinin bitmesini SIRAYLA bekler
+# (cancel-in-progress: false) - bu, GitHub'ın "runner'lar dolu" tıkanıklığını
+# ve aynı kayıtların birden fazla çalıştırma tarafından işlenmeye çalışılmasını
+# önler.
+concurrency:
+  group: yks-scrape
+  cancel-in-progress: false
+
+permissions:
+  actions: write
+
 jobs:
   scrape_and_load:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    outputs:
+      kalan: ${{ steps.run_script.outputs.kalan }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,6 +43,7 @@ jobs:
           playwright install --with-deps chromium
 
       - name: sinavizcisi.com'dan çek ve Supabase'e yükle
+        id: run_script
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -38,3 +53,14 @@ jobs:
           else
             python scripts/scrape_and_load_yks_sinavizcisi.py --max-batch "${{ inputs.max_batch }}"
           fi
+
+      - name: Kaldıysa kendini yeniden tetikle
+        if: inputs.dry_run == 'false' && steps.run_script.outputs.kalan != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Kalan kurum var (${{ steps.run_script.outputs.kalan }}), workflow yeniden tetikleniyor..."
+          gh workflow run yks-scrape.yml \
+            -f max_batch="${{ inputs.max_batch }}" \
+            -f dry_run="false" \
+            --repo ${{ github.repository }}
