@@ -170,6 +170,10 @@ def main():
 
     if not todo:
         print("İşlenecek kurum kalmadı - hepsi zaten skorlanmış! 🎉")
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a", encoding="utf-8") as f:
+                f.write("kalan=0\n")
         return
 
     processed, matched, unmatched = 0, 0, []
@@ -243,6 +247,14 @@ def main():
     kalan = len(all_lise) - len(already_scored_ids) - matched
     if kalan > 0:
         print(f"\n⚠️ Tahmini {kalan} kurum daha kaldı. Workflow'u TEKRAR ÇALIŞTIRIN, kaldığı yerden devam edecek.")
+
+    # GitHub Actions'ın kendi kendini yeniden tetikleyebilmesi için sonucu
+    # $GITHUB_OUTPUT dosyasına da yazıyoruz (workflow YAML bunu okuyacak).
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a", encoding="utf-8") as f:
+            f.write(f"kalan={max(kalan, 0)}\n")
+
 
 
 if __name__ == "__main__":
