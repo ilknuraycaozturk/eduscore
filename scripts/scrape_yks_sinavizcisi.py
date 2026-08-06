@@ -65,6 +65,11 @@ def search_and_find_url(page, okul_adi: str, timeout_ms: int = 15000) -> str | N
 def extract_stats(page, url: str, timeout_ms: int = 15000) -> dict:
     """Bir okulun ana sayfasına gidip başlıktaki özet istatistikleri çeker."""
     full_url = url if url.startswith("http") else f"{BASE_URL}{url}"
+    # ÖNEMLİ: Okulun ÇIPLAK (bare) sayfası (örn. /lise/ankara-lisesi--123/)
+    # sitede 500 hatası veriyor - ama '/universite-yerlesmeleri/' alt sayfası
+    # doğru çalışıyor ve tam da ihtiyacımız olan özet istatistikleri içeriyor.
+    if not full_url.rstrip("/").endswith("universite-yerlesmeleri"):
+        full_url = full_url.rstrip("/") + "/universite-yerlesmeleri/"
     page.goto(full_url, wait_until="networkidle", timeout=timeout_ms)
     page.wait_for_timeout(1000)
 
