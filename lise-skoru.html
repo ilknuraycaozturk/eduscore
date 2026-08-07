@@ -107,6 +107,25 @@
             <div id="resultsList" class="space-y-3"></div>
         </div>
 
+        <!-- Karşılaştırma alt çubuğu -->
+        <div id="compareBar" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-brandDark text-white rounded-full shadow-lg px-5 py-3 flex items-center gap-4 z-40">
+            <span class="text-sm font-semibold"><span id="compareCount">0</span> lise seçildi</span>
+            <button onclick="openComparison()" class="bg-brandRed hover:bg-brandRedDark px-4 py-1.5 rounded-full text-sm font-bold transition-all">
+                Karşılaştır →
+            </button>
+        </div>
+
+        <!-- Karşılaştırma modal'ı -->
+        <div id="compareModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-brandDark">🆚 Okul Karşılaştırma</h3>
+                    <button onclick="closeComparison()" class="text-brandGray hover:text-brandDark text-2xl leading-none">&times;</button>
+                </div>
+                <div id="compareModalBody"></div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -514,8 +533,13 @@
                     ? `<div class="text-xl font-bold text-brandRed">${r.personalScore.toFixed(1)}</div><div class="text-[10px] text-brandGray uppercase tracking-wide">Kişisel Skor</div>`
                     : `<div class="text-[11px] text-brandGray italic max-w-[110px] text-right">Henüz akademik veri yok</div>`;
 
+                const isSelected = compareSelection.has(r.inst.id);
                 html += `
-                    <a href="okul-detay.html?id=${r.inst.id}${hasScore ? '&match=' + r.personalScore.toFixed(1) : ''}" class="bg-white rounded-2xl border ${hasScore ? 'border-slate-200' : 'border-dashed border-slate-300'} shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
+                    <div class="bg-white rounded-2xl border ${hasScore ? 'border-slate-200' : 'border-dashed border-slate-300'} shadow-sm p-4 flex items-center gap-3 hover:border-brandRed/40 hover:shadow-md transition-all">
+                        <label class="shrink-0 cursor-pointer" title="Karşılaştırmaya ekle">
+                            <input type="checkbox" class="compare-checkbox w-4 h-4 accent-brandRed" data-id="${r.inst.id}" ${isSelected ? 'checked' : ''}>
+                        </label>
+                        <a href="okul-detay.html?id=${r.inst.id}${hasScore ? '&match=' + r.personalScore.toFixed(1) : ''}" class="flex items-center gap-4 flex-grow cursor-pointer">
                         ${rankBadge}
                         <div class="flex-grow">
                             <div class="flex flex-wrap items-center gap-2 mb-1">
@@ -530,11 +554,74 @@
                         <div class="text-right shrink-0">
                             ${scoreBlock}
                         </div>
-                    </a>
+                        </a>
+                    </div>
                 `;
             });
 
             listEl.innerHTML = html;
+
+            document.querySelectorAll('.compare-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (cb.checked) {
+                        if (compareSelection.size >= 3) {
+                            cb.checked = false;
+                            alert('En fazla 3 lise karşılaştırabilirsiniz. Önce birini çıkarın.');
+                            return;
+                        }
+                        compareSelection.add(cb.dataset.id);
+                    } else {
+                        compareSelection.delete(cb.dataset.id);
+                    }
+                    updateCompareBar();
+                });
+            });
+        }
+
+        let compareSelection = new Set();
+
+        function updateCompareBar() {
+            const bar = document.getElementById('compareBar');
+            if (compareSelection.size >= 2) {
+                bar.classList.remove('hidden');
+                document.getElementById('compareCount').textContent = compareSelection.size;
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        function openComparison() {
+            const ids = [...compareSelection];
+            const rows = lastRanked.filter(r => ids.includes(r.inst.id));
+            if (rows.length < 2) return;
+
+            const allKeys = lastWithData;
+            let bodyHtml = `<div class="overflow-x-auto"><table class="w-full text-sm">
+                <thead><tr>
+                    <th class="text-left p-2 text-xs text-brandGray uppercase sticky left-0 bg-white">Kriter</th>
+                    ${rows.map(r => `<th class="text-left p-2 min-w-[160px]">${r.inst.name}</th>`).join('')}
+                </tr></thead><tbody>`;
+
+            bodyHtml += `<tr class="border-t border-slate-100"><td class="p-2 font-semibold text-xs text-brandGray sticky left-0 bg-white">📍 Konum</td>
+                ${rows.map(r => `<td class="p-2">${r.inst.locations ? r.inst.locations.name : ''}, ${r.inst._ilAdi || 'Ankara'}</td>`).join('')}</tr>`;
+            bodyHtml += `<tr class="border-t border-slate-100"><td class="p-2 font-semibold text-xs text-brandGray sticky left-0 bg-white">🏫 Kamu/Özel</td>
+                ${rows.map(r => `<td class="p-2">${r.inst.is_public ? 'Kamu' : 'Özel'}</td>`).join('')}</tr>`;
+            bodyHtml += `<tr class="border-t border-slate-100 bg-brandRed/5"><td class="p-2 font-bold text-xs text-brandDark sticky left-0 bg-brandRed/5">⭐ Kişisel Skor</td>
+                ${rows.map(r => `<td class="p-2 font-bold text-brandRed">${r.personalScore !== null ? r.personalScore.toFixed(1) : '—'}</td>`).join('')}</tr>`;
+
+            allKeys.forEach(c => {
+                bodyHtml += `<tr class="border-t border-slate-100"><td class="p-2 text-xs text-brandGray sticky left-0 bg-white">${c.name_tr}</td>
+                    ${rows.map(r => `<td class="p-2">${r.scores[c.key] != null ? r.scores[c.key] : '<span class="text-slate-300">—</span>'}</td>`).join('')}</tr>`;
+            });
+
+            bodyHtml += `</tbody></table></div>`;
+
+            document.getElementById('compareModalBody').innerHTML = bodyHtml;
+            document.getElementById('compareModal').classList.remove('hidden');
+        }
+
+        function closeComparison() {
+            document.getElementById('compareModal').classList.add('hidden');
         }
 
         function exportExcel() {
