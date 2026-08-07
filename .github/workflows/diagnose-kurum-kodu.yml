@@ -1,0 +1,23 @@
+name: Kurum Kodu Teşhis (Aksiyon 1.4)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: |
+          pip install -r scripts/requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Satır HTML yapısını teşhis et
+        run: python scripts/diagnose_kurum_kodu.py
