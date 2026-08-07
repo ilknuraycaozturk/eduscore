@@ -90,6 +90,20 @@
                     📏 Mesafeye Göre Sırala
                 </button>
             </div>
+            <div id="typeToggle" class="hidden flex gap-2 mb-4">
+                <button data-type="all" class="type-toggle-btn flex-1 sm:flex-none px-4 py-2 rounded-full text-xs font-semibold transition-all bg-brandRed text-white">
+                    🏫 Tümü
+                </button>
+                <button data-type="public" class="type-toggle-btn flex-1 sm:flex-none px-4 py-2 rounded-full text-xs font-semibold transition-all bg-white border border-slate-200 text-brandGray">
+                    🏛️ Sadece Devlet
+                </button>
+                <button data-type="private" class="type-toggle-btn flex-1 sm:flex-none px-4 py-2 rounded-full text-xs font-semibold transition-all bg-white border border-slate-200 text-brandGray">
+                    🏢 Sadece Özel
+                </button>
+            </div>
+            <p id="typeToggleNote" class="hidden text-[11px] text-brandGray mb-4 -mt-2">
+                💡 Devlet ve özel liseler farklı imkanlara sahip olabilir (fiziksel donanım, ücret vb.) - adil bir karşılaştırma için aynı türdeki okulları karşılaştırmanızı öneririz.
+            </p>
             <div id="resultsList" class="space-y-3"></div>
         </div>
 
@@ -109,6 +123,7 @@
         let scoreSourceByInstitution = {}; // institution_id -> { criteria_key: source_note }
         let userLat = null, userLng = null, radiusParam = null;
         let sortMode = 'score'; // 'score' | 'distance'
+        let typeFilter = 'all'; // 'all' | 'public' | 'private'
 
         async function loadData() {
             const { data: catRows } = await sb.from('categories').select('id').eq('slug', 'okul-oncesi-k12').single();
@@ -319,6 +334,8 @@
             if (userLat && userLng) {
                 document.getElementById('sortToggle').classList.remove('hidden');
             }
+            document.getElementById('typeToggle').classList.remove('hidden');
+            document.getElementById('typeToggleNote').classList.remove('hidden');
 
             const withData = criteriaWithData();
             const withoutData = criteria.filter(c => !withData.includes(c));
@@ -374,7 +391,12 @@
 
             const withScore = [];
             const withoutScore = [];
-            institutions.forEach(inst => {
+            const filteredInstitutions = institutions.filter(inst => {
+                if (typeFilter === 'public') return inst.is_public === true;
+                if (typeFilter === 'private') return inst.is_public === false;
+                return true;
+            });
+            filteredInstitutions.forEach(inst => {
                 const scores = scoresByInstitution[inst.id] || {};
                 let weightedSum = 0, usedWeight = 0;
                 withData.forEach(c => {
@@ -414,6 +436,23 @@
             btn.addEventListener('click', () => {
                 sortMode = btn.dataset.mode;
                 updateSortToggleUI();
+                calculate();
+            });
+        });
+
+        function updateTypeToggleUI() {
+            document.querySelectorAll('.type-toggle-btn').forEach(btn => {
+                const active = btn.dataset.type === typeFilter;
+                btn.className = `type-toggle-btn flex-1 sm:flex-none px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                    active ? 'bg-brandRed text-white' : 'bg-white border border-slate-200 text-brandGray'
+                }`;
+            });
+        }
+
+        document.querySelectorAll('.type-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                typeFilter = btn.dataset.type;
+                updateTypeToggleUI();
                 calculate();
             });
         });
