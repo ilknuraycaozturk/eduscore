@@ -18,6 +18,7 @@ Kullanım:
 """
 import argparse
 import os
+import random
 import re
 import sys
 import time
@@ -183,6 +184,12 @@ def main():
         page = browser.new_page()
 
         for inst in todo:
+            # ÖNEMLİ: sinavizcisi.com'a çok hızlı/sık istek göndermek bizi
+            # geçici olarak sınırlıyor (rate limit) - her kurum arasında
+            # rastgele 3-7 saniye bekleyerek daha insan-benzeri bir hızda
+            # ilerliyoruz.
+            time.sleep(random.uniform(3, 7))
+
             name = bare_name(inst["name"])
             try:
                 url = search_and_find_url(page, name, inst.get("is_public", True))
