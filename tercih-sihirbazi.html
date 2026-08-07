@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | Lise Tercih Sihirbazı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <div id="debugErrorBox" style="display:none; background:#fee2e2; border:2px solid #dc2626; color:#991b1b; padding:12px; margin:12px; border-radius:8px; font-family:monospace; font-size:12px; white-space:pre-wrap; word-break:break-all;"></div>
+    <script>
+        function showDebugError(msg) {
+            const box = document.getElementById('debugErrorBox');
+            box.style.display = 'block';
+            box.textContent = '⚠️ HATA (bu kutuyu Claude\'a gönderin):\n' + msg;
+        }
+        window.addEventListener('error', (e) => showDebugError(e.message + '\n' + (e.error && e.error.stack || '')));
+        window.addEventListener('unhandledrejection', (e) => showDebugError('Promise hatası: ' + (e.reason && (e.reason.message || JSON.stringify(e.reason)))));
+    </script>
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-y-2">
+        <span class="text-xl font-bold tracking-tight text-brandRed">EduScor</span>
+        <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+            <a href="lise-skoru.html" class="text-brandGray hover:text-brandDark transition-colors">🎓 Lise Skoru</a>
+            <a href="favorilerim.html" class="text-brandGray hover:text-brandDark transition-colors">★ Favorilerim</a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-8">
+
+        <div class="text-center mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-brandDark mb-2">🧭 Lise Tercih Sihirbazı</h1>
+            <p class="text-sm text-brandGray max-w-xl mx-auto">
+                LGS yüzdelik diliminizi ve tercihlerinizi girin, gerçekçi olarak
+                yerleşebileceğiniz liseleri görün.
+            </p>
+        </div>
+
+        <div id="formCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-brandDark mb-1">LGS Yüzdelik Diliminiz</label>
+                    <p class="text-xs text-brandGray mb-2">Sınav sonuç belgenizde yazan yüzdelik dilim (örn. 5.2). Ne kadar düşükse o kadar iyi bir sıralamadasınız.</p>
+                    <input type="number" id="yuzdelikInput" step="0.01" min="0" max="100" placeholder="örn. 5.2"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-brandDark mb-1">Program Tercihi</label>
+                    <select id="programSelect" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
+                        <option value="">Farketmez (Tümü)</option>
+                        <option value="fen-lisesi">Fen Lisesi</option>
+                        <option value="sosyal-bilimler-lisesi">Sosyal Bilimler Lisesi</option>
+                        <option value="anadolu-lisesi">Anadolu Lisesi</option>
+                        <option value="anadolu-imam-hatip-lisesi">Anadolu İmam Hatip Lisesi</option>
+                        <option value="mesleki-teknik-anadolu-lisesi">Mesleki ve Teknik Anadolu Lisesi</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-brandDark mb-1">Kamu / Özel</label>
+                    <select id="typeSelect" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
+                        <option value="">Farketmez</option>
+                        <option value="public">Sadece Devlet</option>
+                        <option value="private">Sadece Özel</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-brandDark mb-1">İl <span class="text-brandGray font-normal">(opsiyonel)</span></label>
+                    <input type="text" id="ilInput" placeholder="örn. Ankara (boş bırakırsanız tüm Türkiye)"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
+                </div>
+
+                <button onclick="search()" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-bold py-3 rounded-xl transition-all">
+                    🔍 Uygun Liseleri Göster
+                </button>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="hidden">
+            <div id="resultsSummary" class="bg-slate-100 text-brandDark text-xs rounded-xl px-4 py-3 mb-4"></div>
+            <div id="resultsList" class="space-y-3"></div>
+        </div>
+
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const PROGRAM_LABELS = {
+            'fen-lisesi': 'Fen Lisesi',
+            'sosyal-bilimler-lisesi': 'Sosyal Bilimler Lisesi',
+            'anadolu-lisesi': 'Anadolu Lisesi',
+            'anadolu-imam-hatip-lisesi': 'Anadolu İmam Hatip Lisesi',
+            'mesleki-teknik-anadolu-lisesi': 'Mesleki ve Teknik Anadolu Lisesi',
+            'lise': 'Lise',
+        };
+
+        async function search() {
+            const yuzdelik = parseFloat(document.getElementById('yuzdelikInput').value);
+            if (isNaN(yuzdelik) || yuzdelik < 0 || yuzdelik > 100) {
+                alert('Lütfen geçerli bir yüzdelik dilim girin (0-100 arası).');
+                return;
+            }
+            const programSlug = document.getElementById('programSelect').value;
+            const typeFilter = document.getElementById('typeSelect').value;
+            const ilFilter = document.getElementById('ilInput').value.trim();
+
+            const btn = document.querySelector('#formCard button');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Aranıyor...';
+            btn.disabled = true;
+
+            try {
+                // Kullanıcının yüzdelik dilimine göre girebileceği en iyi (en düşük
+                // yüzdelikli) okul, kendi akademik_basari skoru (100 - yüzdelik)
+                // kullanıcının eşdeğer skorundan (100 - yüzdelik) KÜÇÜK VEYA EŞİT
+                // olan okuldur - yani okulun kendi tabanı, kullanıcının diliminden
+                // daha "gevşek" ya da eşit olmalı.
+                const kullaniciSkor = 100 - yuzdelik;
+
+                const liseSlugs = programSlug ? [programSlug] : [
+                    'lise', 'fen-lisesi', 'sosyal-bilimler-lisesi', 'anadolu-lisesi',
+                    'anadolu-imam-hatip-lisesi', 'mesleki-teknik-anadolu-lisesi',
+                ];
+                const { data: typeRows } = await sb.from('institution_types').select('id, slug').in('slug', liseSlugs);
+                const typeIds = (typeRows || []).map(t => t.id);
+
+                let query = sb.from('institutions')
+                    .select('id, name, location_id, is_public, is_verified, locations ( name )')
+                    .in('institution_type_id', typeIds);
+                if (typeFilter === 'public') query = query.eq('is_public', true);
+                if (typeFilter === 'private') query = query.eq('is_public', false);
+
+                const { data: instRows, error } = await query.limit(3000);
+                if (error) throw error;
+
+                // İl filtresi varsa uygun konum id'lerini bul
+                let allowedLocationIds = null;
+                if (ilFilter) {
+                    const { data: matchingProvinces } = await sb.from('locations').select('id').ilike('name', `%${ilFilter}%`);
+                    const provinceIds = (matchingProvinces || []).map(p => p.id);
+                    const { data: matchingDistricts } = provinceIds.length
+                        ? await sb.from('locations').select('id').in('parent_id', provinceIds)
+                        : { data: [] };
+                    allowedLocationIds = new Set([...provinceIds, ...(matchingDistricts || []).map(d => d.id)]);
+                }
+
+                const filteredInst = allowedLocationIds
+                    ? instRows.filter(i => allowedLocationIds.has(i.location_id))
+                    : instRows;
+
+                const { data: scoreRows } = await sb.from('institution_criteria_scores')
+                    .select('institution_id, score, source_note, scoring_criteria ( key )')
+                    .in('institution_id', filteredInst.map(i => i.id));
+
+                const scoresByInst = {};
+                (scoreRows || []).forEach(sr => {
+                    const key = sr.scoring_criteria ? sr.scoring_criteria.key : null;
+                    if (!key) return;
+                    if (!scoresByInst[sr.institution_id]) scoresByInst[sr.institution_id] = {};
+                    scoresByInst[sr.institution_id][key] = { score: sr.score, note: sr.source_note };
+                });
+
+                const matches = [];
+                filteredInst.forEach(inst => {
+                    const scores = scoresByInst[inst.id] || {};
+                    const akademik = scores['akademik_basari'];
+                    if (!akademik) return;  // veri yoksa gerçekçi bir kıyas yapılamaz, dahil etmiyoruz
+                    if (akademik.score <= kullaniciSkor) {
+                        matches.push({ inst, akademik, yuzdelikDilim: (100 - akademik.score).toFixed(2) });
+                    }
+                });
+
+                // En yüksek skorlu (en seçkin ama hâlâ girebileceği) okullar önce gelsin
+                matches.sort((a, b) => b.akademik.score - a.akademik.score);
+                const top = matches.slice(0, 40);
+
+                renderResults(top, matches.length, yuzdelik);
+            } catch (err) {
+                showDebugError('search() hatası: ' + err.message + '\n' + (err.stack || ''));
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function renderResults(top, totalCount, yuzdelik) {
+            const section = document.getElementById('resultsSection');
+            section.classList.remove('hidden');
+
+            const summary = document.getElementById('resultsSummary');
+            summary.innerHTML = `📊 <b>%${yuzdelik}</b> yüzdelik diliminize göre, gerçekçi olarak girebileceğiniz <b>${totalCount}</b> lise bulundu ` +
+                `(en seçkin ${top.length} tanesi gösteriliyor). ` +
+                `<br><span class="opacity-70">Not: Bu tahmin, okulların geçmiş yıl taban yüzdelik dilimlerine dayanır - gerçek sonuçlar yıldan yıla değişebilir.</span>`;
+
+            const list = document.getElementById('resultsList');
+            if (top.length === 0) {
+                list.innerHTML = `<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-brandGray">
+                    Bu kriterlere uygun, verisi olan bir lise bulunamadı. Filtreleri gevşetmeyi deneyin (örn. il seçimini kaldırın).
+                </div>`;
+                return;
+            }
+
+            list.innerHTML = top.map((m, idx) => {
+                const loc = m.inst.locations ? m.inst.locations.name : '';
+                const verifiedBadge = m.inst.is_verified
+                    ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                    : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+                return `
+                    <a href="okul-detay.html?id=${m.inst.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
+                        <div class="w-10 h-10 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
+                        <div class="flex-grow">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <h3 class="font-bold text-sm text-brandDark">${m.inst.name}</h3>
+                                ${verifiedBadge}
+                                <span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">${m.inst.is_public ? 'Devlet' : 'Özel'}</span>
+                            </div>
+                            <p class="text-xs text-brandGray">📍 ${loc}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="text-lg font-bold text-brandRed">%${m.yuzdelikDilim}</div>
+                            <div class="text-[10px] text-brandGray uppercase tracking-wide">Okulun Taban Dilimi</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
