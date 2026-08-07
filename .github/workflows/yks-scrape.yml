@@ -63,7 +63,9 @@ jobs:
           # 'workflow' izniyle) kullanıyoruz - bu kısıtlamaya tabi değildir.
           GH_TOKEN: ${{ secrets.WORKFLOW_PAT }}
         run: |
-          echo "Kalan kurum var (${{ steps.run_script.outputs.kalan }}), workflow yeniden tetikleniyor..."
+          echo "Kalan kurum var (${{ steps.run_script.outputs.kalan }}), 2 dakika bekleniyor (siteye nefes payı için)..."
+          sleep 120
+          echo "Workflow yeniden tetikleniyor..."
           gh workflow run yks-scrape.yml \
             -f max_batch="${{ inputs.max_batch }}" \
             -f dry_run="false" \
