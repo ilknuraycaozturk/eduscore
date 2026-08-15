@@ -223,6 +223,61 @@
             width: 100%;
         }
 
+        .lise-priority-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px 28px;
+        }
+        .lise-priority-item label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .lise-priority-item .lp-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #241A16;
+            line-height: 1.3;
+        }
+        .lise-priority-item .lp-val {
+            font-size: 11px;
+            font-weight: 700;
+            color: #E8543A;
+            white-space: nowrap;
+        }
+        .lise-priority-item input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            appearance: none;
+            background: #F0E6DE;
+            cursor: pointer;
+        }
+        .lise-priority-item input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #E8543A;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .lise-priority-item input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #E8543A;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 768px) {
+            .lise-priority-grid { grid-template-columns: 1fr; gap: 18px; }
+        }
+
         .step-box {
             flex: 1;
             padding: 12px 24px;
@@ -512,8 +567,8 @@
         
         <!-- Arama Arayüzü -->
         <div class="search-container">
-            <form action="explorer.html" method="GET" class="search-steps" id="searchForm">
-                
+            <form action="explorer.html" method="GET" id="searchForm">
+                <div class="search-steps">
                 <!-- Adım 1: EduScor Kurumsal Eğitim Segmentleri -->
                 <div class="step-box">
                     <span class="step-label">
@@ -600,21 +655,23 @@
                     </div>
                 </div>
 
-                <!-- Lise Öncelikleri (sadece Lise segmenti seçilince görünür) -->
-                <div id="lisePriorityCard" class="step-box" style="display:none; grid-column: 1 / -1;">
-                    <span class="step-label">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
-                        Öncelikleriniz (isteğe bağlı — sonraki sayfada da değiştirebilirsiniz)
-                    </span>
-                    <div id="lisePriorityList" style="display:flex; flex-direction:column; gap:10px; padding:8px 4px;"></div>
-                </div>
-
                 <!-- Arama Butonu -->
                 <div class="search-action">
                     <button type="submit" class="search-submit">
                         Sorgula
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                     </button>
+                </div>
+                </div>
+
+                <!-- Lise Öncelikleri (sadece Lise segmenti seçilince görünür, tam genişlikte) -->
+                <div id="lisePriorityCard" style="display:none; margin-top:24px; padding-top:24px; border-top:1px solid #F0E6DE;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E8543A" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
+                        <span style="font-size:13px; font-weight:700; color:#241A16; text-transform:uppercase; letter-spacing:0.03em;">Öncelikleriniz</span>
+                        <span style="font-size:12px; color:#8A7A72; font-weight:400;">(isteğe bağlı — sonraki sayfada da değiştirebilirsiniz)</span>
+                    </div>
+                    <div id="lisePriorityList" class="lise-priority-grid"></div>
                 </div>
             </form>
         </div>
@@ -750,13 +807,12 @@
             const list = document.getElementById('lisePriorityList');
             const labels = { 1: '1 - Önemsiz', 2: '2 - Az Önemli', 3: '3 - Normal', 4: '4 - Önemli', 5: '5 - Çok Önemli' };
             list.innerHTML = liseCriteria.map(c => `
-                <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <label style="font-size:13px; font-weight:600; color:#241A16;">${c.name_tr}</label>
-                        <span id="idx-val-${c.key}" style="font-size:11px; font-weight:700; color:#E8543A;">3 - Normal</span>
-                    </div>
+                <div class="lise-priority-item">
+                    <label>
+                        <span class="lp-name">${c.name_tr}</span>
+                        <span class="lp-val" id="idx-val-${c.key}">3 - Normal</span>
+                    </label>
                     <input type="range" min="1" max="5" value="3" step="1" data-priority-key="${c.key}"
-                        style="width:100%; height:8px; border-radius:999px; accent-color:#E8543A;"
                         oninput="document.getElementById('idx-val-${c.key}').textContent = ({1:'1 - Önemsiz',2:'2 - Az Önemli',3:'3 - Normal',4:'4 - Önemli',5:'5 - Çok Önemli'})[this.value]">
                 </div>
             `).join('');
