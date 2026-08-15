@@ -340,6 +340,9 @@
             });
 
             renderSurvey();
+            calculate();  // ÖNEMLİ: Kullanıcı henüz kriterleri kişiselleştirmeden önce
+                          // TÜM okulları varsayılan (Normal) ağırlıklarla göster -
+                          // "Hesapla" butonuna basmadan boş bir sayfa görmesin.
         }
 
         function criteriaWithData() {
@@ -369,15 +372,24 @@
             }
 
             const listEl = document.getElementById('criteriaList');
+            // ÖNEMLİ: Ana sayfada (index.html) kullanıcı Lise segmentini seçip
+            // öncelik slider'larını ayarladıysa, bu değerler w_{kriter_key}=değer
+            // formatında URL'ye eklenip buraya taşınır - varsa slider'ları
+            // varsayılan '3' yerine bu değerlerle başlatıyoruz (kullanıcı yine
+            // burada da değiştirebilir).
+            const urlWeights = new URLSearchParams(window.location.search);
             listEl.innerHTML = criteria.map(c => {
                 const hasData = withData.includes(c);
+                const fromUrl = urlWeights.get('w_' + c.key);
+                const initialVal = (fromUrl && ['1', '2', '3', '4', '5'].includes(fromUrl)) ? fromUrl : '3';
+                const initialLabel = { 1: '1 - Önemsiz', 2: '2 - Az Önemli', 3: '3 - Normal', 4: '4 - Önemli', 5: '5 - Çok Önemli' }[initialVal];
                 return `
                     <div class="${hasData ? '' : 'opacity-40'}">
                         <div class="flex justify-between items-center mb-1">
                             <label class="text-sm font-semibold text-brandDark">${c.name_tr} <span class="text-xs text-brandGray font-normal">(${c.default_weight}%)</span></label>
-                            <span id="val-${c.key}" class="text-xs font-bold text-brandRed">3 - Normal</span>
+                            <span id="val-${c.key}" class="text-xs font-bold text-brandRed">${initialLabel}</span>
                         </div>
-                        <input type="range" min="1" max="5" value="3" step="1" data-key="${c.key}"
+                        <input type="range" min="1" max="5" value="${initialVal}" step="1" data-key="${c.key}"
                             ${hasData ? '' : 'disabled'}
                             class="w-full h-2 rounded-full appearance-none bg-slate-200 cursor-pointer"
                             oninput="updateLabel('${c.key}', this.value)">
