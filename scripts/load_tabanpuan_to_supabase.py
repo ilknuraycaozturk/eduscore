@@ -142,6 +142,10 @@ def main():
         yuzdelikler = [r["yuzdelik_2026"] if r.get("yuzdelik_2026") is not None else r.get("yuzdelik_2025")
                        for r in rows]
         yuzdelikler = [y for y in yuzdelikler if y is not None]
+        puanlar = [r["lgs_puani_2026"] if r.get("lgs_puani_2026") is not None else r.get("lgs_puani_2025")
+                   for r in rows]
+        puanlar = [p for p in puanlar if p is not None]
+        avg_puan = round(sum(puanlar) / len(puanlar), 2) if puanlar else None
         veri_yili = "2026" if any(r.get("yuzdelik_2026") is not None for r in rows) else "2025"
         avg_yuzdelik = round(sum(yuzdelikler) / len(yuzdelikler), 2) if yuzdelikler else None
         toplam_kontenjan_2026 = sum(r["kontenjan_2026"] for r in rows if r["kontenjan_2026"])
@@ -151,6 +155,7 @@ def main():
             "name": name,
             "il_adi": il_adi,
             "avg_yuzdelik": avg_yuzdelik,
+            "avg_puan": avg_puan,
             "veri_yili": veri_yili,
             "kontenjan_2026": toplam_kontenjan_2026 or None,
             "kontenjan_2025": toplam_kontenjan_2025 or None,
@@ -221,9 +226,10 @@ def main():
 
         if school["avg_yuzdelik"] is not None:
             academic_score = round(100 - school["avg_yuzdelik"], 2)
+            puan_kismi = f"Ortalama taban puanı ({school['avg_puan']}) ve " if school.get("avg_puan") is not None else ""
             source_note = (
                 f"Kaynak: tabanpuanlari.net (MEB resmi LGS yerleştirme verilerinden derlenmiştir, {school['veri_yili']} verisi). "
-                f"{school['program_count']} programın ortalama yüzdelik dilimi ({school['avg_yuzdelik']}) "
+                f"{school['program_count']} programın {puan_kismi}ortalama yüzdelik dilimi ({school['avg_yuzdelik']}) "
                 f"üzerinden hesaplanmıştır (skor = 100 - yüzdelik dilim)."
             )
             resp = requests.post(
