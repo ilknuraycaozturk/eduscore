@@ -453,7 +453,24 @@
                     }
                 });
                 const personalScore = usedWeight > 0 ? (weightedSum / usedWeight) : null;
-                (personalScore !== null ? withScore : withoutScore).push({ inst, personalScore, scores });
+
+                // ÖNEMLİ: Kullanıcının "Önemli/Çok Önemli" (4-5) işaretlediği ve
+                // okulun da güçlü olduğu (skor >= 70) kriterleri bularak kısa bir
+                // "Neden öneriyoruz?" açıklaması oluşturuyoruz - salt bir sayı
+                // yerine kullanıcının önceliğiyle somut bağlantı kuruyoruz.
+                let why = null;
+                if (personalScore !== null) {
+                    const strongMatches = withData
+                        .filter(c => importance[c.key] >= 4 && scores[c.key] != null && scores[c.key] >= 70)
+                        .sort((a, b) => scores[b.key] - scores[a.key])
+                        .slice(0, 2)
+                        .map(c => c.name_tr);
+                    if (strongMatches.length) {
+                        why = `${strongMatches.join(' ve ')} önceliklerinizle yüksek uyum gösteriyor.`;
+                    }
+                }
+
+                (personalScore !== null ? withScore : withoutScore).push({ inst, personalScore, scores, why });
             });
 
             withScore.sort((a, b) => b.personalScore - a.personalScore);
@@ -578,6 +595,7 @@
                             </div>
                             <p class="text-xs text-brandGray mb-1">📍 ${loc}, ${ilAdi}${distText}</p>
                             <div class="flex flex-wrap gap-1">${breakdown}</div>
+                            ${r.why ? `<p class="text-[11px] text-brandRedDark mt-1.5 flex items-start gap-1"><span>💡</span><span>${r.why}</span></p>` : ''}
                         </div>
                         <div class="text-right shrink-0">
                             ${scoreBlock}
