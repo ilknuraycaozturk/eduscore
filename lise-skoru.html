@@ -167,6 +167,21 @@
             userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
             radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
 
+            // ÖNEMLİ: PostgreSQL'in standart ILIKE'ı Türkçe büyük/küçük harf
+            // dönüşümünü (özellikle ğ/Ğ, ı/I, ş/Ş) doğru yapmıyor - "bağlıca"
+            // ile "BAĞLICA" aynı kelime olarak eşleşmiyordu. Bunu çözmek için
+            // veritabanında tr_normalize() ile önceden hesaplanmış
+            // name_normalized/address_normalized sütunlarını kullanıyoruz -
+            // arama teriminin de AYNI mantıkla normalize edilmiş halini
+            // gönderiyoruz ki her iki taraf tutarlı olsun.
+            function trNormalize(s) {
+                if (!s) return '';
+                const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
+                return s.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
+            }
+            const qNorm = trNormalize(qParam);
+            const locNorm = trNormalize(locParam);
+
             // ÖNEMLİ (PERFORMANS): Bir arama (loc/q) varsa, tüm Türkiye'yi (2100+
             // kurum) çekip TARAYICIDA filtrelemek yerine, mümkün olduğunca
             // SUNUCU TARAFINDA filtreleyip çok daha az veri çekiyoruz. Bu, arama
@@ -175,7 +190,7 @@
             if (locParam) {
                 const { data: matchingLocations } = await sb.from('locations')
                     .select('id')
-                    .ilike('name', `%${locParam}%`);
+                    .ilike('name_normalized', `%${locNorm}%`);
                 matchingLocationIds = (matchingLocations || []).map(l => l.id);
                 // İlin kendisi eşleşiyorsa, o ilin TÜM ilçelerini de dahil etmemiz gerekir
                 const { data: childLocations } = matchingLocationIds.length
@@ -189,9 +204,9 @@
                 .in('institution_type_id', typeIds);
 
             if (qParam) {
-                instQuery = instQuery.or(`name.ilike.%${qParam}%,address.ilike.%${qParam}%`);
+                instQuery = instQuery.or(`name_normalized.ilike.%${qNorm}%,address_normalized.ilike.%${qNorm}%`);
             } else if (locParam) {
-                const orParts = [`address.ilike.%${locParam}%`];
+                const orParts = [`address_normalized.ilike.%${locNorm}%`];
                 if (matchingLocationIds && matchingLocationIds.length) {
                     orParts.push(`location_id.in.(${matchingLocationIds.join(",")})`);
                 }

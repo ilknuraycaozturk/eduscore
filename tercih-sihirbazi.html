@@ -162,10 +162,17 @@
                 const { data: instRows, error } = await query.limit(3000);
                 if (error) throw error;
 
-                // İl filtresi varsa uygun konum id'lerini bul
+                // İl filtresi varsa uygun konum id'lerini bul (Türkçe büyük/küçük
+                // harf sorununu önlemek için normalize edilmiş sütun kullanılıyor)
                 let allowedLocationIds = null;
                 if (ilFilter) {
-                    const { data: matchingProvinces } = await sb.from('locations').select('id').ilike('name', `%${ilFilter}%`);
+                    function trNormalize(s) {
+                        if (!s) return '';
+                        const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
+                        return s.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
+                    }
+                    const ilNorm = trNormalize(ilFilter);
+                    const { data: matchingProvinces } = await sb.from('locations').select('id').ilike('name_normalized', `%${ilNorm}%`);
                     const provinceIds = (matchingProvinces || []).map(p => p.id);
                     const { data: matchingDistricts } = provinceIds.length
                         ? await sb.from('locations').select('id').in('parent_id', provinceIds)

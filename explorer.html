@@ -208,9 +208,17 @@
                 if (catRow) query = query.eq('category_id', catRow.id);
             }
 
-            // Metin aramasını da sunucu tarafında uyguluyoruz (isim/adres üzerinde)
+            // Metin aramasını da sunucu tarafında uyguluyoruz (isim/adres üzerinde).
+            // ÖNEMLİ: Standart ILIKE Türkçe ğ/ı/ş gibi harfleri doğru
+            // eşleştirmediği için normalize edilmiş sütunları kullanıyoruz.
             if (qParam) {
-                query = query.or(`name.ilike.%${qParam}%,address.ilike.%${qParam}%`);
+                function trNormalize(s) {
+                    if (!s) return '';
+                    const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
+                    return s.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
+                }
+                const qNorm = trNormalize(qParam);
+                query = query.or(`name_normalized.ilike.%${qNorm}%,address_normalized.ilike.%${qNorm}%`);
             }
 
             // ÖNEMLİ: Supabase/PostgREST varsayılan olarak sorguyu 1000 satırla
