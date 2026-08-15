@@ -567,7 +567,28 @@
 
             if (matchScore) {
                 document.getElementById('matchBanner').classList.remove('hidden');
+                document.getElementById('matchBanner').style.background = '';
                 document.getElementById('matchScoreText').textContent = `%${matchScore} Uyumlu (Kişisel Skor: ${matchScore})`;
+            } else if (scores && scores.length > 0) {
+                // ÖNEMLİ: Kullanıcı kişiselleştirilmiş bir aramadan gelmediyse
+                // (örn. doğrudan link ya da Genel Arama'dan), yine de kriterlerin
+                // VARSAYILAN ağırlıklarıyla hesaplanmış bir "Genel EduScor" göster -
+                // sayfa hiçbir özet skor göstermeden kalmasın.
+                let toplamAgirlik = 0, agirlikliToplam = 0;
+                scores.forEach(s => {
+                    const w = s.scoring_criteria ? s.scoring_criteria.default_weight : null;
+                    if (w != null && s.score != null) {
+                        toplamAgirlik += w;
+                        agirlikliToplam += w * s.score;
+                    }
+                });
+                if (toplamAgirlik > 0) {
+                    const genelSkor = (agirlikliToplam / toplamAgirlik).toFixed(1);
+                    document.getElementById('matchBanner').classList.remove('hidden');
+                    document.getElementById('matchBanner').style.background = '#241A16';
+                    document.querySelector('#matchBanner p.text-\\[11px\\]').textContent = 'Genel EduScor (Mevcut Verilere Göre)';
+                    document.getElementById('matchScoreText').textContent = `${genelSkor} / 100`;
+                }
             }
 
             updateFavButton(inst.id);
@@ -702,10 +723,38 @@
                     radarEl.classList.remove('hidden');
                 }
 
+                function extractRealValueBadges(criteriaKey, note) {
+                    if (!note) return [];
+                    const badges = [];
+                    if (criteriaKey === 'akademik_basari') {
+                        const m = note.match(/yüzdelik dilimi \(([\d.,]+)\)/);
+                        if (m) badges.push({ label: 'Taban Yüzdelik Dilimi', value: `%${m[1]}` });
+                        const y = note.match(/(\d{4}) verisi/);
+                        if (y) badges.push({ label: 'Veri Yılı', value: y[1] });
+                    } else if (criteriaKey === 'universite_yerlestirme') {
+                        const toplam = note.match(/toplam (\d+) mezun/);
+                        if (toplam) badges.push({ label: 'Toplam Yerleşen (4 Yıl)', value: toplam[1] });
+                        const ilkSene = note.match(/%([\d.,]+) ilk senesinde/);
+                        if (ilkSene) badges.push({ label: 'İlk Sene Yerleşme Başarısı', value: `%${ilkSene[1]}` });
+                        const uni = note.match(/\((\d+) farklı üniversite\)/);
+                        if (uni) badges.push({ label: 'Farklı Üniversite', value: uni[1] });
+                    } else if (criteriaKey === 'yabanci_dil') {
+                        const sure = note.match(/süresi (\d+) yıl/);
+                        if (sure) badges.push({ label: 'Program Süresi', value: `${sure[1]} yıl` });
+                    }
+                    return badges;
+                }
+
                 criteriaEl.innerHTML = sorted.map(s => {
                     const name = s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter';
                     const weight = s.scoring_criteria ? s.scoring_criteria.default_weight : '';
+                    const key = s.scoring_criteria ? s.scoring_criteria.key : '';
                     const pct = Math.max(0, Math.min(100, s.score));
+                    const realBadges = extractRealValueBadges(key, s.source_note);
+                    const badgesHtml = realBadges.length
+                        ? `<div class="flex flex-wrap gap-1.5 mt-1.5 mb-1">` +
+                          realBadges.map(b => `<span class="bg-brandBg border border-slate-200 text-brandDark text-[10px] font-semibold px-2 py-0.5 rounded-full">${b.label}: <b class="text-brandRed">${b.value}</b></span>`).join('') +
+                          `</div>` : '';
                     return `
                         <div>
                             <div class="flex justify-between text-xs font-semibold mb-1">
@@ -715,6 +764,7 @@
                             <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                 <div class="h-full bg-brandRed rounded-full" style="width:${pct}%"></div>
                             </div>
+                            ${badgesHtml}
                             ${s.source_note ? `<p class="text-[10px] text-brandGray mt-1">${s.source_note}</p>` : ''}
                         </div>
                     `;
