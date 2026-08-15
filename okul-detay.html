@@ -729,6 +729,8 @@
                     if (criteriaKey === 'akademik_basari') {
                         const m = note.match(/yüzdelik dilimi \(([\d.,]+)\)/);
                         if (m) badges.push({ label: 'Taban Yüzdelik Dilimi', value: `%${m[1]}` });
+                        const p = note.match(/taban puanı \(([\d.,]+)\)/);
+                        if (p) badges.push({ label: 'Taban Puanı', value: p[1] });
                         const y = note.match(/(\d{4}) verisi/);
                         if (y) badges.push({ label: 'Veri Yılı', value: y[1] });
                     } else if (criteriaKey === 'universite_yerlestirme') {
