@@ -239,10 +239,14 @@
             allLocations.forEach(loc => { locationById[loc.id] = loc; });
 
             let ratingById = {};
-            if ((instRows || []).length > 0) {
-                const { data: ratings } = await sb.from('institution_ratings')
+            const RATING_CHUNK = 150;
+            for (let i = 0; i < instRows.length; i += RATING_CHUNK) {
+                const chunk = instRows.slice(i, i + RATING_CHUNK).map(inst => inst.id);
+                if (!chunk.length) continue;
+                const { data: ratings, error } = await sb.from('institution_ratings')
                     .select('institution_id, avg_rating, review_count')
-                    .in('institution_id', instRows.map(i => i.id));
+                    .in('institution_id', chunk);
+                if (error) { console.error('Puan sorgusu hatası:', error); continue; }
                 (ratings || []).forEach(r => { ratingById[r.institution_id] = r; });
             }
 
@@ -320,12 +324,23 @@
                 filterNotice.appendChild(clearLink);
             }
 
+            // ÖNEMLİ: Çok sayıda kurum varken (örn. tüm Ankara ~700+) tüm id'leri
+            // TEK bir .in() sorgusunda göndermek URL'yi çok uzatıp sessizce
+            // başarısız olabiliyordu (hata kontrolü de yapılmıyordu). Bunu
+            // önlemek için sorguyu 150'şer kurumluk parçalara bölüyoruz.
             let scoreRows = [];
-            if (institutions.length > 0) {
-                const resp = await sb.from('institution_criteria_scores')
+            const CHUNK_SIZE = 150;
+            for (let i = 0; i < institutions.length; i += CHUNK_SIZE) {
+                const chunk = institutions.slice(i, i + CHUNK_SIZE).map(inst => inst.id);
+                if (!chunk.length) continue;
+                const { data, error } = await sb.from('institution_criteria_scores')
                     .select('institution_id, score, source_note, criteria_id, scoring_criteria ( key )')
-                    .in('institution_id', institutions.map(i => i.id));
-                scoreRows = resp.data || [];
+                    .in('institution_id', chunk);
+                if (error) {
+                    console.error('Skor sorgusu hatası:', error);
+                    continue;
+                }
+                scoreRows = scoreRows.concat(data || []);
             }
 
             scoresByInstitution = {};
