@@ -58,13 +58,13 @@ def fetch_all_paginated(base_url: str, headers: dict, path: str, page_size: int 
     return all_rows
 
 
-def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 15000) -> str | None:
+def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 15000) -> tuple[str | None, int | None]:
     page.goto(f"{BASE_URL}/", wait_until="networkidle", timeout=timeout_ms)
     page.wait_for_timeout(800)
 
     search_input = page.query_selector("input[placeholder*='Lise ara' i]")
     if not search_input:
-        return None
+        return None, None
 
     search_input.click()
     search_input.fill(okul_adi)
@@ -78,7 +78,7 @@ def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 
         candidates.append((href, text))
 
     if not candidates:
-        return None
+        return None, None
 
     # Devlet okulu arıyorsak 'ÖZEL' geçen sonuçları ele - MEV Koleji, Sınav
     # Koleji gibi özel okullar aynı isimle çıkabiliyor ve yanlış eşleşmeye
@@ -88,7 +88,15 @@ def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 
         if non_ozel:
             candidates = non_ozel
 
-    return candidates[0][0]
+    # Arama sonucu kartında "... • Lise • 537 öğrenci" gibi bir metin de
+    # geçiyor - bunu ekstra bir sayfa ziyareti yapmadan (bedavaya) yakalayıp
+    # kaydediyoruz.
+    ogrenci_sayisi = None
+    m = re.search(r"(\d+)\s*öğrenci", candidates[0][1])
+    if m:
+        ogrenci_sayisi = int(m.group(1))
+
+    return candidates[0][0], ogrenci_sayisi
 
 
 def extract_stats(page, url: str, timeout_ms: int = 15000) -> dict:
@@ -192,7 +200,7 @@ def main():
 
             name = bare_name(inst["name"])
             try:
-                url = search_and_find_url(page, name, inst.get("is_public", True))
+                url, ogrenci_sayisi = search_and_find_url(page, name, inst.get("is_public", True))
                 if not url:
                     unmatched.append(inst["name"])
                     processed += 1
@@ -216,6 +224,11 @@ def main():
                 )
 
                 if not args.dry_run:
+                    if ogrenci_sayisi:
+                        requests.patch(
+                            f"{supabase_url}/rest/v1/institutions?id=eq.{inst['id']}",
+                            headers=headers, json={"student_count": ogrenci_sayisi},
+                        )
                     resp = requests.post(
                         f"{supabase_url}/rest/v1/institution_criteria_scores?on_conflict=institution_id,criteria_id",
                         headers={**headers, "Prefer": "resolution=merge-duplicates"},
