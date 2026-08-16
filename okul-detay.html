@@ -439,44 +439,88 @@
             }
 
             const { data: scores } = await sb.from('institution_criteria_scores')
-                .select('score, source_note, scoring_criteria ( name_tr, default_weight, display_order )')
+                .select('score, source_note, scoring_criteria ( key, name_tr, default_weight, display_order )')
                 .eq('institution_id', instId);
 
             renderInstitution(inst, scores || [], ilAdi);
             setupClaimSection(instId, inst);
             setupReviewsSection(instId);
-            loadSimilarInstitutions(inst);
+            const kendiAkademikSkor = (scores || []).find(s => s.scoring_criteria && s.scoring_criteria.key === 'akademik_basari');
+            loadSimilarInstitutions(inst, kendiAkademikSkor ? kendiAkademikSkor.score : null);
         }
 
-        async function loadSimilarInstitutions(inst) {
+        async function loadSimilarInstitutions(inst, kendiSkor) {
             if (!inst.institution_type_id) return;
 
             // Önce aynı tür + aynı ilçede dene, yetersizse aynı tür (il genelinde) ile genişlet
             let { data: similar } = await sb.from('institutions')
-                .select('id, name, institution_types(name_tr), locations(name)')
+                .select('id, name, is_public, institution_types(name_tr), locations(name)')
                 .eq('institution_type_id', inst.institution_type_id)
                 .eq('location_id', inst.location_id)
                 .neq('id', inst.id)
-                .limit(4);
+                .limit(15);
 
-            if (!similar || similar.length < 2) {
+            if (!similar || similar.length < 3) {
                 const { data: broader } = await sb.from('institutions')
-                    .select('id, name, institution_types(name_tr), locations(name)')
+                    .select('id, name, is_public, institution_types(name_tr), locations(name)')
                     .eq('institution_type_id', inst.institution_type_id)
                     .neq('id', inst.id)
-                    .limit(4);
+                    .limit(15);
                 similar = broader;
             }
 
-            if (similar && similar.length) {
-                document.getElementById('similarCard').classList.remove('hidden');
-                document.getElementById('similarList').innerHTML = similar.map(s => `
-                    <a href="okul-detay.html?id=${s.id}" class="flex items-center justify-between bg-brandBg hover:bg-red-50 rounded-xl px-4 py-2.5 transition-all">
-                        <span class="text-xs font-semibold text-brandDark truncate pr-2">${s.name}</span>
-                        <span class="text-[10px] text-brandGray whitespace-nowrap">${s.locations ? s.locations.name : ''} →</span>
-                    </a>
-                `).join('');
+            if (!similar || !similar.length) return;
+
+            // ÖNEMLİ: "Benzer" kurumları rastgele değil, akademik BAŞARI SEVİYESİ
+            // YAKIN olanlar arasından seçiyoruz - bu, velinin gerçekten
+            // karşılaştırmak isteyeceği alternatifleri (kendi çocuğunun
+            // girebileceği benzer seçkinlikte okulları) gösterir.
+            const { data: scoreRows } = await sb.from('institution_criteria_scores')
+                .select('institution_id, score, scoring_criteria ( key )')
+                .in('institution_id', similar.map(s => s.id));
+
+            const akademikByInst = {};
+            (scoreRows || []).forEach(r => {
+                if (r.scoring_criteria && r.scoring_criteria.key === 'akademik_basari') {
+                    akademikByInst[r.institution_id] = r.score;
+                }
+            });
+
+            let withScores = similar.map(s => ({ ...s, akademikSkor: akademikByInst[s.id] ?? null }));
+            if (kendiSkor != null) {
+                withScores.sort((a, b) => {
+                    if (a.akademikSkor == null) return 1;
+                    if (b.akademikSkor == null) return -1;
+                    return Math.abs(a.akademikSkor - kendiSkor) - Math.abs(b.akademikSkor - kendiSkor);
+                });
             }
+            withScores = withScores.slice(0, 6);
+
+            document.getElementById('similarCard').classList.remove('hidden');
+            document.getElementById('similarList').innerHTML = `
+                <div class="overflow-x-auto -mx-2">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="text-brandGray uppercase tracking-wide text-[10px]">
+                            <th class="text-left font-semibold px-2 py-2">Okul</th>
+                            <th class="text-left font-semibold px-2 py-2">Yüzdelik Dilim</th>
+                            <th class="text-left font-semibold px-2 py-2">Tür</th>
+                            <th class="px-2 py-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${withScores.map(s => `
+                            <tr class="border-t border-slate-100 hover:bg-brandBg transition-colors">
+                                <td class="px-2 py-2.5 font-semibold text-brandDark">${s.name}<br><span class="text-[10px] text-brandGray font-normal">${s.locations ? s.locations.name : ''}</span></td>
+                                <td class="px-2 py-2.5 font-bold text-brandRed">${s.akademikSkor != null ? `%${(100 - s.akademikSkor).toFixed(2)}` : '<span class="text-slate-300 font-normal">Veri yok</span>'}</td>
+                                <td class="px-2 py-2.5 text-brandGray">${s.is_public ? 'Devlet' : 'Özel'}</td>
+                                <td class="px-2 py-2.5 text-right"><a href="okul-detay.html?id=${s.id}" class="text-brandRed font-semibold hover:underline">İncele →</a></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                </div>
+            `;
         }
 
         async function setupReviewsSection(institutionId) {
