@@ -142,8 +142,11 @@
                             <div id="avgRatingBox" class="hidden text-right">
                                 <span id="avgRatingValue" class="text-lg font-bold text-brandRed"></span>
                                 <span id="avgRatingCount" class="text-[11px] text-brandGray block"></span>
+                                <span id="guvenSeviyesi" class="text-[10px] font-semibold px-2 py-0.5 rounded-full inline-block mt-1"></span>
                             </div>
                         </div>
+
+                        <div id="detayliOzetGrid" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 bg-brandBg rounded-xl p-3"></div>
 
                         <div id="reviewsList" class="space-y-3 mb-4"></div>
                         <p id="noReviewsMsg" class="hidden text-xs text-brandGray italic mb-4">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
@@ -153,9 +156,15 @@
                             <a href="giris.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">Giriş Yap</a>
                         </div>
 
-                        <form id="reviewForm" class="hidden border-t border-slate-100 pt-4 space-y-2">
-                            <p class="text-xs font-semibold text-brandGray">Puanınız</p>
+                        <form id="reviewForm" class="hidden border-t border-slate-100 pt-4 space-y-3">
+                            <p class="text-xs font-semibold text-brandGray">Genel Puanınız</p>
                             <div id="starPicker" class="flex gap-1 text-2xl"></div>
+
+                            <div class="border-t border-slate-100 pt-3">
+                                <p class="text-[11px] font-semibold text-brandGray mb-2">Detaylı Değerlendirme <span class="font-normal">(isteğe bağlı - doldurdukça değerlendirmemiz daha güvenilir olur)</span></p>
+                                <div id="detayliDegerlendirmeGrid" class="grid grid-cols-2 gap-x-4 gap-y-2"></div>
+                            </div>
+
                             <textarea id="reviewComment" rows="3" placeholder="Deneyiminizi paylaşın (opsiyonel)..." class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2"></textarea>
                             <button type="submit" class="bg-brandDark hover:bg-brandRed text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">
                                 Yorumu Gönder
@@ -576,12 +585,30 @@
             `;
         }
 
+        const DEGERLENDIRME_BOYUTLARI = [
+            { key: 'rating_ogretmen', label: 'Öğretmen Kalitesi' },
+            { key: 'rating_rehberlik', label: 'Rehberlik' },
+            { key: 'rating_yonetim', label: 'Yönetim' },
+            { key: 'rating_sosyal', label: 'Sosyal Yaşam' },
+            { key: 'rating_akademik_baski', label: 'Akademik Baskı' },
+            { key: 'rating_guvenlik', label: 'Güvenlik' },
+            { key: 'rating_yemek', label: 'Yemek' },
+            { key: 'rating_ulasim', label: 'Ulaşım' },
+            { key: 'rating_universite_hazirlik', label: 'Üniversite Hazırlığı' },
+        ];
+
+        function guvenSeviyesiHesapla(n) {
+            if (n >= 15) return { metin: 'Güven Seviyesi: Yüksek', renk: 'bg-green-100 text-green-700' };
+            if (n >= 5) return { metin: 'Güven Seviyesi: Orta', renk: 'bg-amber-100 text-amber-700' };
+            return { metin: 'Güven Seviyesi: Başlangıç', renk: 'bg-slate-100 text-brandGray' };
+        }
+
         async function setupReviewsSection(institutionId) {
             const { data: { session } } = await sb.auth.getSession();
 
             // Mevcut yorumları çek
             const { data: reviews } = await sb.from('reviews')
-                .select('id, user_id, rating, comment, created_at')
+                .select('id, user_id, rating, comment, created_at, ' + DEGERLENDIRME_BOYUTLARI.map(b => b.key).join(', '))
                 .eq('institution_id', institutionId)
                 .order('created_at', { ascending: false });
 
@@ -602,11 +629,28 @@
                 const avg = list.reduce((sum, r) => sum + r.rating, 0) / list.length;
                 document.getElementById('avgRatingBox').classList.remove('hidden');
                 document.getElementById('avgRatingValue').textContent = `★ ${avg.toFixed(1)}`;
-                document.getElementById('avgRatingCount').textContent = `${list.length} değerlendirme`;
+                document.getElementById('avgRatingCount').textContent = `${list.length} veli değerlendirdi`;
+
+                const guven = guvenSeviyesiHesapla(list.length);
+                const guvenEl = document.getElementById('guvenSeviyesi');
+                guvenEl.textContent = guven.metin;
+                guvenEl.className = `text-[10px] font-semibold px-2 py-0.5 rounded-full inline-block mt-1 ${guven.renk}`;
 
                 const topBadge = document.getElementById('ratingBadgeTop');
                 topBadge.textContent = `⭐ ${avg.toFixed(1)} (${list.length})`;
                 topBadge.classList.remove('hidden');
+
+                // Boyut bazlı ortalamalar (en az 1 kişi doldurmuşsa göster)
+                const ozetHtml = DEGERLENDIRME_BOYUTLARI.map(b => {
+                    const degerler = list.map(r => r[b.key]).filter(v => v != null);
+                    if (!degerler.length) return '';
+                    const ort = degerler.reduce((s, v) => s + v, 0) / degerler.length;
+                    return `<div><p class="text-[10px] text-brandGray">${b.label}</p><p class="text-sm font-bold text-brandDark">${ort.toFixed(1)} <span class="text-[10px] font-normal text-brandGray">(${degerler.length})</span></p></div>`;
+                }).join('');
+                if (ozetHtml) {
+                    document.getElementById('detayliOzetGrid').classList.remove('hidden');
+                    document.getElementById('detayliOzetGrid').innerHTML = ozetHtml;
+                }
 
                 document.getElementById('reviewsList').innerHTML = list.map(r => {
                     const name = namesById[r.user_id] || 'Anonim Kullanıcı';
@@ -648,6 +692,31 @@
             }
             renderStars();
 
+            // Detaylı değerlendirme boyutları için mini yıldız seçiciler
+            const boyutSelections = {};
+            DEGERLENDIRME_BOYUTLARI.forEach(b => { boyutSelections[b.key] = myReview ? (myReview[b.key] || 0) : 0; });
+            const boyutGrid = document.getElementById('detayliDegerlendirmeGrid');
+            function renderBoyutlar() {
+                boyutGrid.innerHTML = DEGERLENDIRME_BOYUTLARI.map(b => `
+                    <div>
+                        <p class="text-[10px] text-brandGray mb-0.5">${b.label}</p>
+                        <div class="flex gap-0.5 text-sm" data-boyut="${b.key}">
+                            ${[1, 2, 3, 4, 5].map(i => `<span data-star="${i}" class="cursor-pointer ${i <= boyutSelections[b.key] ? 'text-amber-500' : 'text-slate-200'}">★</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+                boyutGrid.querySelectorAll('[data-boyut]').forEach(container => {
+                    const key = container.dataset.boyut;
+                    container.querySelectorAll('[data-star]').forEach(el => {
+                        el.addEventListener('click', () => {
+                            boyutSelections[key] = parseInt(el.dataset.star);
+                            renderBoyutlar();
+                        });
+                    });
+                });
+            }
+            renderBoyutlar();
+
             if (myReview) {
                 document.getElementById('reviewComment').value = myReview.comment || '';
             }
@@ -665,11 +734,16 @@
                 }
 
                 const comment = document.getElementById('reviewComment').value.trim();
+                const boyutPayload = {};
+                DEGERLENDIRME_BOYUTLARI.forEach(b => {
+                    boyutPayload[b.key] = boyutSelections[b.key] > 0 ? boyutSelections[b.key] : null;
+                });
                 const { error } = await sb.from('reviews').upsert({
                     institution_id: institutionId,
                     user_id: session.user.id,
                     rating: selectedRating,
                     comment: comment || null,
+                    ...boyutPayload,
                 }, { onConflict: 'institution_id,user_id' });
 
                 if (error) {
