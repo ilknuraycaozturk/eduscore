@@ -108,6 +108,17 @@
                 <div id="campusFacts" class="mt-3 flex flex-wrap gap-2"></div>
             </div>
 
+            <!-- Yıllık Toplam Maliyet -->
+            <div id="maliyetCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Yıllık Toplam Maliyet (Tahmini)</h2>
+                <div id="maliyetGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3"></div>
+                <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
+                    <span class="text-sm font-bold text-brandDark">Toplam</span>
+                    <span id="maliyetToplam" class="text-xl font-bold text-brandRed"></span>
+                </div>
+                <p class="text-[10px] text-brandGray mt-2">Bu rakamlar kurum tarafından "Profilini Sahiplen" üzerinden bildirilmiştir, yıldan yıla değişebilir.</p>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <!-- Kriter Puanları -->
@@ -226,12 +237,53 @@
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Ücret Bilgisi</label>
+                                        <label class="text-[11px] font-semibold text-brandGray">Ücret Bilgisi (genel not)</label>
                                         <input type="text" id="editFee" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 15.000-25.000 TL/yıl">
                                     </div>
                                     <div>
                                         <label class="text-[11px] font-semibold text-brandGray">Ulaşım Notu</label>
                                         <input type="text" id="editTransport" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Metro 400m">
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-100 pt-3 mt-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <p class="text-[11px] font-bold text-brandDark">Yıllık Maliyet Kalemleri (TL) — opsiyonel, doldurursanız toplam otomatik hesaplanır</p>
+                                        <select id="editUcretYili" class="text-[10px] border border-slate-200 rounded-lg px-1.5 py-1">
+                                            <option value="2026" selected>2026</option>
+                                            <option value="2025">2025</option>
+                                            <option value="2027">2027</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Eğitim</label>
+                                            <input type="number" id="editUcretEgitim" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Yemek</label>
+                                            <input type="number" id="editUcretYemek" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Servis</label>
+                                            <input type="number" id="editUcretServis" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Kitap</label>
+                                            <input type="number" id="editUcretKitap" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Kıyafet</label>
+                                            <input type="number" id="editUcretKiyafet" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Etüt/Kurs</label>
+                                            <input type="number" id="editUcretEtutKurs" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-brandGray">Diğer</label>
+                                            <input type="number" id="editUcretDiger" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
+                                        </div>
                                     </div>
                                 </div>
 
@@ -416,6 +468,7 @@
                     is_public, is_verified, description, category_id, location_id, institution_type_id,
                     age_min, age_max, class_size_avg, student_count, campus_info, success_score, success_score_note,
                     fee_info, transport_note, instagram_url, facebook_url,
+                    ucret_egitim, ucret_yemek, ucret_servis, ucret_kitap, ucret_kiyafet, ucret_etut_kurs, ucret_diger, ucret_yili,
                     servis_bilgisi, guvenlik_bilgisi, sosyal_sportif_bilgisi, kontenjan_bilgisi, ogretmen_deneyimi_notu,
                     institution_types ( name_tr ),
                     locations ( name )
@@ -762,6 +815,30 @@
                 }
             }
 
+            // Yıllık Toplam Maliyet kartı - en az bir kalem doluysa göster
+            const maliyetKalemleri = [
+                { label: 'Eğitim', value: inst.ucret_egitim },
+                { label: 'Yemek', value: inst.ucret_yemek },
+                { label: 'Servis', value: inst.ucret_servis },
+                { label: 'Kitap', value: inst.ucret_kitap },
+                { label: 'Kıyafet', value: inst.ucret_kiyafet },
+                { label: 'Etüt/Kurs', value: inst.ucret_etut_kurs },
+                { label: 'Diğer', value: inst.ucret_diger },
+            ].filter(k => k.value != null);
+
+            if (maliyetKalemleri.length > 0) {
+                document.getElementById('maliyetCard').classList.remove('hidden');
+                document.querySelector('#maliyetCard h2').textContent = `Yıllık Toplam Maliyet (Tahmini${inst.ucret_yili ? ', ' + inst.ucret_yili : ''})`;
+                document.getElementById('maliyetGrid').innerHTML = maliyetKalemleri.map(k => `
+                    <div>
+                        <p class="text-brandGray">${k.label}</p>
+                        <p class="font-bold text-brandDark">₺${Number(k.value).toLocaleString('tr-TR')}</p>
+                    </div>
+                `).join('');
+                const toplam = maliyetKalemleri.reduce((sum, k) => sum + Number(k.value), 0);
+                document.getElementById('maliyetToplam').textContent = `₺${toplam.toLocaleString('tr-TR')}`;
+            }
+
             // Yerleşke bilgileri (varsa) - anaokulu/ilkokul/lise gibi fiziksel kurumlar için
             if (inst.campus_info) {
                 const facts = [];
@@ -926,6 +1003,14 @@
             document.getElementById('editClassSize').value = inst.class_size_avg ?? '';
             document.getElementById('editFee').value = inst.fee_info || '';
             document.getElementById('editTransport').value = inst.transport_note || '';
+            document.getElementById('editUcretEgitim').value = inst.ucret_egitim ?? '';
+            document.getElementById('editUcretYemek').value = inst.ucret_yemek ?? '';
+            document.getElementById('editUcretServis').value = inst.ucret_servis ?? '';
+            document.getElementById('editUcretKitap').value = inst.ucret_kitap ?? '';
+            document.getElementById('editUcretKiyafet').value = inst.ucret_kiyafet ?? '';
+            document.getElementById('editUcretEtutKurs').value = inst.ucret_etut_kurs ?? '';
+            document.getElementById('editUcretDiger').value = inst.ucret_diger ?? '';
+            document.getElementById('editUcretYili').value = inst.ucret_yili || '2026';
             document.getElementById('editServis').value = inst.servis_bilgisi || '';
             document.getElementById('editGuvenlik').value = inst.guvenlik_bilgisi || '';
             document.getElementById('editSosyal').value = inst.sosyal_sportif_bilgisi || '';
@@ -959,7 +1044,18 @@
                     metrekare: metrekareVal ? parseInt(metrekareVal) : null,
                 };
 
+                const ucretAlanlari = ['editUcretEgitim', 'editUcretYemek', 'editUcretServis', 'editUcretKitap', 'editUcretKiyafet', 'editUcretEtutKurs', 'editUcretDiger'];
+                const ucretDbAlanlari = ['ucret_egitim', 'ucret_yemek', 'ucret_servis', 'ucret_kitap', 'ucret_kiyafet', 'ucret_etut_kurs', 'ucret_diger'];
+                const ucretPayload = {};
+                ucretAlanlari.forEach((elId, i) => {
+                    const v = document.getElementById(elId).value;
+                    ucretPayload[ucretDbAlanlari[i]] = v ? parseFloat(v) : null;
+                });
+                const herhangiUcretVar = Object.values(ucretPayload).some(v => v != null);
+                ucretPayload.ucret_yili = herhangiUcretVar ? parseInt(document.getElementById('editUcretYili').value) : null;
+
                 const updatePayload = {
+                    ...ucretPayload,
                     address: document.getElementById('editAddress').value.trim() || null,
                     phone: document.getElementById('editPhone').value.trim() || null,
                     email: document.getElementById('editEmail').value.trim() || null,
