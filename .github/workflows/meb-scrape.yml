@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       il_kodu:
-        description: "İl plaka kodu (Ankara=6)"
+        description: "İl plaka kodu (Ankara=6) - il_kodu_listesi doluysa görmezden gelinir"
         required: true
         default: "6"
+      il_kodu_listesi:
+        description: "Virgülle ayrılmış il plaka kodları (örn. '1,2,3,4,5,6,7,8,9,10') - doldurulursa il_kodu/all_ilceler görmezden gelinir. 6 saatlik sınır için parti başına 10-15 il önerilir."
+        required: false
+        default: ""
       all_ilceler:
         description: "true ise ildeki TÜM ilçeleri otomatik keşfedip çeker (ilce_kodu/location_name/filter_mahalle görmezden gelinir)"
         required: true
@@ -38,7 +42,7 @@ jobs:
   # birine kendi 6 saatlik hakkını verir (toplamda 12 saate kadar).
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +57,11 @@ jobs:
 
       - name: MEB verisini çek
         run: |
-          if [ "${{ inputs.all_ilceler || 'false' }}" = "true" ]; then
+          if [ -n "${{ inputs.il_kodu_listesi }}" ]; then
+            python scripts/scrape_meb_schools.py \
+              --il-kodu-listesi "${{ inputs.il_kodu_listesi }}" \
+              --output data/meb_raw.json
+          elif [ "${{ inputs.all_ilceler || 'false' }}" = "true" ]; then
             python scripts/scrape_meb_schools.py \
               --il-kodu "${{ inputs.il_kodu || '6' }}" \
               --all-ilceler \
@@ -98,7 +106,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           ARGS="--input data/meb_raw.json"
-          if [ "${{ inputs.all_ilceler || 'false' }}" != "true" ]; then
+          if [ -z "${{ inputs.il_kodu_listesi }}" ] && [ "${{ inputs.all_ilceler || 'false' }}" != "true" ]; then
             ARGS="$ARGS --location-name \"${{ inputs.location_name || 'Etimesgut' }}\""
             FILTER="${{ inputs.filter_mahalle }}"
             if [ -n "$FILTER" ]; then
