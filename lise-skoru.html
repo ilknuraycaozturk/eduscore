@@ -201,7 +201,7 @@
             }
 
             let instQuery = sb.from('institutions')
-                .select('id, name, address, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name )')
+                .select('id, name, address, is_public, is_verified, fee_info, kontenjan_bilgisi, lat, lng, location_id, locations ( name )')
                 .in('institution_type_id', typeIds);
 
             if (qParam) {
@@ -585,6 +585,10 @@
                 const ratingBadge = (r.inst._rating && r.inst._rating.review_count > 0)
                     ? `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">⭐ ${r.inst._rating.avg_rating} (${r.inst._rating.review_count})</span>`
                     : '';
+                const kontenjanMatch = r.inst.kontenjan_bilgisi ? r.inst.kontenjan_bilgisi.match(/2026:\s*(\d+)/) : null;
+                const kontenjanBadge = kontenjanMatch
+                    ? `<span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">👥 ${kontenjanMatch[1]} kontenjan</span>`
+                    : '';
 
                 const hasScore = r.personalScore !== null;
                 const rankBadge = hasScore
@@ -608,6 +612,7 @@
                                 ${verifiedBadge}
                                 ${feeBadge}
                                 ${ratingBadge}
+                                ${kontenjanBadge}
                             </div>
                             <p class="text-xs text-brandGray mb-1">📍 ${loc}, ${ilAdi}${distText}</p>
                             <div class="flex flex-wrap gap-1">${breakdown}</div>
