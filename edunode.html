@@ -142,7 +142,14 @@
                 steps.forEach((j, idx) => {
                     const key = nodeKeyFor(j);
                     if (!nodesMap.has(key)) {
-                        const label = j.institutions ? j.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : j.custom_label;
+                        let label = j.institutions ? j.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : j.custom_label;
+                        // ÖNEMLİ: Yolun SONUNDAKİ (kariyer) düğüm kişiye özel
+                        // olduğu için etikette doğrudan kişinin ismini de
+                        // gösteriyoruz - grafiğin ucunda kimin olduğu netleşsin.
+                        if (j.stage === 'kariyer') {
+                            const kisi = people.find(p => p.id === personId);
+                            if (kisi) label = `${kisi.name} — ${label}`;
+                        }
                         nodesMap.set(key, {
                             id: key, label, stage: j.stage,
                             institutionId: j.institution_id || null,
