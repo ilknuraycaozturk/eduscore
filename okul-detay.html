@@ -105,7 +105,7 @@
             <!-- Kurum Bilgileri -->
             <div id="infoCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
                 <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Kurum Bilgileri</h2>
-                <div id="infoGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm"></div>
+                <div id="infoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm"></div>
                 <div id="campusFacts" class="mt-3 flex flex-wrap gap-2"></div>
             </div>
 
@@ -901,15 +901,15 @@
             if (infoItems.length > 0) {
                 document.getElementById('infoCard').classList.remove('hidden');
                 document.getElementById('infoGrid').innerHTML = infoItems.map(it => `
-                    <div>
+                    <div class="min-w-0">
                         <p class="text-[10px] text-brandGray uppercase tracking-wide">${it.label}</p>
-                        <p class="font-bold text-brandDark">${it.value}</p>
+                        <p class="font-bold text-brandDark break-words">${it.value}</p>
                     </div>
                 `).join('');
 
                 if (inst.success_score_note) {
                     document.getElementById('infoGrid').innerHTML += `
-                        <div class="col-span-2 sm:col-span-4">
+                        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
                             <p class="text-[11px] text-brandGray mt-1">${inst.success_score_note}</p>
                         </div>`;
                 }
