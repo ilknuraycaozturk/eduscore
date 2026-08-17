@@ -44,11 +44,28 @@ def main():
         print("⚠️ Beklenmeyen sonuç")
     print(f"İlk 800 karakter:\n{resp2.text[:800]}")
 
-    print("\n=== TEST 3: Arama endpoint'i denemesi ===")
-    for path in ["/arama?q=fen+lisesi", "/search?q=fen+lisesi", "/api/search?q=fen"]:
+    print("\n=== TEST 3: Arama mekanizmasını bul (form/script taraması) ===")
+    homepage_html = resp.text
+    # <form> etiketlerini bul
+    import re
+    forms = re.findall(r'<form[^>]*>', homepage_html)
+    print(f"Bulunan <form> sayısı: {len(forms)}")
+    for f in forms[:5]:
+        print(f"  {f}")
+
+    # 'ara' veya 'search' geçen input/script parçalarını bul
+    search_hints = re.findall(r'.{80}(?:search|arama|/api/).{80}', homepage_html, re.IGNORECASE)
+    print(f"\n'search/arama/api' geçen {len(search_hints)} parça bulundu (ilk 8):")
+    for h in search_hints[:8]:
+        print(f"  ...{h}...")
+
+    print("\n=== TEST 4: Bilinen basit lise URL kalıbı (id olmadan arama) ===")
+    for path in ["/lise-ara?q=fen", "/liseler?q=fen", "/liseler/ara?q=fen", "/api/liseler?q=fen", "/autocomplete?q=fen"]:
         try:
             r = session.get(BASE_URL + path, timeout=10)
             print(f"{path} -> {r.status_code} ({len(r.text)} karakter)")
+            if r.status_code == 200 and len(r.text) < 5000:
+                print(f"    İçerik: {r.text[:300]}")
         except Exception as e:
             print(f"{path} -> HATA: {e}")
 
