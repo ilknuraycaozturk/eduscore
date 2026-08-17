@@ -17,9 +17,12 @@ import argparse
 import json
 import re
 import sys
+import time
 import unicodedata
 from pathlib import Path
 
+import requests
+from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
 BASE_URL = "https://tabanpuanlari.net/lgs"
@@ -180,7 +183,32 @@ def extract_row(row, col_map: dict, il_adi: str) -> dict | None:
     }
 
 
-def scrape_il(page, il_adi: str, il_slug: str, timeout_ms: int = 30000) -> list[dict]:
+def fetch_kontenjan(session: requests.Session, program_id: str) -> tuple[int | None, int | None]:
+    """Program detay sayfasındaki ('/programs/{id}') 'Yıllara Göre Tüm Veriler'
+    tablosundan 2026 ve 2025 kontenjanlarını çeker. Bu sayfa il listesinin
+    aksine kontenjan bilgisini hâlâ içeriyor - JS gerektirmeyen statik bir
+    sayfa olduğu için Playwright yerine hızlı 'requests' kullanıyoruz."""
+    try:
+        resp = session.get(f"{BASE_URL.replace('/lgs', '')}/programs/{program_id}", timeout=15)
+        resp.raise_for_status()
+    except Exception:
+        return None, None
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    kontenjan_2026, kontenjan_2025 = None, None
+    for row in soup.find_all("tr"):
+        cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
+        if len(cells) < 2:
+            continue
+        yil, kontenjan_str = cells[0], cells[1]
+        if yil == "2026":
+            kontenjan_2026 = parse_int(kontenjan_str)
+        elif yil == "2025":
+            kontenjan_2025 = parse_int(kontenjan_str)
+    return kontenjan_2026, kontenjan_2025
+
+
+
     url = f"{BASE_URL}/{il_slug}"
     collected: dict[str, dict] = {}
 
@@ -270,6 +298,8 @@ def main():
 
     iller = TUM_ILLER if args.tumu else [args.il]
     all_results = []
+    http_session = requests.Session()
+    http_session.headers.update({"User-Agent": "Mozilla/5.0 (EduScor-Pilot/1.0)"})
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -279,6 +309,25 @@ def main():
             print(f"\n=== [{idx}/{len(iller)}] {il_adi} ({il_slug}) ===")
             try:
                 results = scrape_il(page, il_adi, il_slug)
+
+                # ÖNEMLİ: İl listesi sayfası artık kontenjan göstermiyor, ama
+                # HER PROGRAMIN kendi detay sayfası ('/programs/{id}') hâlâ
+                # 2026/2025 kontenjanını içeriyor. Bu sayfa statik olduğu için
+                # (JS gerektirmiyor) Playwright yerine hızlı 'requests'
+                # kullanıyoruz - onlarca kat daha hızlı.
+                kontenjan_bulundu = 0
+                for i, row in enumerate(results):
+                    if not row.get("program_id"):
+                        continue
+                    k26, k25 = fetch_kontenjan(http_session, row["program_id"])
+                    row["kontenjan_2026"] = k26
+                    row["kontenjan_2025"] = k25
+                    if k26 or k25:
+                        kontenjan_bulundu += 1
+                    if (i + 1) % 50 == 0:
+                        print(f"    ...kontenjan: {i + 1}/{len(results)} program işlendi")
+                print(f"  {il_adi}: {kontenjan_bulundu}/{len(results)} programda kontenjan bulundu.")
+
                 all_results.extend(results)
             except Exception as e:
                 print(f"  HATA: {il_adi} çekilemedi -> {e}")
