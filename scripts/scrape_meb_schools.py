@@ -343,12 +343,49 @@ def discover_ilceler(il_kodu: str, timeout_ms: int = 20000) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="MEB okul listesini çeker (Playwright).")
-    parser.add_argument("--il-kodu", required=True, help="İl plaka kodu (Ankara=6)")
+    parser.add_argument("--il-kodu", default=None, help="İl plaka kodu (Ankara=6) - --il-kodu-listesi ile kullanılmaz")
+    parser.add_argument("--il-kodu-listesi", default=None,
+                         help="Virgülle ayrılmış il plaka kodları (örn. '1,2,3,4,5') - birden fazla ili tek "
+                              "çalıştırmada, sırayla ve GÜVENLİ ŞEKİLDE (her il sonrası ara kayıt) çeker. "
+                              "6 saatlik iş sınırını aşmamak için genelde 10-15 il/parti önerilir.")
     parser.add_argument("--ilce-kodu", default=None, help="İlçe kodu (opsiyonel, --all-ilceler ile birlikte kullanılmaz)")
     parser.add_argument("--all-ilceler", action="store_true",
                          help="Verilirse önce ildeki TÜM ilçeleri keşfedip her biri için ayrı ayrı veri çeker ve birleştirir.")
     parser.add_argument("--output", default="data/meb_raw.json", help="Çıktı JSON dosyası")
     args = parser.parse_args()
+
+    if not args.il_kodu_listesi and not args.il_kodu:
+        parser.error("--il-kodu belirtilmeli (ya da --il-kodu-listesi kullanılmalı).")
+
+    if args.il_kodu_listesi:
+        il_kodlari = [k.strip() for k in args.il_kodu_listesi.split(",") if k.strip()]
+        all_data = []
+        for idx, il_kodu in enumerate(il_kodlari, 1):
+            print(f"\n=== [{idx}/{len(il_kodlari)}] İl kodu {il_kodu} ===")
+            try:
+                il_data = scrape_okullar(il_kodu, None)
+                for row in il_data:
+                    parts = [p.strip() for p in row["raw_name"].split(" - ", 2)]
+                    if len(parts) >= 2:
+                        row["ilce_ad"] = parts[1]
+                        row["raw_name"] = parts[2] if len(parts) > 2 else parts[1]
+                    else:
+                        row["ilce_ad"] = None
+                all_data.extend(il_data)
+                print(f"  İl {il_kodu}: {len(il_data)} kayıt bulundu (toplam: {len(all_data)})")
+            except Exception as e:
+                print(f"  HATA: İl {il_kodu} çekilemedi -> {e}")
+
+            # ÖNEMLİ: Her il sonrası dosyayı YENİDEN YAZIYORUZ (ara kayıt) - iş
+            # zaman aşımına uğrarsa bile şimdiye kadar çekilen veri dosyada
+            # kalır ve bir sonraki adımda (artifact yükleme başarısız olsa
+            # bile GitHub loglarından) kurtarılabilir.
+            out_path = Path(args.output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        print(f"\nTOPLAM {len(all_data)} kayıt ({len(il_kodlari)} il) -> {args.output}")
+        return
 
     if args.all_ilceler:
         # ÖNEMLİ (Ağustos 2026 güncellemesi): MEB sitesi yeniden tasarlandı ve
