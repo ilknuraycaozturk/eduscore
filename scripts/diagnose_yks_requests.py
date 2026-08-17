@@ -114,5 +114,24 @@ def main():
     print(f"\n<body> içeriğinden 1500 karakterlik örnek:\n{r1.text[body_idx:body_idx+1500]}")
 
 
+    print("\n=== TEST 8: /lise-ara/ (doğru trailing slash ile) ===")
+    r3 = session.get(BASE_URL + "/lise-ara/", params={"q": "Adana Fen Lisesi"}, timeout=15)
+    print(f"URL: {r3.url}")
+    print(f"Durum kodu: {r3.status_code}, uzunluk: {len(r3.text)}")
+    lise_links3 = re.findall(r'href="(/lise/[a-z0-9\-]+--\d+/?[a-z0-9İıŞşĞğÜüÖöÇç\-]*/?)"', r3.text, re.IGNORECASE)
+    lise_links3 = list(dict.fromkeys(lise_links3))
+    print(f"Bulunan lise linkleri ({len(lise_links3)} adet):")
+    for l in lise_links3[:10]:
+        print(f"  {l}")
+    if not lise_links3:
+        # Belki JS ile dolduruluyor - fetch/api çağrılarını bu sayfada ara
+        api_calls3 = re.findall(r'(?:fetch|axios|url:)\s*\(?["\']([^"\']+)["\']', r3.text)
+        print(f"Bu sayfadaki olası API/fetch çağrıları ({len(api_calls3)}):")
+        for a in api_calls3[:15]:
+            print(f"  {a}")
+        body_idx3 = r3.text.find('<body')
+        print(f"\n<body> içeriğinden 1200 karakter:\n{r3.text[body_idx3:body_idx3+1200]}")
+
+
 if __name__ == "__main__":
     main()
