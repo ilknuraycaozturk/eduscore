@@ -1,0 +1,21 @@
+name: YKS Requests Teşhis (Aksiyon 1.6)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: requests kur
+        run: pip install requests
+
+      - name: sinavizcisi.com'a requests ile erişimi test et
+        run: python scripts/diagnose_yks_requests.py
