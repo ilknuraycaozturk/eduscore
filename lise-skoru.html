@@ -157,7 +157,7 @@
             criteria = criteriaRows || [];
 
             // Lise türlerindeki kurumları çek
-            const liseSlugs = ['lise', 'fen-lisesi', 'sosyal-bilimler-lisesi', 'anadolu-lisesi', 'anadolu-imam-hatip-lisesi', 'mesleki-teknik-anadolu-lisesi'];
+            const liseSlugs = ['lise', 'fen-lisesi', 'sosyal-bilimler-lisesi', 'anadolu-lisesi', 'anadolu-imam-hatip-lisesi', 'mesleki-teknik-anadolu-lisesi', 'yabanci-ozel-lise'];
             const { data: typeRows } = await sb.from('institution_types').select('id, slug').in('slug', liseSlugs);
             const typeIds = (typeRows || []).map(t => t.id);
 
