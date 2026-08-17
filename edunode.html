@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | EduNode — Eğitim Yolculukları</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: {
+                brandRed: '#E8543A', brandRedDark: '#CC3F28', brandDark: '#241A16',
+                brandGray: '#8A7A72', brandBg: '#FDF8F5'
+            } } }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        #graphSvg { touch-action: none; cursor: grab; }
+        #graphSvg:active { cursor: grabbing; }
+        .node-label { font-family: 'Plus Jakarta Sans', sans-serif; pointer-events: none; user-select: none; }
+    </style>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <div id="debugErrorBox" style="display:none; background:#fee2e2; border:2px solid #dc2626; color:#991b1b; padding:12px; margin:12px; border-radius:8px; font-family:monospace; font-size:12px; white-space:pre-wrap; word-break:break-all;"></div>
+    <script>
+        function showDebugError(msg) {
+            const box = document.getElementById('debugErrorBox');
+            box.style.display = 'block';
+            box.textContent = '⚠️ HATA (bu kutuyu Claude\'a gönderin):\n' + msg;
+        }
+        window.addEventListener('error', (e) => showDebugError(e.message + '\n' + (e.error && e.error.stack || '')));
+        window.addEventListener('unhandledrejection', (e) => showDebugError('Promise hatası: ' + (e.reason && (e.reason.message || JSON.stringify(e.reason)))));
+    </script>
+
+    <header class="w-full bg-white border-b border-slate-200/80 px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-y-2">
+        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed hover:opacity-80 transition-opacity">EduScor</a>
+        <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold">
+            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
+            <a href="lise-skoru.html" class="text-brandGray hover:text-brandDark transition-colors">🎓 Lise Skoru</a>
+            <a href="tercih-sihirbazi.html" class="text-brandGray hover:text-brandDark transition-colors">🧭 Tercih Sihirbazı</a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+
+        <div class="text-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-brandDark mb-2">🕸️ EduNode — Eğitim Yolculukları</h1>
+            <p class="text-sm text-brandGray max-w-2xl mx-auto">
+                Başarılı isimlerin eğitim hayatlarını okul okul takip edin. Her okul bir düğüm (node),
+                her kişinin yolculuğu bir çizgi. Bir kişiye tıklayarak yolunu vurgulayabilirsiniz.
+            </p>
+        </div>
+
+        <div id="personChips" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+            <svg id="graphSvg" width="100%" height="560"></svg>
+        </div>
+
+        <div id="legend" class="flex flex-wrap justify-center gap-4 text-[11px] text-brandGray mb-8"></div>
+
+        <div id="personDetail" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 max-w-xl mx-auto"></div>
+
+        <div class="text-center mt-10">
+            <p class="text-xs text-brandGray">Bu, EduScor'un uzun vadeli "Eğitim Bilgi Grafiği" vizyonunun ilk adımı — okuldan kariyere giden gerçek, doğrulanmış yolculukları biriktiriyoruz.</p>
+        </div>
+
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://piyxmmzteyygwlurdawi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const STAGE_LABELS = {
+            ilkokul: 'İlkokul', ortaokul: 'Ortaokul', lise: 'Lise',
+            universite: 'Üniversite', kariyer: 'Kariyer',
+        };
+        const STAGE_COLORS = {
+            ilkokul: '#8A7A72', ortaokul: '#C97B63', lise: '#E8543A',
+            universite: '#241A16', kariyer: '#CC3F28',
+        };
+        const PERSON_COLORS = ['#E8543A', '#241A16', '#8A7A72', '#C97B63', '#B0402C'];
+
+        async function load() {
+            const { data: people, error: e1 } = await sb.from('notable_people').select('*').order('name');
+            if (e1) throw e1;
+
+            const { data: journeys, error: e2 } = await sb.from('notable_person_journey')
+                .select('*, institutions ( id, name, locations ( name ) )')
+                .order('order_index');
+            if (e2) throw e2;
+
+            renderPersonChips(people);
+            renderGraph(people, journeys);
+            renderLegend();
+        }
+
+        function renderPersonChips(people) {
+            const el = document.getElementById('personChips');
+            el.innerHTML = `<button data-person="all" class="person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-brandDark text-white transition-all">Tümünü Göster</button>` +
+                people.map((p, i) => `
+                    <button data-person="${p.id}" class="person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all">
+                        ${p.name}
+                    </button>
+                `).join('');
+        }
+
+        function renderLegend() {
+            document.getElementById('legend').innerHTML = Object.entries(STAGE_LABELS).map(([key, label]) => `
+                <span class="flex items-center gap-1.5">
+                    <span style="width:10px;height:10px;border-radius:50%;background:${STAGE_COLORS[key]};display:inline-block;"></span>
+                    ${label}
+                </span>
+            `).join('');
+        }
+
+        function renderGraph(people, journeys) {
+            const svg = d3.select('#graphSvg');
+            const width = document.getElementById('graphSvg').clientWidth || 900;
+            const height = 560;
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+            // ÖNEMLİ: Aynı kuruma (institution_id) bağlı adımlar TEK bir düğümde
+            // birleştiriliyor - böylece iki kişi aynı okuldan geçtiyse, o okul
+            // grafikte ortak/paylaşılan bir düğüm olarak görünür (grafiğin asıl
+            // anlamlı kısmı burası). Kurum bağlantısı olmayan adımlar kişiye özel
+            // düğüm olarak kalır.
+            const nodesMap = new Map();
+            const links = [];
+            const personColorById = {};
+            people.forEach((p, i) => { personColorById[p.id] = PERSON_COLORS[i % PERSON_COLORS.length]; });
+
+            function nodeKeyFor(j) {
+                if (j.institution_id) return 'inst:' + j.institution_id;
+                return 'custom:' + j.person_id + ':' + j.order_index;
+            }
+
+            const journeysByPerson = {};
+            journeys.forEach(j => {
+                (journeysByPerson[j.person_id] = journeysByPerson[j.person_id] || []).push(j);
+            });
+
+            Object.entries(journeysByPerson).forEach(([personId, steps]) => {
+                steps.sort((a, b) => a.order_index - b.order_index);
+                steps.forEach((j, idx) => {
+                    const key = nodeKeyFor(j);
+                    if (!nodesMap.has(key)) {
+                        const label = j.institutions ? j.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : j.custom_label;
+                        nodesMap.set(key, {
+                            id: key, label, stage: j.stage,
+                            institutionId: j.institution_id || null,
+                            people: new Set(),
+                        });
+                    }
+                    nodesMap.get(key).people.add(personId);
+                    if (idx > 0) {
+                        const prevKey = nodeKeyFor(steps[idx - 1]);
+                        links.push({ source: prevKey, target: key, personId });
+                    }
+                });
+            });
+
+            const nodes = [...nodesMap.values()];
+
+            const sim = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(110).strength(0.6))
+                .force('charge', d3.forceManyBody().strength(-320))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(48));
+
+            const g = svg.append('g');
+
+            svg.call(d3.zoom().scaleExtent([0.4, 2.5]).on('zoom', (ev) => g.attr('transform', ev.transform)));
+
+            const linkSel = g.append('g').selectAll('line')
+                .data(links).join('line')
+                .attr('stroke', d => personColorById[d.personId])
+                .attr('stroke-width', 2)
+                .attr('stroke-opacity', 0.55)
+                .attr('class', d => 'link-person-' + d.personId);
+
+            const nodeGroup = g.append('g').selectAll('g')
+                .data(nodes).join('g')
+                .attr('class', d => 'node-group ' + [...d.people].map(p => 'node-person-' + p).join(' '))
+                .call(d3.drag()
+                    .on('start', (ev, d) => { if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                    .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+                    .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+            nodeGroup.append('circle')
+                .attr('r', d => 14 + Math.min(d.people.size, 4) * 4)
+                .attr('fill', d => STAGE_COLORS[d.stage])
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2.5);
+
+            nodeGroup.append('text')
+                .attr('class', 'node-label')
+                .attr('text-anchor', 'middle')
+                .attr('dy', d => 14 + Math.min(d.people.size, 4) * 4 + 14)
+                .attr('font-size', 10)
+                .attr('font-weight', 600)
+                .attr('fill', '#241A16')
+                .text(d => d.label.length > 22 ? d.label.slice(0, 21) + '…' : d.label)
+                .append('title').text(d => d.label);
+
+            nodeGroup.append('title').text(d => `${d.label} (${STAGE_LABELS[d.stage]})`);
+
+            sim.on('tick', () => {
+                linkSel
+                    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+                nodeGroup.attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            // Kişi filtreleme
+            document.querySelectorAll('.person-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.person-chip').forEach(b => {
+                        b.className = 'person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all';
+                    });
+                    btn.className = 'person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-brandDark text-white transition-all';
+
+                    const personId = btn.dataset.person;
+                    if (personId === 'all') {
+                        linkSel.attr('stroke-opacity', 0.55).attr('stroke-width', 2);
+                        nodeGroup.style('opacity', 1);
+                        document.getElementById('personDetail').classList.add('hidden');
+                    } else {
+                        linkSel.attr('stroke-opacity', d => d.personId === personId ? 0.9 : 0.06)
+                               .attr('stroke-width', d => d.personId === personId ? 3.5 : 1);
+                        nodeGroup.style('opacity', d => d.people.has(personId) ? 1 : 0.15);
+                        showPersonDetail(people.find(p => p.id === personId), journeysByPerson[personId]);
+                    }
+                });
+            });
+        }
+
+        function showPersonDetail(person, steps) {
+            const el = document.getElementById('personDetail');
+            el.classList.remove('hidden');
+            const sorted = [...steps].sort((a, b) => a.order_index - b.order_index);
+            el.innerHTML = `
+                <h3 class="font-bold text-lg text-brandDark mb-1">${person.name}</h3>
+                <p class="text-sm text-brandRed font-semibold mb-3">${person.career_title}</p>
+                <p class="text-xs text-brandGray mb-4">${person.bio || ''}</p>
+                <div class="space-y-2">
+                    ${sorted.map(s => {
+                        const label = s.institutions ? s.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : s.custom_label;
+                        return `
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0" style="background:${STAGE_COLORS[s.stage]}20; color:${STAGE_COLORS[s.stage]};">${STAGE_LABELS[s.stage]}</span>
+                                <span class="text-xs text-brandDark">${label}${s.year_note ? ` <span class="text-brandGray">(${s.year_note})</span>` : ''}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                ${person.source_url ? `<a href="${person.source_url}" target="_blank" rel="noopener" class="text-[10px] text-brandGray hover:text-brandRed underline mt-4 inline-block">Kaynak →</a>` : ''}
+            `;
+        }
+
+        load().catch(err => showDebugError('load() hatası: ' + err.message + '\n' + (err.stack || '')));
+    </script>
+</body>
+</html>
