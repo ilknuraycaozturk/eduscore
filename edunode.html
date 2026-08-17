@@ -55,7 +55,7 @@
             </p>
         </div>
 
-        <div id="personChips" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+        <p class="text-center text-xs text-brandGray mb-6">👆 Bir okula (düğüme) tıklayarak o okuldan geçen kişilerin yolunu keşfedin</p>
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
             <svg id="graphSvg" width="100%" height="560"></svg>
@@ -98,19 +98,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             const institutionParam = urlParams.get('institution');
 
-            renderPersonChips(people);
             renderGraph(people, journeys, institutionParam);
             renderLegend();
-        }
-
-        function renderPersonChips(people) {
-            const el = document.getElementById('personChips');
-            el.innerHTML = `<button data-person="all" class="person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-brandDark text-white transition-all">Tümünü Göster</button>` +
-                people.map((p, i) => `
-                    <button data-person="${p.id}" class="person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all">
-                        ${p.name}
-                    </button>
-                `).join('');
         }
 
         function renderLegend() {
@@ -213,6 +202,15 @@
 
             nodeGroup.append('title').text(d => `${d.label} (${STAGE_LABELS[d.stage]})`);
 
+            svg.on('click', (ev) => {
+                if (ev.target === svg.node()) resetHighlight();
+            });
+
+            nodeGroup.style('cursor', 'pointer').on('click', (ev, d) => {
+                ev.stopPropagation();
+                highlightPeopleSet(d.people, d.label);
+            });
+
             sim.on('tick', () => {
                 linkSel
                     .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
@@ -220,27 +218,35 @@
                 nodeGroup.attr('transform', d => `translate(${d.x},${d.y})`);
             });
 
-            // Kişi filtreleme
-            document.querySelectorAll('.person-chip').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.person-chip').forEach(b => {
-                        b.className = 'person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all';
-                    });
-                    btn.className = 'person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-brandDark text-white transition-all';
+            function highlightPeopleSet(personIdSet, labelForHeader) {
+                linkSel.attr('stroke-opacity', d => personIdSet.has(d.personId) ? 0.9 : 0.06)
+                       .attr('stroke-width', d => personIdSet.has(d.personId) ? 3.5 : 1);
+                nodeGroup.style('opacity', d => [...d.people].some(p => personIdSet.has(p)) ? 1 : 0.15);
 
-                    const personId = btn.dataset.person;
-                    if (personId === 'all') {
-                        linkSel.attr('stroke-opacity', 0.55).attr('stroke-width', 2);
-                        nodeGroup.style('opacity', 1);
-                        document.getElementById('personDetail').classList.add('hidden');
-                    } else {
-                        linkSel.attr('stroke-opacity', d => d.personId === personId ? 0.9 : 0.06)
-                               .attr('stroke-width', d => d.personId === personId ? 3.5 : 1);
-                        nodeGroup.style('opacity', d => d.people.has(personId) ? 1 : 0.15);
-                        showPersonDetail(people.find(p => p.id === personId), journeysByPerson[personId]);
-                    }
-                });
-            });
+                const detailEl = document.getElementById('personDetail');
+                detailEl.classList.remove('hidden');
+                if (personIdSet.size === 1) {
+                    const pid = [...personIdSet][0];
+                    showPersonDetail(people.find(p => p.id === pid), journeysByPerson[pid]);
+                } else {
+                    detailEl.innerHTML = `
+                        <h3 class="font-bold text-lg text-brandDark mb-2">🏫 ${labelForHeader}</h3>
+                        <p class="text-xs text-brandGray mb-3">Buradan geçmiş, doğrulanmış ${personIdSet.size} kişinin yolu vurgulandı.</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${[...personIdSet].map(pid => {
+                                const p = people.find(x => x.id === pid);
+                                return `<span class="text-xs font-semibold bg-brandBg px-3 py-1 rounded-full">${p.name}</span>`;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            function resetHighlight() {
+                linkSel.attr('stroke-opacity', 0.55).attr('stroke-width', 2);
+                nodeGroup.style('opacity', 1);
+                document.getElementById('personDetail').classList.add('hidden');
+            }
 
             // ÖNEMLİ: okul-detay.html'den '?institution={id}' ile gelindiyse,
             // o okuldan geçen TÜM kişilerin yollarını otomatik olarak
@@ -250,27 +256,7 @@
                 const instNodeKey = 'inst:' + institutionParam;
                 const instNode = nodesMap.get(instNodeKey);
                 if (instNode && instNode.people.size > 0) {
-                    const relevantIds = new Set(instNode.people);
-                    linkSel.attr('stroke-opacity', d => relevantIds.has(d.personId) ? 0.9 : 0.06)
-                           .attr('stroke-width', d => relevantIds.has(d.personId) ? 3.5 : 1);
-                    nodeGroup.style('opacity', d => [...d.people].some(p => relevantIds.has(p)) ? 1 : 0.15);
-                    document.querySelectorAll('.person-chip').forEach(b => {
-                        if (relevantIds.has(b.dataset.person)) {
-                            b.className = 'person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-brandDark text-white transition-all';
-                        }
-                    });
-                    const detailEl = document.getElementById('personDetail');
-                    detailEl.classList.remove('hidden');
-                    detailEl.innerHTML = `
-                        <h3 class="font-bold text-lg text-brandDark mb-2">🏫 ${instNode.label}</h3>
-                        <p class="text-xs text-brandGray mb-3">Bu okuldan geçmiş, doğrulanmış ${instNode.people.size} kişinin yolu vurgulandı.</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${[...relevantIds].map(pid => {
-                                const p = people.find(x => x.id === pid);
-                                return `<span class="text-xs font-semibold bg-brandBg px-3 py-1 rounded-full">${p.name}</span>`;
-                            }).join('')}
-                        </div>
-                    `;
+                    highlightPeopleSet(instNode.people, instNode.label);
                 }
             }
         }
