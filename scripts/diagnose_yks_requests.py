@@ -95,5 +95,24 @@ def main():
         print(f"  {l}")
 
 
+    print("\n=== TEST 7: /liseler sayfasının ham içeriğini incele ===")
+    print(f"Tam URL denemesi: {r1.url}")
+    # <a href kalıplarının TÜMÜNÜ (regex'i genişletiyoruz)
+    all_hrefs = re.findall(r'href="([^"]+)"', r1.text)
+    print(f"Toplam href sayısı: {len(all_hrefs)}")
+    lise_like = [h for h in all_hrefs if 'lise' in h.lower()]
+    print(f"'lise' içeren href sayısı: {len(lise_like)} (ilk 15):")
+    for h in lise_like[:15]:
+        print(f"  {h}")
+    # fetch/axios/api çağrılarını script içinde ara
+    api_calls = re.findall(r'(?:fetch|axios\.get|\.get\()\s*\(?["\']([^"\']+)["\']', r1.text)
+    print(f"\nJS içinde bulunan fetch/api çağrıları ({len(api_calls)} adet):")
+    for a in api_calls[:10]:
+        print(f"  {a}")
+    # Ortada 1000 karakterlik bir dilim göster (body içeriği görmek için)
+    body_idx = r1.text.find('<body')
+    print(f"\n<body> içeriğinden 1500 karakterlik örnek:\n{r1.text[body_idx:body_idx+1500]}")
+
+
 if __name__ == "__main__":
     main()
