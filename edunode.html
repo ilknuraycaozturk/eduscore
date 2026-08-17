@@ -244,20 +244,25 @@
                         const kariyerLabel = kariyerAdimi
                             ? (kariyerAdimi.institutions ? kariyerAdimi.institutions.name : kariyerAdimi.custom_label)
                             : p.career_title;
-                        return { name: p.name, unvan: p.career_title, kariyer: kariyerLabel };
+                        return { id: pid, name: p.name, unvan: p.career_title, kariyer: kariyerLabel };
                     });
                     detailEl.innerHTML = `
                         <h3 class="font-bold text-lg text-brandDark mb-1">🏫 ${labelForHeader}</h3>
-                        <p class="text-xs text-brandGray mb-4">Bu okuldan ulaşılan, doğrulanmış ${personIdSet.size} kariyer yolu:</p>
-                        <div class="space-y-3">
+                        <p class="text-xs text-brandGray mb-4">Bu okuldan ulaşılan, doğrulanmış ${personIdSet.size} kariyer yolu — detayı görmek için tıklayın:</p>
+                        <div class="space-y-2">
                             ${kariyerSatirlari.map(k => `
-                                <div class="border-l-2 border-brandRed pl-3">
+                                <button data-goto-person="${k.id}" class="w-full text-left border-l-2 border-brandRed pl-3 py-1.5 hover:bg-brandBg rounded-r-lg transition-all">
                                     <p class="text-sm font-bold text-brandDark">${k.kariyer}</p>
-                                    <p class="text-[11px] text-brandGray">${k.unvan} — <span class="font-semibold text-brandRedDark">${k.name}</span></p>
-                                </div>
+                                    <p class="text-[11px] text-brandGray">${k.unvan} — <span class="font-semibold text-brandRedDark">${k.name}</span> <span class="text-brandGray">→</span></p>
+                                </button>
                             `).join('')}
                         </div>
                     `;
+                    detailEl.querySelectorAll('[data-goto-person]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            highlightPeopleSet(new Set([btn.dataset.gotoPerson]), null);
+                        });
+                    });
                 }
             }
 
@@ -266,6 +271,7 @@
                 nodeGroup.style('opacity', 1);
                 document.getElementById('personDetail').classList.add('hidden');
             }
+            window.resetHighlightPublic = resetHighlight;  // inline onclick'ten erişim için
 
             // ÖNEMLİ: okul-detay.html'den '?institution={id}' ile gelindiyse,
             // o okuldan geçen TÜM kişilerin yollarını otomatik olarak
@@ -285,6 +291,7 @@
             el.classList.remove('hidden');
             const sorted = [...steps].sort((a, b) => a.order_index - b.order_index);
             el.innerHTML = `
+                <button onclick="resetHighlightPublic()" class="text-[11px] text-brandGray hover:text-brandRed mb-3 font-semibold">← Tüm okullara dön</button>
                 <h3 class="font-bold text-lg text-brandDark mb-1">${person.name}</h3>
                 <p class="text-sm text-brandRed font-semibold mb-3">${person.career_title}</p>
                 <p class="text-xs text-brandGray mb-4">${person.bio || ''}</p>
