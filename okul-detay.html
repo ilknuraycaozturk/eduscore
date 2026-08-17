@@ -510,6 +510,31 @@
             setupReviewsSection(instId);
             const kendiAkademikSkor = (scores || []).find(s => s.scoring_criteria && s.scoring_criteria.key === 'akademik_basari');
             loadSimilarInstitutions(inst, kendiAkademikSkor ? kendiAkademikSkor.score : null);
+            checkEduNodeLink(instId, inst.name);
+        }
+
+        async function checkEduNodeLink(institutionId, institutionName) {
+            const { data: journeySteps } = await sb.from('notable_person_journey')
+                .select('person_id, notable_people ( name )')
+                .eq('institution_id', institutionId);
+
+            if (!journeySteps || !journeySteps.length) return;
+
+            const isimler = [...new Map(journeySteps.map(j => [j.person_id, j.notable_people.name])).values()];
+            const box = document.createElement('a');
+            box.href = `edunode.html?institution=${institutionId}`;
+            box.className = 'block bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6 hover:border-brandRed/40 hover:shadow-md transition-all';
+            box.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🕸️</span>
+                    <div>
+                        <p class="text-sm font-bold text-brandDark">Bu okuldan çıkan başarı hikayeleri</p>
+                        <p class="text-xs text-brandGray">${isimler.join(', ')} — EduNode'da yolculuklarını keşfedin →</p>
+                    </div>
+                </div>
+            `;
+            const infoCard = document.getElementById('infoCard');
+            infoCard.parentNode.insertBefore(box, infoCard);
         }
 
         async function loadSimilarInstitutions(inst, kendiSkor) {

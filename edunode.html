@@ -95,8 +95,11 @@
                 .order('order_index');
             if (e2) throw e2;
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const institutionParam = urlParams.get('institution');
+
             renderPersonChips(people);
-            renderGraph(people, journeys);
+            renderGraph(people, journeys, institutionParam);
             renderLegend();
         }
 
@@ -119,7 +122,7 @@
             `).join('');
         }
 
-        function renderGraph(people, journeys) {
+        function renderGraph(people, journeys, institutionParam) {
             const svg = d3.select('#graphSvg');
             const width = document.getElementById('graphSvg').clientWidth || 900;
             const height = 560;
@@ -238,6 +241,38 @@
                     }
                 });
             });
+
+            // ÖNEMLİ: okul-detay.html'den '?institution={id}' ile gelindiyse,
+            // o okuldan geçen TÜM kişilerin yollarını otomatik olarak
+            // vurguluyoruz - kullanıcı bir okuldan direkt "bu okuldan çıkanlar"
+            // görünümüne düşsün, elle tıklamasına gerek kalmasın.
+            if (institutionParam) {
+                const instNodeKey = 'inst:' + institutionParam;
+                const instNode = nodesMap.get(instNodeKey);
+                if (instNode && instNode.people.size > 0) {
+                    const relevantIds = new Set(instNode.people);
+                    linkSel.attr('stroke-opacity', d => relevantIds.has(d.personId) ? 0.9 : 0.06)
+                           .attr('stroke-width', d => relevantIds.has(d.personId) ? 3.5 : 1);
+                    nodeGroup.style('opacity', d => [...d.people].some(p => relevantIds.has(p)) ? 1 : 0.15);
+                    document.querySelectorAll('.person-chip').forEach(b => {
+                        if (relevantIds.has(b.dataset.person)) {
+                            b.className = 'person-chip px-4 py-1.5 rounded-full text-xs font-bold bg-brandDark text-white transition-all';
+                        }
+                    });
+                    const detailEl = document.getElementById('personDetail');
+                    detailEl.classList.remove('hidden');
+                    detailEl.innerHTML = `
+                        <h3 class="font-bold text-lg text-brandDark mb-2">🏫 ${instNode.label}</h3>
+                        <p class="text-xs text-brandGray mb-3">Bu okuldan geçmiş, doğrulanmış ${instNode.people.size} kişinin yolu vurgulandı.</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${[...relevantIds].map(pid => {
+                                const p = people.find(x => x.id === pid);
+                                return `<span class="text-xs font-semibold bg-brandBg px-3 py-1 rounded-full">${p.name}</span>`;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+            }
         }
 
         function showPersonDetail(person, steps) {
