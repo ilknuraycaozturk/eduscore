@@ -184,18 +184,23 @@
                     .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
                     .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
 
+            // ÖNEMLİ: Odak noktamız OKULLARIN kendisi ve oradan çıkan kariyer
+            // yolları - bu yüzden bir kuruma (okul) bağlı düğümler, kişiye özel
+            // (custom_label) düğümlerden görsel olarak daha belirgin/büyük
+            // çiziliyor. Kişi bilgisi, okulun başarısını KANITLAYAN destekleyici
+            // bir detay - odak değil.
             nodeGroup.append('circle')
-                .attr('r', d => 14 + Math.min(d.people.size, 4) * 4)
+                .attr('r', d => (d.institutionId ? 20 : 12) + Math.min(d.people.size, 4) * 3)
                 .attr('fill', d => STAGE_COLORS[d.stage])
-                .attr('stroke', '#fff')
-                .attr('stroke-width', 2.5);
+                .attr('stroke', d => d.institutionId ? '#241A16' : '#fff')
+                .attr('stroke-width', d => d.institutionId ? 3 : 2);
 
             nodeGroup.append('text')
                 .attr('class', 'node-label')
                 .attr('text-anchor', 'middle')
-                .attr('dy', d => 14 + Math.min(d.people.size, 4) * 4 + 14)
-                .attr('font-size', 10)
-                .attr('font-weight', 600)
+                .attr('dy', d => (d.institutionId ? 20 : 12) + Math.min(d.people.size, 4) * 3 + 14)
+                .attr('font-size', d => d.institutionId ? 11 : 10)
+                .attr('font-weight', d => d.institutionId ? 800 : 600)
                 .attr('fill', '#241A16')
                 .text(d => d.label.length > 22 ? d.label.slice(0, 21) + '…' : d.label)
                 .append('title').text(d => d.label);
@@ -229,14 +234,28 @@
                     const pid = [...personIdSet][0];
                     showPersonDetail(people.find(p => p.id === pid), journeysByPerson[pid]);
                 } else {
+                    // ÖNEMLİ: Odağımız okulun kendisi ve oradan ulaşılan kariyer
+                    // sonuçları - bu yüzden önce "hangi kariyerlere ulaşıldığını"
+                    // öne çıkarıyoruz, kişi ismini bunu kanıtlayan destekleyici
+                    // (küçük) bir etiket olarak veriyoruz.
+                    const kariyerSatirlari = [...personIdSet].map(pid => {
+                        const p = people.find(x => x.id === pid);
+                        const kariyerAdimi = (journeysByPerson[pid] || []).find(j => j.stage === 'kariyer');
+                        const kariyerLabel = kariyerAdimi
+                            ? (kariyerAdimi.institutions ? kariyerAdimi.institutions.name : kariyerAdimi.custom_label)
+                            : p.career_title;
+                        return { name: p.name, unvan: p.career_title, kariyer: kariyerLabel };
+                    });
                     detailEl.innerHTML = `
-                        <h3 class="font-bold text-lg text-brandDark mb-2">🏫 ${labelForHeader}</h3>
-                        <p class="text-xs text-brandGray mb-3">Buradan geçmiş, doğrulanmış ${personIdSet.size} kişinin yolu vurgulandı.</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${[...personIdSet].map(pid => {
-                                const p = people.find(x => x.id === pid);
-                                return `<span class="text-xs font-semibold bg-brandBg px-3 py-1 rounded-full">${p.name}</span>`;
-                            }).join('')}
+                        <h3 class="font-bold text-lg text-brandDark mb-1">🏫 ${labelForHeader}</h3>
+                        <p class="text-xs text-brandGray mb-4">Bu okuldan ulaşılan, doğrulanmış ${personIdSet.size} kariyer yolu:</p>
+                        <div class="space-y-3">
+                            ${kariyerSatirlari.map(k => `
+                                <div class="border-l-2 border-brandRed pl-3">
+                                    <p class="text-sm font-bold text-brandDark">${k.kariyer}</p>
+                                    <p class="text-[11px] text-brandGray">${k.unvan} — <span class="font-semibold text-brandRedDark">${k.name}</span></p>
+                                </div>
+                            `).join('')}
                         </div>
                     `;
                 }
