@@ -593,16 +593,14 @@
                             <th class="text-left font-semibold px-2 py-2">Okul</th>
                             <th class="text-left font-semibold px-2 py-2">Yüzdelik Dilim</th>
                             <th class="text-left font-semibold px-2 py-2">Tür</th>
-                            <th class="px-2 py-2"></th>
                         </tr>
                     </thead>
                     <tbody>
                         ${withScores.map(s => `
-                            <tr class="border-t border-slate-100 hover:bg-brandBg transition-colors">
+                            <tr onclick="window.location.href='okul-detay.html?id=${s.id}'" class="border-t border-slate-100 hover:bg-brandBg active:bg-brandBg transition-colors cursor-pointer">
                                 <td class="px-2 py-2.5 font-semibold text-brandDark">${s.name}<br><span class="text-[10px] text-brandGray font-normal">${s.locations ? s.locations.name : ''}</span></td>
-                                <td class="px-2 py-2.5 font-bold text-brandRed">${s.akademikSkor != null ? `%${(100 - s.akademikSkor).toFixed(2)}` : '<span class="text-slate-300 font-normal">Veri yok</span>'}</td>
-                                <td class="px-2 py-2.5 text-brandGray">${s.is_public ? 'Devlet' : 'Özel'}</td>
-                                <td class="px-2 py-2.5 text-right"><a href="okul-detay.html?id=${s.id}" class="text-brandRed font-semibold hover:underline">İncele →</a></td>
+                                <td class="px-2 py-2.5 font-bold text-brandRed whitespace-nowrap">${s.akademikSkor != null ? `%${(100 - s.akademikSkor).toFixed(2)}` : '<span class="text-slate-300 font-normal">Veri yok</span>'}</td>
+                                <td class="px-2 py-2.5 text-brandGray whitespace-nowrap">${s.is_public ? 'Devlet' : 'Özel'}</td>
                             </tr>
                         `).join('')}
                     </tbody>
