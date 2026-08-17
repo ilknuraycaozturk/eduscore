@@ -70,5 +70,30 @@ def main():
             print(f"{path} -> HATA: {e}")
 
 
+    print("\n=== TEST 5: /liseler?q= endpoint'i gerçekten filtreleme yapıyor mu? ===")
+    r1 = session.get(BASE_URL + "/liseler?q=Adana+Fen+Lisesi", timeout=15)
+    print(f"'Adana Fen Lisesi' araması -> {r1.status_code}, {len(r1.text)} karakter")
+    if "adana-fen-lisesi" in r1.text.lower() or "adana fen lisesi" in r1.text.lower():
+        print("✅ Sonuçlarda 'Adana Fen Lisesi' geçiyor - GERÇEK FİLTRELEME ÇALIŞIYOR")
+    else:
+        print("⚠️ Sonuçlarda okul adı bulunamadı")
+
+    # Sonuç linklerini regex ile çıkar
+    import re
+    links = re.findall(r'href="(/lise/[a-z0-9\-]+--\d+/?[a-z0-9\-]*/?)"', r1.text, re.IGNORECASE)
+    links = list(dict.fromkeys(links))  # tekrarları temizle, sırayı koru
+    print(f"\nBulunan lise linkleri ({len(links)} adet, ilk 10):")
+    for l in links[:10]:
+        print(f"  {l}")
+
+    print("\n=== TEST 6: Farklı bir okul adıyla tekrar dene ===")
+    r2 = session.get(BASE_URL + "/liseler?q=Sungurlu+Fen+Lisesi", timeout=15)
+    links2 = re.findall(r'href="(/lise/[a-z0-9\-]+--\d+/?[a-z0-9\-]*/?)"', r2.text, re.IGNORECASE)
+    links2 = list(dict.fromkeys(links2))
+    print(f"'Sungurlu Fen Lisesi' araması -> {len(links2)} link bulundu (ilk 5):")
+    for l in links2[:5]:
+        print(f"  {l}")
+
+
 if __name__ == "__main__":
     main()
