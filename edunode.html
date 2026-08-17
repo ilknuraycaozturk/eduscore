@@ -129,6 +129,15 @@
 
             function nodeKeyFor(j) {
                 if (j.institution_id) return 'inst:' + j.institution_id;
+                // ÖNEMLİ: Veritabanımızda kaydı olmayan okullar (özel/uluslararası
+                // okullar - Robert Koleji, Üsküdar Amerikan Lisesi vb.) için de,
+                // AYNI isimdeki okulları farklı kişiler arasında birleştiriyoruz -
+                // böylece "aynı okuldan çıkan farklı kariyerler" mantığı sadece
+                // veritabanı kayıtlı okullarla sınırlı kalmıyor. Kariyer adımı
+                // (yolun sonu) ise her zaman kişiye özel kalmalı.
+                if (j.stage !== 'kariyer' && j.custom_label) {
+                    return 'label:' + j.custom_label.toLowerCase().trim();
+                }
                 return 'custom:' + j.person_id + ':' + j.order_index;
             }
 
