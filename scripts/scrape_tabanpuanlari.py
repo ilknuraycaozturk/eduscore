@@ -208,7 +208,7 @@ def fetch_kontenjan(session: requests.Session, program_id: str) -> tuple[int | N
     return kontenjan_2026, kontenjan_2025
 
 
-
+def scrape_il(page, il_adi: str, il_slug: str, timeout_ms: int = 30000) -> list[dict]:
     url = f"{BASE_URL}/{il_slug}"
     collected: dict[str, dict] = {}
 
