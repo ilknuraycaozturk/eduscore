@@ -31,13 +31,16 @@ TYPE_KEYWORDS = [
     # genel "lise" kontrolünden ÖNCE gelmeli, yoksa hepsi genel 'lise'ye düşer.
     ("anaokulu", ["anaokulu", "anasınıfı", "kreş"]),
     ("ilkokul", ["ilkokul", "i̇lköğretim okulu"]),
-    ("ortaokul", ["ortaokul", "imam hatip ortaokulu"]),
+    ("ortaokul", ["ortaokul", "imam hatip ortaokulu", "ımam hatip ortaokulu"]),
     ("fen-lisesi", ["fen lisesi"]),
     ("fen-teknoloji-lisesi", ["fen ve teknoloji lisesi", "fen-teknoloji lisesi"]),
     ("sosyal-bilimler-lisesi", ["sosyal bilimler lisesi"]),
     ("anadolu-guzel-sanatlar-lisesi", ["güzel sanatlar lisesi", "güzel sanatlar ve spor lisesi"]),
     ("laboratuvar-lisesi", ["laboratuvar lisesi", "laboratuvar okulu"]),
-    ("anadolu-imam-hatip-lisesi", ["imam hatip lisesi", "imam-hatip lisesi"]),
+    ("anadolu-imam-hatip-lisesi", [
+        "imam hatip lisesi", "imam-hatip lisesi",
+        "ımam hatip lisesi", "ımam-hatip lisesi",  # kaynak veride "İmam" bazen düz ASCII "I" ile yazılıyor
+    ]),
     ("mesleki-teknik-anadolu-lisesi", [
         "mesleki ve teknik anadolu lisesi", "mesleki eğitim merkezi",
         "ticaret mesleki", "teknik anadolu lisesi", "meslek lisesi",
