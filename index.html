@@ -128,6 +128,21 @@
             transition: var(--transition);
             border: 1px solid var(--dark-brown);
         }
+        .cta-btn-outline {
+            background-color: transparent;
+            color: var(--dark-brown);
+            padding: 11px 20px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            border: 1.5px solid var(--dark-brown);
+        }
+        .cta-btn-outline:hover {
+            background-color: var(--dark-brown);
+            color: var(--pure-white);
+        }
 
         .cta-btn:hover {
             background-color: transparent;
@@ -550,6 +565,7 @@
                 <li><a href="kurumlar-icin.html" class="nav-link">Kurumlar İçin</a></li>
                 <li><a href="edunode.html" class="nav-link">EduNode</a></li>
                 <li><a href="giris.html" class="nav-link">Giriş Yap</a></li>
+                <li><a href="kurumlar-icin.html" class="cta-btn-outline">Okulunuzu Sahiplenin</a></li>
                 <li><a href="explorer.html" class="cta-btn">Platformu Keşfet</a></li>
             </ul>
             <button class="menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
@@ -590,37 +606,40 @@
 
                             <!-- Yükseköğretim & Alternatif Modeller -->
                             <optgroup label="Yükseköğretim & Dijital">
-                                <option value="seg-university">05. Üniversiteler / Yükseköğretim Kurumları</option>
-                                <option value="seg-distance">06. Açık ve Uzaktan Eğitim Kurumları</option>
-                                <option value="seg-edtech">07. EdTech Platformları & Dijital İçerik Sağlayıcılar</option>
+                                <option value="seg-university" data-veri-yok="1">05. Üniversiteler / Yükseköğretim Kurumları 🔜</option>
+                                <option value="seg-distance" data-veri-yok="1">06. Açık ve Uzaktan Eğitim Kurumları 🔜</option>
+                                <option value="seg-edtech" data-veri-yok="1">07. EdTech Platformları & Dijital İçerik Sağlayıcılar 🔜</option>
                             </optgroup>
 
                             <!-- Sınav, Dil ve Gelişim Odaklı -->
                             <optgroup label="Özel Kurslar & Gelişim">
-                                <option value="seg-courses">08. Kurslar & Özel Ders Merkezleri</option>
-                                <option value="seg-language">09. Dil Okulları & Yurtdışı Eğitim</option>
-                                <option value="seg-driving">10. Sürücü, Ulaştırma & Havacılık Akademileri</option>
-                                <option value="seg-sports-arts">11. Spor, Sanat & Beceri Akademileri</option>
+                                <option value="seg-courses" data-veri-yok="1">08. Kurslar & Özel Ders Merkezleri 🔜</option>
+                                <option value="seg-language" data-veri-yok="1">09. Dil Okulları & Yurtdışı Eğitim 🔜</option>
+                                <option value="seg-driving" data-veri-yok="1">10. Sürücü, Ulaştırma & Havacılık Akademileri 🔜</option>
+                                <option value="seg-sports-arts" data-veri-yok="1">11. Spor, Sanat & Beceri Akademileri 🔜</option>
                             </optgroup>
 
                             <!-- Dönemsel & Özel İhtiyaçlar -->
                             <optgroup label="Özel Alanlar & Kamplar">
-                                <option value="seg-special">12. Özel Gereksinim Eğitim Kurumları</option>
-                                <option value="seg-camps">13. Eğitim, Bilim & Gelişim Kampları</option>
-                                <option value="seg-summer">14. Yaz / Kış Okulları</option>
+                                <option value="seg-special" data-veri-yok="1">12. Özel Gereksinim Eğitim Kurumları 🔜</option>
+                                <option value="seg-camps" data-veri-yok="1">13. Eğitim, Bilim & Gelişim Kampları 🔜</option>
+                                <option value="seg-summer" data-veri-yok="1">14. Yaz / Kış Okulları 🔜</option>
                             </optgroup>
 
                             <!-- Profesyonel, Kurumsal & Sektörel -->
                             <optgroup label="Kurumsal, Profesyonel & Toplumsal">
-                                <option value="seg-corporate">15. Kurumsal Akademiler & Profesyonel Gelişim</option>
-                                <option value="seg-lifelong">16. Sürekli Eğitim & Yaşam Boyu Öğrenme</option>
-                                <option value="seg-vocational">17. Mesleki & Teknik Eğitim Merkezleri</option>
-                                <option value="seg-stk">18. STK, Vakıf & Topluluk Eğitimleri</option>
-                                <option value="seg-defense">19. Savunma, Güvenlik & Askeri Akademiler</option>
-                                <option value="seg-religious">20. Dini & İlahiyat Eğitim Kurumları</option>
+                                <option value="seg-corporate" data-veri-yok="1">15. Kurumsal Akademiler & Profesyonel Gelişim 🔜</option>
+                                <option value="seg-lifelong" data-veri-yok="1">16. Sürekli Eğitim & Yaşam Boyu Öğrenme 🔜</option>
+                                <option value="seg-vocational" data-veri-yok="1">17. Mesleki & Teknik Eğitim Merkezleri 🔜</option>
+                                <option value="seg-stk" data-veri-yok="1">18. STK, Vakıf & Topluluk Eğitimleri 🔜</option>
+                                <option value="seg-defense" data-veri-yok="1">19. Savunma, Güvenlik & Askeri Akademiler 🔜</option>
+                                <option value="seg-religious" data-veri-yok="1">20. Dini & İlahiyat Eğitim Kurumları 🔜</option>
                             </optgroup>
                         </select>
                     </div>
+                    <p id="segmentVeriYokNotice" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5 mt-1.5">
+                        🔜 Bu segment için veri aktarımı henüz devam ediyor — şu an en kapsamlı verimiz <b>Lise</b>, <b>Ortaokul</b>, <b>İlkokul</b> ve <b>Anaokulu</b> için.
+                    </p>
                 </div>
 
                 <!-- Adım 2: Konum -->
@@ -684,6 +703,17 @@
             <h3>Eğitim Kararı Şansa Bırakılmaz</h3>
             <p>EduScor, eğitim kurumlarını ticari kaygılardan uzak, tamamen şeffaf ve bilimsel ağırlıklandırma algoritmalarıyla puanlar. Velilerin ve öğrencilerin doğru veriye ulaşmasını hedefler.</p>
         </div>
+
+        <a href="edunode.html" style="display:block; max-width: 760px; margin: 32px auto 0; background: linear-gradient(135deg, #241A16 0%, #3a2a22 100%); border-radius: 16px; padding: 24px 28px; text-decoration: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <span style="font-size:32px;">🕸️</span>
+                <div style="flex:1; min-width:200px;">
+                    <p style="color:#fff; font-weight:700; font-size:16px; margin:0 0 4px;">Öne Çıkan Başarı Hikayeleri</p>
+                    <p style="color:#c9bcb4; font-size:13px; margin:0;">Hangi okul, hangi kariyere taşıdı? EduNode'da gerçek, doğrulanmış yolculukları keşfedin.</p>
+                </div>
+                <span style="color:#E8543A; font-weight:700; font-size:14px; white-space:nowrap;">Keşfet →</span>
+            </div>
+        </a>
 
         <div class="formula-grid">
             <div class="formula-card">
@@ -774,6 +804,29 @@
             });
         }
 
+        // ÖNEMLİ: Konum izni reddedilince artık çirkin bir alert() yerine,
+        // kullanıcıyı doğrudan il/ilçe alanına odaklayan şık bir bildirim
+        // kutusu gösteriyoruz.
+        function showLocationDeniedModal() {
+            const existing = document.getElementById('locationDeniedNotice');
+            if (existing) existing.remove();
+            const locInput = document.querySelector('input[name="location"]');
+            const notice = document.createElement('div');
+            notice.id = 'locationDeniedNotice';
+            notice.className = 'mt-2 flex items-start gap-2 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2';
+            notice.innerHTML = `
+                <span>📍</span>
+                <span>Konum izni verilmedi. Sorun yok — aşağıya <b>il veya ilçenizi</b> yazarak da arayabilirsiniz.</span>
+            `;
+            if (locInput && locInput.parentNode) {
+                locInput.parentNode.insertBefore(notice, locInput.nextSibling);
+                locInput.placeholder = 'İl, ilçe veya mahalle...';
+                locInput.required = true;
+                locInput.focus();
+            }
+            setTimeout(() => { const n = document.getElementById('locationDeniedNotice'); if (n) n.remove(); }, 8000);
+        }
+
         if (nearMeBtn) {
             nearMeBtn.addEventListener('click', () => {
                 if (!navigator.geolocation) {
@@ -826,7 +879,8 @@
         }
 
         async function onSegmentChange() {
-            const segment = document.getElementById('institutionSegmentSelect').value;
+            const selectEl = document.getElementById('institutionSegmentSelect');
+            const segment = selectEl.value;
             const card = document.getElementById('lisePriorityCard');
             if (segment === 'seg-high') {
                 await loadLiseCriteriaOnce();
@@ -834,6 +888,17 @@
                 card.style.display = '';
             } else {
                 card.style.display = 'none';
+            }
+
+            // ÖNEMLİ: Henüz veri aktarımı tamamlanmamış segmentler seçilirse
+            // kullanıcı "Sorgula"ya basıp boş sonuçla karşılaşmasın diye
+            // önceden uyarıyoruz.
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const veriYokNotice = document.getElementById('segmentVeriYokNotice');
+            if (selectedOption && selectedOption.dataset.veriYok === '1') {
+                veriYokNotice.classList.remove('hidden');
+            } else {
+                veriYokNotice.classList.add('hidden');
             }
         }
         document.getElementById('institutionSegmentSelect').addEventListener('change', onSegmentChange);
@@ -856,9 +921,10 @@
                         nearMeLng = pos.coords.longitude;
                         if (nearMeBtn) nearMeBtn.textContent = '✓ Konum alındı';
                     } catch (err) {
-                        if (nearMeBtn) nearMeBtn.textContent = 'İzin verilmedi';
+                        if (nearMeBtn) nearMeBtn.textContent = '📍 Yakınımda Ara';
                         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
-                        alert('Konum izni alınamadı. "Yakınımda Ara" olmadan devam etmek için önce o seçimi kaldırıp tekrar Sorgula\'ya basabilirsiniz.');
+                        wantsNearMe = false;
+                        showLocationDeniedModal();
                         return;
                     }
                     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
