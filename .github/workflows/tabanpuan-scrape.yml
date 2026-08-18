@@ -13,8 +13,8 @@ on:
         default: "false"
   # ÖNEMLİ: Her gün otomatik olarak tüm Türkiye'yi (81 il) tekrar tarar -
   # script zaten "zaten var/aynı" kayıtları hızlıca atlayıp sadece yeni/
-  # değişen verileri işlediği için güvenlidir. 14 gün boyunca günlük
-  # çalıştıktan sonra otomatik olarak AYA (her ayın 8'i) geçer.
+  # değişen verileri işlediği için güvenlidir. 30 gün boyunca günlük
+  # çalıştıktan sonra otomatik olarak AYLIĞA (her ayın 8'i) geçer.
   schedule:
     - cron: "0 4 * * *"  # Her gün 04:00 UTC (07:00 TR saati)
 
@@ -35,10 +35,10 @@ jobs:
             exit 0
           fi
           MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
-          TODAY=$(date -u +%m-%d)
-          if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "07-15" ] && [ "$TODAY" != "08-15" ]; then
+          TODAY=$(date -u +%d)
+          if [ "$MODE" = "aylik" ] && [ "$TODAY" != "08" ]; then
             echo "skip_today=true" >> "$GITHUB_OUTPUT"
-            echo "Yılda 2 kez moddayız ve bugün hedef tarih (15 Temmuz/15 Ağustos) değil - atlanıyor."
+            echo "Aylık moddayız ve bugün ayın 8'i değil - atlanıyor."
           else
             echo "skip_today=false" >> "$GITHUB_OUTPUT"
           fi
@@ -107,7 +107,7 @@ jobs:
             python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json
           fi
 
-      - name: 14 gün dolduysa yılda 2 kez moda geç
+      - name: 30 gün dolduysa aylık moda geç
         if: github.event_name == 'schedule'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -116,6 +116,6 @@ jobs:
           STARTED=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_mode_started_at&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else '')")
           DAYS=$(python3 -c "from datetime import date; print((date.today() - date.fromisoformat('$STARTED')).days)" 2>/dev/null || echo "0")
           if [ "$DAYS" -ge "30" ]; then
-            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
-            echo "🎉 30 günlük yoğun tarama tamamlandı - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 15 Temmuz ve 15 Ağustos'ta çalışacak)."
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "aylik"}'
+            echo "🎉 30 günlük yoğun tarama tamamlandı - otomatik olarak AYLIK moda geçildi (her ayın 8'i çalışacak)."
           fi

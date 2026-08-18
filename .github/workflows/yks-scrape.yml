@@ -14,7 +14,7 @@ on:
   # ÖNEMLİ: Her gün otomatik olarak 150 kurumluk bir parti işler - script
   # zaten skorlanmış kurumları hızlıca atladığı için güvenli. Kalan kurum
   # sayısı çok azalınca (script'in kendi 'kalan' çıktısına göre) otomatik
-  # olarak AYA (her ayın 15'i) geçer.
+  # olarak AYLIĞA (her ayın 15'i) geçer.
   schedule:
     - cron: "0 5 * * *"  # Her gün 05:00 UTC (08:00 TR saati)
 
@@ -43,10 +43,10 @@ jobs:
             exit 0
           fi
           MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.yks_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
-          TODAY=$(date -u +%m-%d)
-          if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "08-20" ] && [ "$TODAY" != "09-20" ]; then
+          TODAY=$(date -u +%d)
+          if [ "$MODE" = "aylik" ] && [ "$TODAY" != "15" ]; then
             echo "skip_today=true" >> "$GITHUB_OUTPUT"
-            echo "Yılda 2 kez moddayız ve bugün hedef tarih (20 Ağustos/20 Eylül) değil - atlanıyor."
+            echo "Aylık moddayız ve bugün ayın 15'i değil - atlanıyor."
           else
             echo "skip_today=false" >> "$GITHUB_OUTPUT"
           fi
@@ -82,7 +82,7 @@ jobs:
             python scripts/scrape_and_load_yks_sinavizcisi.py --max-batch "${{ inputs.max_batch || '150' }}"
           fi
 
-      - name: Kalan azaldıysa yılda 2 kez moda geç
+      - name: Kalan azaldıysa aylık moda geç
         if: github.event_name == 'schedule'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -90,17 +90,13 @@ jobs:
         run: |
           KALAN="${{ steps.run_script.outputs.kalan }}"
           if [ -n "$KALAN" ] && [ "$KALAN" -lt "100" ] 2>/dev/null; then
-            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.yks_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
-            echo "🎉 Kalan kurum sayısı 100'ün altına düştü ($KALAN) - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 20 Ağustos ve 20 Eylül'de çalışacak)."
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.yks_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "aylik"}'
+            echo "🎉 Kalan kurum sayısı 100'ün altına düştü ($KALAN) - otomatik olarak AYLIK moda geçildi (her ayın 15'i çalışacak)."
           fi
 
       - name: Kaldıysa kendini yeniden tetikle (sadece manuel çalıştırmalarda)
         if: github.event_name != 'schedule' && inputs.dry_run == 'false' && steps.run_script.outputs.kalan != '0'
         env:
-          # ÖNEMLİ: Varsayılan GITHUB_TOKEN ile tetiklenen bir workflow, GitHub'ın
-          # sonsuz döngü koruması nedeniyle BAŞKA bir workflow'u tetikleyemez.
-          # Bu yüzden kişisel bir erişim anahtarı (Personal Access Token,
-          # 'workflow' izniyle) kullanıyoruz - bu kısıtlamaya tabi değildir.
           GH_TOKEN: ${{ secrets.WORKFLOW_PAT }}
         run: |
           echo "Kalan kurum var (${{ steps.run_script.outputs.kalan }}), 2 dakika bekleniyor (siteye nefes payı için)..."

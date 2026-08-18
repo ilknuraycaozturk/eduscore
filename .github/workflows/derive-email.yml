@@ -12,8 +12,8 @@ on:
         required: true
         default: "false"
   # ÖNEMLİ: Her gün otomatik olarak 100 kurumluk bir parti dener - e-postası
-  # zaten olan kurumlar hızlıca atlanır, güvenlidir. 14 gün boyunca günlük
-  # çalıştıktan sonra otomatik olarak AYA (her ayın 22'si) geçer.
+  # zaten olan kurumlar hızlıca atlanır, güvenlidir. 30 gün boyunca günlük
+  # çalıştıktan sonra otomatik olarak AYLIĞA (her ayın 22'si) geçer.
   schedule:
     - cron: "0 6 * * *"  # Her gün 06:00 UTC (09:00 TR saati)
 
@@ -34,10 +34,10 @@ jobs:
             exit 0
           fi
           MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.email_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
-          TODAY=$(date -u +%m-%d)
-          if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "03-01" ] && [ "$TODAY" != "09-01" ]; then
+          TODAY=$(date -u +%d)
+          if [ "$MODE" = "aylik" ] && [ "$TODAY" != "22" ]; then
             echo "skip_today=true" >> "$GITHUB_OUTPUT"
-            echo "Yılda 2 kez moddayız ve bugün hedef tarih (1 Mart/1 Eylül) değil - atlanıyor."
+            echo "Aylık moddayız ve bugün ayın 22'si değil - atlanıyor."
           else
             echo "skip_today=false" >> "$GITHUB_OUTPUT"
           fi
@@ -70,7 +70,7 @@ jobs:
             python scripts/derive_email_from_website.py --max-batch "${{ inputs.max_batch || '100' }}"
           fi
 
-      - name: 14 gün dolduysa yılda 2 kez moda geç
+      - name: 30 gün dolduysa aylık moda geç
         if: github.event_name == 'schedule'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -79,6 +79,6 @@ jobs:
           STARTED=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.email_mode_started_at&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else '')")
           DAYS=$(python3 -c "from datetime import date; print((date.today() - date.fromisoformat('$STARTED')).days)" 2>/dev/null || echo "0")
           if [ "$DAYS" -ge "30" ]; then
-            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.email_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
-            echo "🎉 30 günlük yoğun tarama tamamlandı - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 1 Mart ve 1 Eylül'de çalışacak)."
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.email_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "aylik"}'
+            echo "🎉 30 günlük yoğun tarama tamamlandı - otomatik olarak AYLIK moda geçildi (her ayın 22'si çalışacak)."
           fi

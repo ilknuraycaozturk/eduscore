@@ -34,7 +34,7 @@ on:
   # ÖNEMLİ: Her gün 81 ilin TAMAMINI otomatik olarak, 13'er illik partiler
   # halinde dolaşarak tarar. Nerede kaldığını 'scrape_progress' tablosunda
   # (Supabase) saklar. 81 il bir kez TAMAMLANINCA (döngü tamamlanınca)
-  # otomatik olarak GÜNLÜKTEN YILDA 2 KEZ çalışacak şekilde geçer (her ayın 1'i) - böylece
+  # otomatik olarak GÜNLÜKTEN AYLIĞA geçer (her ayın 1'i) - böylece
   # veri tabanı büyüdükçe gereksiz yere sürekli tam hızda çalışmaz.
   schedule:
     - cron: "0 3 * * *"  # Her gün 03:00 UTC (06:00 TR saati) - mod kontrolü içeride yapılır
@@ -60,7 +60,7 @@ jobs:
           pip install -r scripts/requirements.txt
           playwright install --with-deps chromium
 
-      - name: Parti belirle (otomatik mod ise Supabase'ten oku, yılda 2 kez moddaysa günü kontrol et)
+      - name: Parti belirle (otomatik mod ise Supabase'ten oku, aylık moddaysa günü kontrol et)
         id: determine_batch
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -69,10 +69,10 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             echo "is_scheduled=true" >> "$GITHUB_OUTPUT"
             MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
-            TODAY=$(date -u +%m-%d)
-            if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "03-01" ] && [ "$TODAY" != "09-01" ]; then
+            TODAY=$(date -u +%d)
+            if [ "$MODE" = "aylik" ] && [ "$TODAY" != "01" ]; then
               echo "skip_today=true" >> "$GITHUB_OUTPUT"
-              echo "Yılda 2 kez moddayız ve bugün hedef tarih (1 Mart/1 Eylül) değil - bu çalıştırma atlanıyor."
+              echo "Aylık moddayız ve bugün ayın ilk günü değil - bu çalıştırma atlanıyor."
               exit 0
             fi
             echo "skip_today=false" >> "$GITHUB_OUTPUT"
@@ -150,7 +150,7 @@ jobs:
           fi
           eval python scripts/load_to_supabase.py $ARGS
 
-      - name: Otomatik modda sıradaki partiyi ilerlet ve döngü tamamlandıysa aya geç
+      - name: Otomatik modda sıradaki partiyi ilerlet ve döngü tamamlandıysa aylığa geç
         if: needs.scrape.outputs.is_scheduled == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -162,8 +162,8 @@ jobs:
           echo "Sıradaki parti başlangıcı: il $NEW_START"
           # ÖNEMLİ: Eğer yeni başlangıç eski başlangıçtan KÜÇÜKSE, bu 81'i
           # geçip başa döndüğümüz (bir tam döngü tamamlandığı) anlamına gelir
-          # - bu durumda otomatik olarak yılda 2 kez moda geçiyoruz.
+          # - bu durumda otomatik olarak aylık moda geçiyoruz.
           if [ "$NEW_START" -lt "$OLD_START" ]; then
-            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
-            echo "🎉 81 il tam tur tamamlandı - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 1 Mart ve 1 Eylül'de çalışacak)."
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "aylik"}'
+            echo "🎉 81 il tam tur tamamlandı - otomatik olarak AYLIK moda geçildi (her ayın 1'i çalışacak)."
           fi
