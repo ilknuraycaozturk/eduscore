@@ -24,6 +24,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .tooltip-term::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            width: 220px;
+            background: #241A16;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 400;
+            font-size: 11px;
+            line-height: 1.4;
+            padding: 8px 10px;
+            border-radius: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+            z-index: 20;
+        }
+        .tooltip-term:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
@@ -85,14 +109,33 @@
                     ayrı ayrı ağırlık veriyoruz. Lise Skoru Hesaplayıcı'da siz de kendi önceliklerinize göre bu
                     ağırlıkları değiştirebilirsiniz:
                 </p>
-                <div class="bg-brandBg rounded-xl p-4 mb-4">
-                    <p class="text-xs font-mono text-brandDark">Kişisel Skor = Σ (Kriter Puanı × Temel Ağırlık × Aile Önem Çarpanı) / Σ Ağırlıklar</p>
+                <div class="bg-brandBg rounded-xl p-5 mb-4 border border-brandRed/10">
+                    <p class="text-[10px] uppercase tracking-wide text-brandGray mb-2 font-bold">Formül</p>
+                    <p class="text-sm sm:text-base font-mono text-brandDark leading-relaxed flex flex-wrap items-center gap-1">
+                        <span>Kişisel Skor = Σ (</span>
+                        <span class="tooltip-term relative inline-block border-b-2 border-dotted border-brandRed cursor-help font-semibold" data-tooltip="Bir okulun bu tek kriterdeki (örn. Akademik Başarı) ham puanı, 0-100 arası ölçeklenmiş.">Kriter Puanı</span>
+                        <span>×</span>
+                        <span class="tooltip-term relative inline-block border-b-2 border-dotted border-brandRed cursor-help font-semibold" data-tooltip="Bu kriterin, tüm veliler için ortalama önemini yansıtan varsayılan katsayı (örn. Akademik Başarı = 1.0).">Temel Ağırlık</span>
+                        <span>×</span>
+                        <span class="tooltip-term relative inline-block border-b-2 border-dotted border-brandRed cursor-help font-semibold" data-tooltip="Sizin bu kritere verdiğiniz 1-5 arası önem derecesine göre 0.50×-1.5× arasında değişen kişisel çarpan.">Aile Önem Çarpanı</span>
+                        <span>) / Σ Ağırlıklar</span>
+                    </p>
+                    <p class="text-[11px] text-brandGray mt-3">👆 Terimlerin üzerine gelin, ne anlama geldiğini görün.</p>
                 </div>
                 <p class="text-xs text-brandGray">
                     Önem derecenizi 1 (önemsiz) ile 5 (çok önemli) arasında seçtiğinizde, o kriterin ağırlığı buna göre
                     0.50× ile 1.5× arasında yeniden hesaplanır. <b>Veri olmayan kriterler hesaplamaya hiç dahil edilmez</b> —
                     hiçbir zaman tahmini/uydurma bir sayı göstermeyiz.
                 </p>
+            </div>
+        </section>
+
+        <!-- Güven Vaadi — bilinçli olarak sayfanın ORTASINDA, en görünür yerde -->
+        <section class="mb-10">
+            <div class="bg-brandDark text-white rounded-2xl p-8 text-center shadow-lg shadow-brandDark/20 border-2 border-brandRed/30">
+                <span class="text-3xl mb-3 inline-block">🛡️</span>
+                <p class="text-xl font-bold mb-2">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
+                <p class="text-xs text-white/70">Bu, değişmez bir platform ilkemizdir.</p>
             </div>
         </section>
 
@@ -134,23 +177,28 @@
         <!-- 4. Şeffaflık Rozetleri -->
         <section class="mb-10">
             <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">4. Rozetlerimiz Ne Anlama Gelir</h2>
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
-                <div class="flex items-center gap-3">
-                    <span class="bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded shrink-0">✓ Doğrulanmış</span>
-                    <p class="text-xs text-brandGray">Bilgi, kurumun kendi resmi sitesi ya da birincil bir kaynaktan doğrudan teyit edilmiştir.</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded shrink-0">🔍 Taslak Veri</span>
-                    <p class="text-xs text-brandGray">Bilgi otomatik olarak resmi kaynaklardan derlenmiştir ama henüz kurum tarafından teyit edilmemiştir.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. Güven Vaadi -->
-        <section class="mb-10">
-            <div class="bg-brandDark text-white rounded-2xl p-6 text-center">
-                <p class="text-lg font-bold mb-2">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
-                <p class="text-xs text-white/70">Bu, değişmez bir platform ilkemizdir.</p>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="bg-brandBg text-brandGray uppercase text-[10px]">
+                            <th class="text-left font-semibold px-4 py-3">Rozet</th>
+                            <th class="text-left font-semibold px-4 py-3">Nasıl elde edildi?</th>
+                            <th class="text-left font-semibold px-4 py-3">Güvenilirlik</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <td class="px-4 py-4"><span class="bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded whitespace-nowrap">✓ Doğrulanmış</span></td>
+                            <td class="px-4 py-4 text-brandGray">Kurumun kendisi (yetkilisi) tarafından teyit edildi ya da birincil resmi bir kaynaktan doğrudan alındı.</td>
+                            <td class="px-4 py-4 font-semibold text-green-700">Yüksek</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-4"><span class="bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded whitespace-nowrap">🔍 Taslak Veri</span></td>
+                            <td class="px-4 py-4 text-brandGray">Otomatik olarak resmi kaynaklardan (MEB, ÖOKGM vb.) derlendi, henüz kurum tarafından teyit edilmedi.</td>
+                            <td class="px-4 py-4 font-semibold text-amber-700">Orta — kaynağı resmi ama güncelliği teyitli değil</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
