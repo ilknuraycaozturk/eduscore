@@ -23,6 +23,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         table { border-collapse: collapse; width: 100%; }
@@ -80,14 +81,49 @@
         <section class="mb-10">
             <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Lise İçin Temel Kriter Ağırlıkları</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="grid sm:grid-cols-2 gap-6 items-center mb-4">
+                    <div class="relative" style="max-width: 260px; margin: 0 auto;">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                    <div id="chartLegend" class="space-y-1.5 text-xs"></div>
+                </div>
                 <table>
                     <thead><tr><th>Kriter</th><th>Ağırlık</th><th>Veri Durumu</th></tr></thead>
                     <tbody id="criteriaTable"><tr><td colspan="3" class="text-brandGray italic">Yükleniyor...</td></tr></tbody>
                 </table>
                 <p class="text-[11px] text-brandGray mt-3">
-                    "Veri Durumu" sütunu, kaç kurumda bu kritere ait gerçek veri bulunduğunu (152+ Ankara lisesi üzerinden) gösterir.
+                    "Veri Durumu" sütunu, kaç kurumda bu kritere ait gerçek veri bulunduğunu gösterir.
                     Veri olmayan kriterler hesaplamaya dahil edilmez.
                 </p>
+            </div>
+        </section>
+
+        <!-- Veri Eksikliği Senaryoları (QA) -->
+        <section class="mb-10">
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Veri Eksikliğinde Ne Olur? (Test Edilebilir Senaryolar)</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+                <div class="p-5">
+                    <p class="text-xs font-bold text-brandDark mb-1">Senaryo 1 — 5 kriterden 2'sinde veri yok</p>
+                    <p class="text-xs text-brandGray">
+                        Bir okulda "Akademik Başarı" ve "Yabancı Dil" verisi var, "Fiziksel Altyapı", "Sosyal Etkinlik"
+                        ve "Güvenlik" verisi yok. Skor, <b>sadece mevcut 2 kriterin</b> ağırlıklı ortalamasıyla hesaplanır —
+                        eksik 3 kriter için "0" ya da tahmini bir sayı ASLA kullanılmaz, payda da payaya da girmezler.
+                    </p>
+                </div>
+                <div class="p-5">
+                    <p class="text-xs font-bold text-brandDark mb-1">Senaryo 2 — Hiçbir kriterde veri yok</p>
+                    <p class="text-xs text-brandGray">
+                        Skor hesaplanmaz, kart üzerinde <span class="text-slate-400 font-semibold">"Veri yok"</span> gösterilir.
+                        Bu okul, "en yüksek skorlu" sıralamalarda hiç görünmez — ama "en yakın" ya da "isme göre" aramalarda görünür.
+                    </p>
+                </div>
+                <div class="p-5">
+                    <p class="text-xs font-bold text-brandDark mb-1">Senaryo 3 — Veri sonradan eklenir</p>
+                    <p class="text-xs text-brandGray">
+                        Bir kriter için veri sonradan bulunup eklenirse (örn. YKS taramasıyla "Üniversite Yerleştirme"),
+                        o kurumun skoru otomatik olarak yeniden hesaplanır — eski, veri-eksik skor hiçbir yerde saklanmaz.
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -95,15 +131,36 @@
         <section class="mb-10">
             <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Kriter → Kaynak Eşleştirmesi</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <table>
-                    <thead><tr><th>Kriter</th><th>Kaynak</th><th>Güncelleme Sıklığı</th></tr></thead>
-                    <tbody>
-                        <tr><td>Akademik Başarı</td><td>MEB LGS Yerleştirme Kılavuzu (resmi PDF)</td><td>Yıllık</td></tr>
-                        <tr><td>Yabancı Dil Eğitimi</td><td>MEB LGS Kılavuzu ("Hazırlık Sınıfı" bilgisi)</td><td>Yıllık</td></tr>
-                        <tr><td>Üniversite Yerleştirme</td><td>Okulun kendi resmi web sitesi (varsa)</td><td>Düzensiz / manuel</td></tr>
-                        <tr><td>Fiziksel Altyapı, Öğretmen Kalitesi, Sosyal Etkinlik, Güvenlik, Burs</td><td class="text-brandGray italic">Henüz merkezi kaynak yok — "Profilini Sahiplen" özelliği gelince okul yöneticileri girecek</td><td>—</td></tr>
-                    </tbody>
-                </table>
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-brandBg">
+                        <span class="text-xl shrink-0">🏛️</span>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-brandDark">Akademik Başarı</p>
+                            <p class="text-[11px] text-brandGray">MEB LGS Yerleştirme Kılavuzu (resmi PDF) — Yıllık güncellenir</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-brandBg">
+                        <span class="text-xl shrink-0">🗣️</span>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-brandDark">Yabancı Dil Eğitimi</p>
+                            <p class="text-[11px] text-brandGray">MEB LGS Kılavuzu ("Hazırlık Sınıfı" bilgisi) — Yıllık güncellenir</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-brandBg">
+                        <span class="text-xl shrink-0">🎓</span>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-brandDark">Üniversite Yerleştirme</p>
+                            <p class="text-[11px] text-brandGray">Okulun kendi sitesi / sinavizcisi.com (YKS resmi sonuçları) — Düzensiz / otomatik</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50">
+                        <span class="text-xl shrink-0">📋</span>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-brandGray">Fiziksel Altyapı, Öğretmen Kalitesi, Sosyal Etkinlik, Güvenlik, Burs</p>
+                            <p class="text-[11px] text-brandGray italic">Henüz merkezi kaynak yok — "Profilini Sahiplen" özelliğiyle okul yöneticileri girecek</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -162,6 +219,32 @@
                     : `<span class="text-amber-700">Veri yok</span>`;
                 return `<tr><td>${c.name_tr}</td><td class="font-bold text-brandRed">%${c.default_weight}</td><td>${statusBadge}</td></tr>`;
             }).join('');
+
+            // ÖNEMLİ: Ağırlıkları statik metin yerine etkileşimli bir pasta
+            // grafiğiyle de gösteriyoruz - üzerine gelince tam yüzdeyi görebilir.
+            const renkler = ['#E8543A', '#241A16', '#8A7A72', '#C97B63', '#B0402C', '#5C4A42', '#D9A18D', '#3D2E27', '#A6866F'];
+            new Chart(document.getElementById('weightChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: criteria.map(c => c.name_tr),
+                    datasets: [{
+                        data: criteria.map(c => c.default_weight),
+                        backgroundColor: renkler,
+                        borderWidth: 2,
+                        borderColor: '#FDF8F5',
+                    }],
+                },
+                options: {
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: %${ctx.raw}` } } },
+                },
+            });
+            document.getElementById('chartLegend').innerHTML = criteria.map((c, i) => `
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${renkler[i % renkler.length]}"></span>
+                    <span class="text-brandDark">${c.name_tr}</span>
+                    <span class="text-brandGray ml-auto">%${c.default_weight}</span>
+                </div>
+            `).join('');
         }
 
         loadCriteriaTable();
