@@ -163,8 +163,15 @@ def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
 
 def guess_type(name: str) -> str | None:
     lower = turkish_lower(name)  # standart .lower() Türkçe 'İ'yi bozar, bkz. turkish_lower()
+    # ÖNEMLİ: Kaynak verilerde (tabanpuanlari.net, MEB vb.) Türkçe "İ" harfi
+    # bazen düz ASCII "I" ile yazılıyor (örn. "Imam Hatip" yerine "İmam Hatip"
+    # olması gerekirken). turkish_lower() bunu kurallara göre "ı"ya çeviriyor,
+    # ama asıl niyet "i" idi. Bu yüzden eşleştirmeyi ı/i farkına karşı
+    # BAĞIŞIK yapıyoruz - her kalıba tek tek ASCII varyasyonu eklemek yerine,
+    # hem metni hem kalıpları "ı"->"i" normalize edip karşılaştırıyoruz.
+    lower_normalized = lower.replace("ı", "i")
     for slug, keywords in TYPE_KEYWORDS:
-        if any(k in lower for k in keywords):
+        if any(k.replace("ı", "i") in lower_normalized for k in keywords):
             return slug
     return None
 
