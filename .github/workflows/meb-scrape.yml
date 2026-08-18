@@ -33,11 +33,11 @@ on:
         default: "false"
   # ÖNEMLİ: Her gün 81 ilin TAMAMINI otomatik olarak, 13'er illik partiler
   # halinde dolaşarak tarar. Nerede kaldığını 'scrape_progress' tablosunda
-  # (Supabase) saklar - 81'i bitirince başa (1) döner ve verileri periyodik
-  # olarak günceller. Manuel çalıştırmalar (workflow_dispatch) bu otomatik
-  # döngüyü etkilemez, ayrı bir mekanizma.
+  # (Supabase) saklar. 81 il bir kez TAMAMLANINCA (döngü tamamlanınca)
+  # otomatik olarak GÜNLÜKTEN YILDA 2 KEZ çalışacak şekilde geçer (her ayın 1'i) - böylece
+  # veri tabanı büyüdükçe gereksiz yere sürekli tam hızda çalışmaz.
   schedule:
-    - cron: "0 3 * * *"  # Her gün 03:00 UTC (06:00 TR saati)
+    - cron: "0 3 * * *"  # Her gün 03:00 UTC (06:00 TR saati) - mod kontrolü içeride yapılır
 
 jobs:
   scrape:
@@ -46,6 +46,7 @@ jobs:
     outputs:
       batch_start: ${{ steps.determine_batch.outputs.batch_start }}
       is_scheduled: ${{ steps.determine_batch.outputs.is_scheduled }}
+      skip_today: ${{ steps.determine_batch.outputs.skip_today }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,11 +55,12 @@ jobs:
           python-version: "3.12"
 
       - name: Bağımlılıkları kur
+        if: github.event_name != 'schedule'
         run: |
           pip install -r scripts/requirements.txt
           playwright install --with-deps chromium
 
-      - name: Parti belirle (otomatik mod ise Supabase'ten oku)
+      - name: Parti belirle (otomatik mod ise Supabase'ten oku, yılda 2 kez moddaysa günü kontrol et)
         id: determine_batch
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -66,6 +68,16 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             echo "is_scheduled=true" >> "$GITHUB_OUTPUT"
+            MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
+            TODAY=$(date -u +%m-%d)
+            if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "03-01" ] && [ "$TODAY" != "09-01" ]; then
+              echo "skip_today=true" >> "$GITHUB_OUTPUT"
+              echo "Yılda 2 kez moddayız ve bugün hedef tarih (1 Mart/1 Eylül) değil - bu çalıştırma atlanıyor."
+              exit 0
+            fi
+            echo "skip_today=false" >> "$GITHUB_OUTPUT"
+            pip install -r scripts/requirements.txt
+            playwright install --with-deps chromium
             START=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else '1')")
             BATCH=$(python3 -c "start=int('$START'); print(','.join(str(((start-1+i)%81)+1) for i in range(13)))")
             echo "batch_start=$START" >> "$GITHUB_OUTPUT"
@@ -73,9 +85,13 @@ jobs:
             echo "Otomatik parti: il $START'den başlayarak 13 il -> $BATCH"
           else
             echo "is_scheduled=false" >> "$GITHUB_OUTPUT"
+            echo "skip_today=false" >> "$GITHUB_OUTPUT"
+            pip install -r scripts/requirements.txt
+            playwright install --with-deps chromium
           fi
 
       - name: MEB verisini çek
+        if: steps.determine_batch.outputs.skip_today != 'true'
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             python scripts/scrape_meb_schools.py --il-kodu-listesi "$AUTO_IL_KODU_LISTESI" --output data/meb_raw.json
@@ -88,6 +104,7 @@ jobs:
           fi
 
       - name: Ham veriyi artifact olarak kaydet
+        if: steps.determine_batch.outputs.skip_today != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: meb-raw-data
@@ -96,6 +113,7 @@ jobs:
 
   load:
     needs: scrape
+    if: needs.scrape.outputs.skip_today != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -132,12 +150,20 @@ jobs:
           fi
           eval python scripts/load_to_supabase.py $ARGS
 
-      - name: Otomatik modda sıradaki partiyi ilerlet
+      - name: Otomatik modda sıradaki partiyi ilerlet ve döngü tamamlandıysa aya geç
         if: needs.scrape.outputs.is_scheduled == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          NEW_START=$(python3 -c "print((int('${{ needs.scrape.outputs.batch_start }}') - 1 + 13) % 81 + 1)")
+          OLD_START=${{ needs.scrape.outputs.batch_start }}
+          NEW_START=$(python3 -c "print((int('$OLD_START') - 1 + 13) % 81 + 1)")
           curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d "{\"value\": \"$NEW_START\"}"
           echo "Sıradaki parti başlangıcı: il $NEW_START"
+          # ÖNEMLİ: Eğer yeni başlangıç eski başlangıçtan KÜÇÜKSE, bu 81'i
+          # geçip başa döndüğümüz (bir tam döngü tamamlandığı) anlamına gelir
+          # - bu durumda otomatik olarak yılda 2 kez moda geçiyoruz.
+          if [ "$NEW_START" -lt "$OLD_START" ]; then
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
+            echo "🎉 81 il tam tur tamamlandı - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 1 Mart ve 1 Eylül'de çalışacak)."
+          fi

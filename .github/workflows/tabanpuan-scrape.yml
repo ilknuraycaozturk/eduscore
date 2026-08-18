@@ -13,14 +13,39 @@ on:
         default: "false"
   # ÖNEMLİ: Her gün otomatik olarak tüm Türkiye'yi (81 il) tekrar tarar -
   # script zaten "zaten var/aynı" kayıtları hızlıca atlayıp sadece yeni/
-  # değişen verileri işlediği için (dedup + skor güncelleme mantığı), günlük
-  # tekrar taramak güvenlidir ve LGS/YKS taban puanlarının güncel kalmasını
-  # sağlar.
+  # değişen verileri işlediği için güvenlidir. 14 gün boyunca günlük
+  # çalıştıktan sonra otomatik olarak AYA (her ayın 8'i) geçer.
   schedule:
-    - cron: "0 4 * * *"  # Her gün 04:00 UTC (07:00 TR saati) - MEB taramasından 1 saat sonra
+    - cron: "0 4 * * *"  # Her gün 04:00 UTC (07:00 TR saati)
 
 jobs:
+  check_mode:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_today: ${{ steps.check.outputs.skip_today }}
+    steps:
+      - name: Mod ve gün kontrolü (sadece zamanlanmış çalıştırmalarda)
+        id: check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "skip_today=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
+          TODAY=$(date -u +%m-%d)
+          if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "07-15" ] && [ "$TODAY" != "08-15" ]; then
+            echo "skip_today=true" >> "$GITHUB_OUTPUT"
+            echo "Yılda 2 kez moddayız ve bugün hedef tarih (15 Temmuz/15 Ağustos) değil - atlanıyor."
+          else
+            echo "skip_today=false" >> "$GITHUB_OUTPUT"
+          fi
+
   scrape:
+    needs: check_mode
+    if: needs.check_mode.outputs.skip_today != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -37,7 +62,7 @@ jobs:
 
       - name: tabanpuanlari.net'ten veri çek
         run: |
-          if [ "${{ inputs.il }}" = "tumu" ]; then
+          if [ "${{ inputs.il || 'tumu' }}" = "tumu" ]; then
             python scripts/scrape_tabanpuanlari.py --tumu --output data/tabanpuan_raw.json
           else
             python scripts/scrape_tabanpuanlari.py --il "${{ inputs.il }}" --output data/tabanpuan_raw.json
@@ -51,7 +76,8 @@ jobs:
           retention-days: 7
 
   load:
-    needs: scrape
+    needs: [check_mode, scrape]
+    if: needs.check_mode.outputs.skip_today != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -75,8 +101,21 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
             python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --dry-run
           else
             python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json
+          fi
+
+      - name: 14 gün dolduysa yılda 2 kez moda geç
+        if: github.event_name == 'schedule'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          STARTED=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_mode_started_at&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else '')")
+          DAYS=$(python3 -c "from datetime import date; print((date.today() - date.fromisoformat('$STARTED')).days)" 2>/dev/null || echo "0")
+          if [ "$DAYS" -ge "30" ]; then
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.tabanpuan_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
+            echo "🎉 30 günlük yoğun tarama tamamlandı - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 15 Temmuz ve 15 Ağustos'ta çalışacak)."
           fi

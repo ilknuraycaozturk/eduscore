@@ -12,16 +12,12 @@ on:
         required: true
         default: "false"
   # ÖNEMLİ: Her gün otomatik olarak 150 kurumluk bir parti işler - script
-  # zaten skorlanmış kurumları hızlıca atladığı için güvenli, zamanla
-  # tüm liseler kapsanmış olur.
+  # zaten skorlanmış kurumları hızlıca atladığı için güvenli. Kalan kurum
+  # sayısı çok azalınca (script'in kendi 'kalan' çıktısına göre) otomatik
+  # olarak AYA (her ayın 15'i) geçer.
   schedule:
     - cron: "0 5 * * *"  # Her gün 05:00 UTC (08:00 TR saati)
 
-# ÖNEMLİ: Bu, aynı anda SADECE BİR çalıştırmaya izin verir. Yeni bir tetikleme
-# (elle ya da otomatik zincirleme) gelirse, öncekinin bitmesini SIRAYLA bekler
-# (cancel-in-progress: false) - bu, GitHub'ın "runner'lar dolu" tıkanıklığını
-# ve aynı kayıtların birden fazla çalıştırma tarafından işlenmeye çalışılmasını
-# önler.
 concurrency:
   group: yks-scrape
   cancel-in-progress: false
@@ -31,7 +27,33 @@ permissions:
   actions: write
 
 jobs:
+  check_mode:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_today: ${{ steps.check.outputs.skip_today }}
+    steps:
+      - name: Mod ve gün kontrolü (sadece zamanlanmış çalıştırmalarda)
+        id: check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "skip_today=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MODE=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.yks_schedule_mode&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 'gunluk')")
+          TODAY=$(date -u +%m-%d)
+          if [ "$MODE" = "yilda2" ] && [ "$TODAY" != "08-20" ] && [ "$TODAY" != "09-20" ]; then
+            echo "skip_today=true" >> "$GITHUB_OUTPUT"
+            echo "Yılda 2 kez moddayız ve bugün hedef tarih (20 Ağustos/20 Eylül) değil - atlanıyor."
+          else
+            echo "skip_today=false" >> "$GITHUB_OUTPUT"
+          fi
+
   scrape_and_load:
+    needs: check_mode
+    if: needs.check_mode.outputs.skip_today != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     outputs:
@@ -54,14 +76,26 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python scripts/scrape_and_load_yks_sinavizcisi.py --max-batch "${{ inputs.max_batch }}" --dry-run
+          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
+            python scripts/scrape_and_load_yks_sinavizcisi.py --max-batch "${{ inputs.max_batch || '150' }}" --dry-run
           else
-            python scripts/scrape_and_load_yks_sinavizcisi.py --max-batch "${{ inputs.max_batch }}"
+            python scripts/scrape_and_load_yks_sinavizcisi.py --max-batch "${{ inputs.max_batch || '150' }}"
           fi
 
-      - name: Kaldıysa kendini yeniden tetikle
-        if: inputs.dry_run == 'false' && steps.run_script.outputs.kalan != '0'
+      - name: Kalan azaldıysa yılda 2 kez moda geç
+        if: github.event_name == 'schedule'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          KALAN="${{ steps.run_script.outputs.kalan }}"
+          if [ -n "$KALAN" ] && [ "$KALAN" -lt "100" ] 2>/dev/null; then
+            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.yks_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "yilda2"}'
+            echo "🎉 Kalan kurum sayısı 100'ün altına düştü ($KALAN) - otomatik olarak YILDA 2 KEZ moda geçildi (her yıl 20 Ağustos ve 20 Eylül'de çalışacak)."
+          fi
+
+      - name: Kaldıysa kendini yeniden tetikle (sadece manuel çalıştırmalarda)
+        if: github.event_name != 'schedule' && inputs.dry_run == 'false' && steps.run_script.outputs.kalan != '0'
         env:
           # ÖNEMLİ: Varsayılan GITHUB_TOKEN ile tetiklenen bir workflow, GitHub'ın
           # sonsuz döngü koruması nedeniyle BAŞKA bir workflow'u tetikleyemez.
