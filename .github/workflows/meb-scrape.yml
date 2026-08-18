@@ -31,18 +31,21 @@ on:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
         default: "false"
+  # ÖNEMLİ: Her gün 81 ilin TAMAMINI otomatik olarak, 13'er illik partiler
+  # halinde dolaşarak tarar. Nerede kaldığını 'scrape_progress' tablosunda
+  # (Supabase) saklar - 81'i bitirince başa (1) döner ve verileri periyodik
+  # olarak günceller. Manuel çalıştırmalar (workflow_dispatch) bu otomatik
+  # döngüyü etkilemez, ayrı bir mekanizma.
   schedule:
-    - cron: "0 0 1 * *"
+    - cron: "0 3 * * *"  # Her gün 03:00 UTC (06:00 TR saati)
 
 jobs:
-  # ÖNEMLİ: Scraping ve Supabase'e yükleme artık İKİ AYRI İŞ (job).
-  # Önceden tek bir işte birleşikti ve GitHub Actions'ın 6 saatlik iş
-  # başına zaman sınırına takılıyordu (tüm Ankara için scraping ~4sa,
-  # yükleme +2sa sürüyor, toplamda 6 saati aşıyordu). Ayrı işler her
-  # birine kendi 6 saatlik hakkını verir (toplamda 12 saate kadar).
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 355
+    outputs:
+      batch_start: ${{ steps.determine_batch.outputs.batch_start }}
+      is_scheduled: ${{ steps.determine_batch.outputs.is_scheduled }}
     steps:
       - uses: actions/checkout@v4
 
@@ -55,22 +58,33 @@ jobs:
           pip install -r scripts/requirements.txt
           playwright install --with-deps chromium
 
+      - name: Parti belirle (otomatik mod ise Supabase'ten oku)
+        id: determine_batch
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "is_scheduled=true" >> "$GITHUB_OUTPUT"
+            START=$(curl -s "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else '1')")
+            BATCH=$(python3 -c "start=int('$START'); print(','.join(str(((start-1+i)%81)+1) for i in range(13)))")
+            echo "batch_start=$START" >> "$GITHUB_OUTPUT"
+            echo "AUTO_IL_KODU_LISTESI=$BATCH" >> "$GITHUB_ENV"
+            echo "Otomatik parti: il $START'den başlayarak 13 il -> $BATCH"
+          else
+            echo "is_scheduled=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: MEB verisini çek
         run: |
-          if [ -n "${{ inputs.il_kodu_listesi }}" ]; then
-            python scripts/scrape_meb_schools.py \
-              --il-kodu-listesi "${{ inputs.il_kodu_listesi }}" \
-              --output data/meb_raw.json
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            python scripts/scrape_meb_schools.py --il-kodu-listesi "$AUTO_IL_KODU_LISTESI" --output data/meb_raw.json
+          elif [ -n "${{ inputs.il_kodu_listesi }}" ]; then
+            python scripts/scrape_meb_schools.py --il-kodu-listesi "${{ inputs.il_kodu_listesi }}" --output data/meb_raw.json
           elif [ "${{ inputs.all_ilceler || 'false' }}" = "true" ]; then
-            python scripts/scrape_meb_schools.py \
-              --il-kodu "${{ inputs.il_kodu || '6' }}" \
-              --all-ilceler \
-              --output data/meb_raw.json
+            python scripts/scrape_meb_schools.py --il-kodu "${{ inputs.il_kodu || '6' }}" --all-ilceler --output data/meb_raw.json
           else
-            python scripts/scrape_meb_schools.py \
-              --il-kodu "${{ inputs.il_kodu || '6' }}" \
-              --ilce-kodu "${{ inputs.ilce_kodu || '27' }}" \
-              --output data/meb_raw.json
+            python scripts/scrape_meb_schools.py --il-kodu "${{ inputs.il_kodu || '6' }}" --ilce-kodu "${{ inputs.ilce_kodu || '27' }}" --output data/meb_raw.json
           fi
 
       - name: Ham veriyi artifact olarak kaydet
@@ -106,7 +120,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           ARGS="--input data/meb_raw.json"
-          if [ -z "${{ inputs.il_kodu_listesi }}" ] && [ "${{ inputs.all_ilceler || 'false' }}" != "true" ]; then
+          if [ "${{ github.event_name }}" != "schedule" ] && [ -z "${{ inputs.il_kodu_listesi }}" ] && [ "${{ inputs.all_ilceler || 'false' }}" != "true" ]; then
             ARGS="$ARGS --location-name \"${{ inputs.location_name || 'Etimesgut' }}\""
             FILTER="${{ inputs.filter_mahalle }}"
             if [ -n "$FILTER" ]; then
@@ -117,3 +131,13 @@ jobs:
             ARGS="$ARGS --dry-run"
           fi
           eval python scripts/load_to_supabase.py $ARGS
+
+      - name: Otomatik modda sıradaki partiyi ilerlet
+        if: needs.scrape.outputs.is_scheduled == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          NEW_START=$(python3 -c "print((int('${{ needs.scrape.outputs.batch_start }}') - 1 + 13) % 81 + 1)")
+          curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d "{\"value\": \"$NEW_START\"}"
+          echo "Sıradaki parti başlangıcı: il $NEW_START"

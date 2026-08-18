@@ -10,7 +10,12 @@ on:
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
-        default: "true"
+        default: "false"
+  # ÖNEMLİ: Her gün otomatik olarak 150 kurumluk bir parti işler - script
+  # zaten skorlanmış kurumları hızlıca atladığı için güvenli, zamanla
+  # tüm liseler kapsanmış olur.
+  schedule:
+    - cron: "0 5 * * *"  # Her gün 05:00 UTC (08:00 TR saati)
 
 # ÖNEMLİ: Bu, aynı anda SADECE BİR çalıştırmaya izin verir. Yeni bir tetikleme
 # (elle ya da otomatik zincirleme) gelirse, öncekinin bitmesini SIRAYLA bekler

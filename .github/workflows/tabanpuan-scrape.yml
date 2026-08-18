@@ -6,11 +6,18 @@ on:
       il:
         description: "İl adı (örn. Ankara). 'tumu' yazarsanız 81 ilin hepsi sırayla çekilir."
         required: true
-        default: "Ankara"
+        default: "tumu"
       dry_run:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
-        default: "true"
+        default: "false"
+  # ÖNEMLİ: Her gün otomatik olarak tüm Türkiye'yi (81 il) tekrar tarar -
+  # script zaten "zaten var/aynı" kayıtları hızlıca atlayıp sadece yeni/
+  # değişen verileri işlediği için (dedup + skor güncelleme mantığı), günlük
+  # tekrar taramak güvenlidir ve LGS/YKS taban puanlarının güncel kalmasını
+  # sağlar.
+  schedule:
+    - cron: "0 4 * * *"  # Her gün 04:00 UTC (07:00 TR saati) - MEB taramasından 1 saat sonra
 
 jobs:
   scrape:
