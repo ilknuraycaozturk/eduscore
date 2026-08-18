@@ -33,7 +33,10 @@ TYPE_KEYWORDS = [
     ("ilkokul", ["ilkokul", "i̇lköğretim okulu"]),
     ("ortaokul", ["ortaokul", "imam hatip ortaokulu"]),
     ("fen-lisesi", ["fen lisesi"]),
+    ("fen-teknoloji-lisesi", ["fen ve teknoloji lisesi", "fen-teknoloji lisesi"]),
     ("sosyal-bilimler-lisesi", ["sosyal bilimler lisesi"]),
+    ("anadolu-guzel-sanatlar-lisesi", ["güzel sanatlar lisesi", "güzel sanatlar ve spor lisesi"]),
+    ("laboratuvar-lisesi", ["laboratuvar lisesi", "laboratuvar okulu"]),
     ("anadolu-imam-hatip-lisesi", ["imam hatip lisesi", "imam-hatip lisesi"]),
     ("mesleki-teknik-anadolu-lisesi", [
         "mesleki ve teknik anadolu lisesi", "mesleki eğitim merkezi",
