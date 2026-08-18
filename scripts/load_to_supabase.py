@@ -36,6 +36,7 @@ TYPE_KEYWORDS = [
     ("fen-teknoloji-lisesi", ["fen ve teknoloji lisesi", "fen-teknoloji lisesi"]),
     ("sosyal-bilimler-lisesi", ["sosyal bilimler lisesi"]),
     ("anadolu-guzel-sanatlar-lisesi", ["güzel sanatlar lisesi", "güzel sanatlar ve spor lisesi"]),
+    ("spor-lisesi", ["spor lisesi"]),
     ("laboratuvar-lisesi", ["laboratuvar lisesi", "laboratuvar okulu"]),
     ("anadolu-imam-hatip-lisesi", [
         "imam hatip lisesi", "imam-hatip lisesi",
