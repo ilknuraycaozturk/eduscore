@@ -238,13 +238,15 @@
                 return;
             }
 
-            // ÖNEMLİ: Sonuç bulunamadıysa ve arama terimi bilinen bir MAHALLE
-            // ile eşleşiyorsa (çoğu okulumuzda mahalle bilgisi yok, sadece
-            // ilçe var), o mahallenin bağlı olduğu ilçedeki okulları geri
-            // dönüş (fallback) olarak gösteriyoruz.
-            let finalData = data;
+            // ÖNEMLİ: Arama terimi bilinen bir MAHALLE ile eşleşiyorsa (çoğu
+            // okulumuzda mahalle bilgisi yok, sadece ilçe var), DOĞRUDAN
+            // EŞLEŞME OLSA BİLE o mahallenin bağlı olduğu ilçedeki okulları
+            // da sonuçlara EKLİYORUZ (sadece sonuç boşsa değil) - çünkü
+            // "Bağlıca" birkaç okul için doğru etiketliyken, diğerleri hâlâ
+            // sadece "Etimesgut" (ilçe) diye kayıtlı olabilir.
+            let finalData = data || [];
             let mahalleUyarisi = null;
-            if (qParam && (!finalData || finalData.length === 0)) {
+            if (qParam) {
                 const qNorm2 = (function () {
                     const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
                     return qParam.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
@@ -264,8 +266,10 @@
                     }
                     const { data: fallbackData } = await fallbackQuery;
                     if (fallbackData && fallbackData.length) {
-                        finalData = fallbackData;
-                        mahalleUyarisi = `"${qParam}" mahallesi için kesin eşleşme bulunamadı, bu mahallenin bağlı olduğu "${mahalleEslesme[0].locations.name}" ilçesindeki kurumlar gösteriliyor.`;
+                        const varOlanIdler = new Set(finalData.map(r => r.id));
+                        const yeniler = fallbackData.filter(r => !varOlanIdler.has(r.id));
+                        finalData = [...finalData, ...yeniler];
+                        mahalleUyarisi = `"${qParam}" mahallesinin tam sınırları elimizde olmadığı için, bağlı olduğu "${mahalleEslesme[0].locations.name}" ilçesindeki kurumlar da eklendi (aralarında ${qParam}'da olmayanlar da olabilir).`;
                     }
                 }
             }
