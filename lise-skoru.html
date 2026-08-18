@@ -188,11 +188,30 @@
             // SUNUCU TARAFINDA filtreleyip çok daha az veri çekiyoruz. Bu, arama
             // yapıldığında sayfanın önemli ölçüde daha hızlı yüklenmesini sağlar.
             let matchingLocationIds = null;
+            let mahalleUyarisi = null;
             if (locParam) {
                 const { data: matchingLocations } = await sb.from('locations')
                     .select('id')
                     .ilike('name_normalized', `%${locNorm}%`);
                 matchingLocationIds = (matchingLocations || []).map(l => l.id);
+
+                // ÖNEMLİ: Kaynak verilerimiz çoğu okul için sadece İLÇE
+                // düzeyinde konum içeriyor (mahalle bilgisi yok). Kullanıcı
+                // "Bağlıca" gibi bir MAHALLE ararsa ve doğrudan bir eşleşme
+                // bulunamazsa, bilinen mahalle->ilçe eşleştirme tablomuza
+                // bakıp o ilçedeki tüm okulları gösteriyoruz - böylece "hiç
+                // sonuç yok" demek yerine makul bir sonuç sunuyoruz.
+                if (matchingLocationIds.length === 0) {
+                    const { data: mahalleEslesme } = await sb.from('mahalle_ilce_eslesme')
+                        .select('mahalle_adi, ilce_location_id, locations!mahalle_ilce_eslesme_ilce_location_id_fkey ( name )')
+                        .ilike('mahalle_normalized', `%${locNorm}%`)
+                        .limit(1);
+                    if (mahalleEslesme && mahalleEslesme.length) {
+                        matchingLocationIds = [mahalleEslesme[0].ilce_location_id];
+                        mahalleUyarisi = `"${locParam}" mahallesi için kesin eşleşme bulunamadı, bu mahallenin bağlı olduğu "${mahalleEslesme[0].locations.name}" ilçesindeki tüm okullar gösteriliyor.`;
+                    }
+                }
+
                 // İlin kendisi eşleşiyorsa, o ilin TÜM ilçelerini de dahil etmemiz gerekir
                 const { data: childLocations } = matchingLocationIds.length
                     ? await sb.from('locations').select('id').in('parent_id', matchingLocationIds)
@@ -328,6 +347,13 @@
                 clearLink.className = 'underline font-semibold';
                 clearLink.textContent = 'Filtreyi kaldır (tüm Türkiye)';
                 filterNotice.appendChild(clearLink);
+
+                if (mahalleUyarisi) {
+                    const mahalleNotice = document.createElement('p');
+                    mahalleNotice.className = 'text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2';
+                    mahalleNotice.textContent = '💡 ' + mahalleUyarisi;
+                    filterNotice.parentNode.insertBefore(mahalleNotice, filterNotice.nextSibling);
+                }
             } else if (userLat && userLng) {
                 filterNotice.classList.remove('hidden');
                 filterNotice.textContent = radiusParam
