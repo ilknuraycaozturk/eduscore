@@ -367,9 +367,11 @@ def main():
                 for row in il_data:
                     parts = [p.strip() for p in row["raw_name"].split(" - ", 2)]
                     if len(parts) >= 2:
+                        row["il_ad"] = parts[0]
                         row["ilce_ad"] = parts[1]
                         row["raw_name"] = parts[2] if len(parts) > 2 else parts[1]
                     else:
+                        row["il_ad"] = None
                         row["ilce_ad"] = None
                 all_data.extend(il_data)
                 print(f"  İl {il_kodu}: {len(il_data)} kayıt bulundu (toplam: {len(all_data)})")
@@ -399,9 +401,11 @@ def main():
         for row in all_data:
             parts = [p.strip() for p in row["raw_name"].split(" - ", 2)]
             if len(parts) >= 2:
+                row["il_ad"] = parts[0]
                 row["ilce_ad"] = parts[1]
                 row["raw_name"] = parts[2] if len(parts) > 2 else parts[1]
             else:
+                row["il_ad"] = None
                 row["ilce_ad"] = None
 
         out_path = Path(args.output)

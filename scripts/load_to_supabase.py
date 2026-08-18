@@ -209,14 +209,20 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website")
 
 
-def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
+def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, parent_il_id: str,
                             location_cache: dict, dry_run: bool) -> str | None:
-    key = turkish_title(ilce_adi.strip())
+    # ÖNEMLİ (hata düzeltmesi): Önbellek anahtarına İL id'sini de dahil
+    # ediyoruz - aksi halde "Merkez" gibi birden fazla ilde aynı isimde olan
+    # ilçeler, çok-illi (il_kodu_listesi) taramalarda birbirine karışıyordu
+    # (örn. Adıyaman'ın "Merkez" ilçesi yanlışlıkla Ankara'nın "Merkez"
+    # ilçesiyle aynı kayıt sanılıyordu).
+    key = f"{parent_il_id}:{turkish_title(ilce_adi.strip())}"
     if key in location_cache:
         return location_cache[key]
 
+    district_name = turkish_title(ilce_adi.strip())
     resp = requests.get(
-        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{ankara_id}&name=eq.{key}",
+        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{parent_il_id}&name=eq.{district_name}",
         headers=headers,
     )
     resp.raise_for_status()
@@ -228,12 +234,12 @@ def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_i
     if dry_run:
         return None
 
-    payload = {"parent_id": ankara_id, "level": "district", "name": key}
+    payload = {"parent_id": parent_il_id, "level": "district", "name": district_name}
     resp = requests.post(f"{base_url}/rest/v1/locations", headers={**headers, "Prefer": "return=representation"}, json=payload)
     resp.raise_for_status()
     new_id = resp.json()[0]["id"]
     location_cache[key] = new_id
-    print(f"Yeni ilçe konumu oluşturuldu: {key}")
+    print(f"Yeni ilçe konumu oluşturuldu: {district_name} (il: {parent_il_id})")
     return new_id
 
 
@@ -281,6 +287,7 @@ def main():
     fixed_location_id = None
     location_cache: dict[str, str] = {}
     ankara_id = None
+    province_lookup: dict[str, str] = {}
     existing = []
 
     if not args.dry_run:
@@ -294,13 +301,19 @@ def main():
                 print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
                 sys.exit(1)
         else:
-            resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
+            # ÖNEMLİ (hata düzeltmesi): Önceden SADECE Ankara'nın id'si alınıp
+            # TÜM illerin yeni ilçeleri yanlışlıkla Ankara'nın altına
+            # ekleniyordu (çok-illi taramalarda ciddi bir veri karışıklığına
+            # yol açıyordu). Şimdi TÜM illerin id'lerini önceden çekip, her
+            # satır için kendi ilini kullanıyoruz.
+            resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&level=eq.province", headers=headers)
             resp.raise_for_status()
-            ankara_rows = resp.json()
-            if not ankara_rows:
+            for row in resp.json():
+                province_lookup[turkish_title(row["name"])] = row["id"]
+            ankara_id = province_lookup.get("Ankara")
+            if not ankara_id:
                 print("HATA: 'Ankara' locations tablosunda bulunamadı.")
                 sys.exit(1)
-            ankara_id = ankara_rows[0]["id"]
 
         # ÖNEMLİ: dedup kontrolünü coğrafi kodlamadan ÖNCE yapıyoruz - böylece
         # daha önceki bir çalıştırmada zaten işlenmiş kayıtlar için gereksiz
@@ -408,7 +421,15 @@ def main():
         if fixed_location_id:
             location_id = fixed_location_id
         else:
-            location_id = get_or_create_location(supabase_url, headers, ilce_ad, ankara_id, location_cache, args.dry_run)
+            # ÖNEMLİ: Her kaydın KENDİ ilini kullanıyoruz (scrape_meb_schools.py
+            # 'il_ad' alanını satıra ekliyor). Bulunamazsa (eski formattaki
+            # veriler için) Ankara'ya düşüyoruz - ama bu artık istisna, kural
+            # değil.
+            row_il_ad = r.get("il_ad")
+            parent_il_id = province_lookup.get(turkish_title(row_il_ad)) if row_il_ad else None
+            if not parent_il_id:
+                parent_il_id = ankara_id
+            location_id = get_or_create_location(supabase_url, headers, ilce_ad, parent_il_id, location_cache, args.dry_run)
             if not location_id:
                 continue
 
@@ -438,8 +459,14 @@ def main():
         type_id = type_lookup.get(type_slug)
         if not type_id:
             continue
+        # ÖNEMLİ (tutarlılık düzeltmesi): Diğer script'lerimiz (tabanpuanlari.net
+        # vb.) kurum isimlerini "İL - İLÇE - İsim" formatında saklıyor - bu
+        # script bugüne kadar sadece çıplak ismi kaydediyordu, bu da hem
+        # görünüm tutarsızlığına hem de mükerrer kayıt tespitinin bazı
+        # durumlarda kaçırılmasına yol açıyordu.
+        display_name = f"{row_il_ad.upper()} - {ilce_ad.upper()} - {raw_name}" if row_il_ad else raw_name
         payload = {
-            "name": raw_name,
+            "name": display_name,
             "institution_type_id": type_id,
             "category_id": category_lookup.get(args.category_slug),
             "location_id": location_id,
