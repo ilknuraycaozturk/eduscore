@@ -33,16 +33,23 @@
 
         <!-- SOL SÜTUN (Liste) -->
         <main id="listContainer" class="w-full md:w-[60%] md:h-full md:overflow-y-auto p-4 pb-24 md:pb-6 md:p-6 bg-[#FDF8F5]">
-            <!-- Arama Barı -->
-            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
-                <div class="flex gap-2">
-                    <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm" placeholder="Kurum arayın...">
-                    <button id="updateBtn" class="bg-[#E8543A] text-white px-4 py-1.5 rounded-lg text-xs font-bold">Ara</button>
+            <!-- Arama Barı — masaüstünde kaydırırken üstte sabit (sticky) kalır -->
+            <div id="filterBar" class="sticky top-0 z-20 bg-[#FDF8F5] pt-0 pb-3 -mx-4 px-4 md:-mx-6 md:px-6">
+                <button id="mobileFilterToggle" class="sm:hidden w-full mb-2 text-xs font-bold text-brandDark bg-white border border-slate-200 rounded-xl py-2.5 flex items-center justify-center gap-2">
+                    🔍 Filtreler <span id="filterToggleIcon">▾</span>
+                </button>
+                <div id="filterBarContent">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
+                        <div class="flex gap-2">
+                            <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm" placeholder="Kurum arayın...">
+                            <button id="updateBtn" class="bg-[#E8543A] text-white px-4 py-1.5 rounded-lg text-xs font-bold">Ara</button>
+                        </div>
+                    </div>
+                    <div id="categoryChips" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
 
-            <div id="categoryChips" class="flex flex-wrap gap-2 mb-6"></div>
-            <h2 id="resultsTitle" class="text-xs font-bold text-[#8A7A72] uppercase mb-4">Yükleniyor...</h2>
+            <h2 id="resultsTitle" class="text-xs font-bold text-[#8A7A72] uppercase mb-4 mt-2">Yükleniyor...</h2>
             
             <!-- Sonuç Listesi -->
             <div id="resultsList" class="space-y-4"></div>
@@ -64,6 +71,26 @@
     <button id="mobileToggleBtn" onclick="toggleMobileMap()" class="md:hidden fixed bottom-4 right-4 z-[9999] bg-[#241A16] text-white pl-3 pr-4 py-2 rounded-full shadow-xl font-bold text-xs whitespace-nowrap flex items-center gap-1.5">
         📍 Haritayı Göster
     </button>
+
+    <!-- Karşılaştırma bandı (en fazla 3 kurum seçilince aktifleşir) -->
+    <div id="compareBar" class="hidden fixed bottom-0 left-0 right-0 z-[9998] bg-brandDark text-white px-4 py-3 flex items-center justify-between gap-3 shadow-lg">
+        <p id="compareBarText" class="text-xs font-semibold truncate min-w-0 flex-1"></p>
+        <div class="flex gap-2 shrink-0">
+            <button onclick="clearCompare()" class="text-[11px] text-white/70 hover:text-white underline">Temizle</button>
+            <button id="openCompareBtn" onclick="openCompareDrawer()" class="bg-brandRed hover:bg-brandRedDark text-white text-xs font-bold px-4 py-1.5 rounded-full transition-all">Karşılaştır →</button>
+        </div>
+    </div>
+
+    <!-- Karşılaştırma çekmecesi -->
+    <div id="compareDrawer" class="hidden fixed inset-0 bg-black/50 z-[9999] flex items-end sm:items-center justify-center">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[85vh] overflow-y-auto p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-brandDark">Liseleri Karşılaştır</h3>
+                <button onclick="closeCompareDrawer()" class="text-brandGray hover:text-brandDark text-xl leading-none">×</button>
+            </div>
+            <div id="compareTableWrap" class="overflow-x-auto"></div>
+        </div>
+    </div>
 
     <script>
         const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
@@ -124,6 +151,18 @@
         document.getElementById('updateBtn').addEventListener('click', goSearch);
         document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') goSearch(); });
 
+        // ÖNEMLİ: Mobilde arama/kategori barı, isteğe bağlı açılıp kapanan
+        // bir "filtre sayfası" gibi davranıyor - varsayılan kapalı, ekran
+        // alanından tasarruf için.
+        const filterContent = document.getElementById('filterBarContent');
+        const filterToggleBtn = document.getElementById('mobileFilterToggle');
+        const filterToggleIcon = document.getElementById('filterToggleIcon');
+        if (window.innerWidth < 640) filterContent.classList.add('hidden');
+        filterToggleBtn.addEventListener('click', () => {
+            filterContent.classList.toggle('hidden');
+            filterToggleIcon.textContent = filterContent.classList.contains('hidden') ? '▾' : '▴';
+        });
+
         function initMap() {
             map = L.map('map').setView([39.90, 32.65], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -150,6 +189,104 @@
         }
 
         // Kırpılmayı tamamen önleyen esnek kart tasarımı
+        // --- Liseleri Karşılaştır (en fazla 3 kurum) ---
+        let compareSelection = [];  // [{id, name}]
+
+        function onCompareToggle(checkboxEl) {
+            const id = checkboxEl.dataset.id;
+            const name = checkboxEl.dataset.name;
+            if (checkboxEl.checked) {
+                if (compareSelection.length >= 3) {
+                    checkboxEl.checked = false;
+                    alert('En fazla 3 kurum karşılaştırabilirsiniz.');
+                    return;
+                }
+                compareSelection.push({ id, name });
+            } else {
+                compareSelection = compareSelection.filter(c => c.id !== id);
+            }
+            updateCompareBar();
+        }
+
+        function updateCompareBar() {
+            const bar = document.getElementById('compareBar');
+            const mapBtn = document.getElementById('mobileToggleBtn');
+            if (compareSelection.length === 0) {
+                bar.classList.add('hidden');
+                mapBtn.style.bottom = '';
+                return;
+            }
+            bar.classList.remove('hidden');
+            // ÖNEMLİ: Karşılaştırma bandı görünürken, mobildeki "Haritayı
+            // Göster" butonu artık onun ÜZERİNDE üst üste biniyordu -
+            // bandın yüksekliği kadar yukarı kaydırıyoruz.
+            mapBtn.style.bottom = '72px';
+            document.getElementById('compareBarText').textContent = `${compareSelection.length} kurum seçildi: ${compareSelection.map(c => c.name).join(', ')}`;
+            document.getElementById('openCompareBtn').style.opacity = compareSelection.length >= 2 ? '1' : '0.5';
+            document.getElementById('openCompareBtn').style.pointerEvents = compareSelection.length >= 2 ? 'auto' : 'none';
+        }
+
+        function clearCompare() {
+            compareSelection = [];
+            document.querySelectorAll('.compare-checkbox').forEach(c => c.checked = false);
+            updateCompareBar();
+        }
+
+        async function openCompareDrawer() {
+            if (compareSelection.length < 2) return;
+            const ids = compareSelection.map(c => c.id);
+            const { data } = await sb.from('institutions')
+                .select('id, name, address, is_public, fee_info, locations(name)')
+                .in('id', ids);
+            const { data: scoreRows } = await sb.from('institution_criteria_scores')
+                .select('institution_id, score, scoring_criteria(key, name_tr)')
+                .in('institution_id', ids);
+
+            const scoresByInst = {};
+            (scoreRows || []).forEach(s => {
+                scoresByInst[s.institution_id] = scoresByInst[s.institution_id] || {};
+                scoresByInst[s.institution_id][s.scoring_criteria.key] = { val: s.score, label: s.scoring_criteria.name_tr };
+            });
+
+            const allCriteriaKeys = [...new Set((scoreRows || []).map(s => s.scoring_criteria.key))];
+            const criteriaLabels = {};
+            (scoreRows || []).forEach(s => { criteriaLabels[s.scoring_criteria.key] = s.scoring_criteria.name_tr; });
+
+            const rows = [
+                { label: 'Konum', get: (i) => i.locations ? i.locations.name : '—' },
+                { label: 'Tür', get: (i) => i.is_public ? 'Devlet' : 'Özel' },
+                { label: 'Ücret', get: (i) => i.fee_info || '—' },
+                ...allCriteriaKeys.map(key => ({
+                    label: criteriaLabels[key],
+                    get: (i) => scoresByInst[i.id]?.[key] ? scoresByInst[i.id][key].val : '<span class="text-slate-300">Veri yok</span>',
+                })),
+            ];
+
+            document.getElementById('compareTableWrap').innerHTML = `
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr>
+                            <th class="text-left font-semibold text-brandGray p-2"></th>
+                            ${data.map(i => `<th class="text-left font-bold text-brandDark p-2 whitespace-nowrap">${i.name}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${rows.map(r => `
+                            <tr>
+                                <td class="p-2 text-brandGray font-semibold whitespace-nowrap">${r.label}</td>
+                                ${data.map(i => `<td class="p-2">${r.get(i)}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('compareDrawer').classList.remove('hidden');
+        }
+
+        function closeCompareDrawer() {
+            document.getElementById('compareDrawer').classList.add('hidden');
+        }
+
         function renderCardHTML(r) {
             const verifiedBadge = r.is_verified
                 ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
@@ -177,26 +314,32 @@
             if (ci.yemekhane) campusFacts.push('🍽️');
 
             return `
-                <a href="okul-detay.html?id=${r.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
+                <div class="relative bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 hover:shadow-md transition-all">
+                    <label class="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/95 rounded-full px-2 py-1 text-[10px] font-bold text-brandGray shadow-sm cursor-pointer" onclick="event.stopPropagation()">
+                        <input type="checkbox" class="compare-checkbox" data-id="${r.id}" data-name="${r.name.replace(/"/g, '&quot;')}" onchange="onCompareToggle(this)" onclick="event.stopPropagation()">
+                        Karşılaştır
+                    </label>
+                    <a href="okul-detay.html?id=${r.id}" class="flex flex-col sm:flex-row gap-4 cursor-pointer">
                     <!-- Görsel Alanı: Mobilde genişlik tam, yükseklik resme göre otomatik (Kırpılma İmkansız). Masaüstünde standart kutu düzeni. -->
                     <div class="w-full sm:w-32 h-auto sm:h-24 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-200/60 overflow-hidden">
                         <img src="students.jpg" alt="${r.name}" class="w-full h-auto sm:h-full sm:object-cover object-center" onerror="this.outerHTML='<span class="text-2xl">🏫</span>'">
                     </div>
                     <div class="flex-grow flex flex-col justify-between">
                         <div>
-                            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1 pr-20">
                                 ${verifiedBadge}
                                 ${ratingBadge}
                                 ${extraBadges.join('')}
                                 ${campusFacts.length ? `<span class="text-xs">${campusFacts.join(' ')}</span>` : ''}
                             </div>
-                            <h3 class="font-bold text-base text-[#241A16]">${r.name}</h3>
+                            <h3 class="font-bold text-base text-[#241A16] pr-16">${r.name}</h3>
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || r._ilAdi || 'Ankara'}</p>
                             ${(r._dist != null && isFinite(r._dist)) ? `<p id="dist-${r.id}" class="text-[11px] text-brandRed font-semibold mt-1">📏 ${r._dist.toFixed(1)} km (kuş uçuşu)</p>` : ''}
                         </div>
                         ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">Web sitesi →</a>` : ''}
                     </div>
-                </a>
+                    </a>
+                </div>
             `;
         }
 

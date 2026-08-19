@@ -55,11 +55,21 @@
             </p>
         </div>
 
-        <p class="text-center text-xs text-brandGray mb-6">👆 Bir okula (düğüme) tıklayarak oradan çıkan kariyer yollarını görün — bir kariyere tıklayarak da o kişinin tam hikayesine ulaşın</p>
+        <p class="text-center text-xs text-brandGray mb-4">👆 Bir okula (düğüme) tıklayarak oradan çıkan kariyer yollarını görün — bir kariyere tıklayarak da o kişinin tam hikayesine ulaşın</p>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+        <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
+            <button id="viewGraphBtn" class="text-xs font-bold px-4 py-1.5 rounded-full bg-brandDark text-white transition-all">🕸️ Grafik</button>
+            <button id="viewListBtn" class="text-xs font-bold px-4 py-1.5 rounded-full bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all">📋 Liste</button>
+            <button id="addAlumniBtn" class="text-xs font-bold px-4 py-1.5 rounded-full bg-white border border-brandRed text-brandRed hover:bg-brandRed hover:text-white transition-all ml-2">➕ Mezun Bilginizi Ekleyin</button>
+        </div>
+
+        <div id="graphView" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
             <svg id="graphSvg" width="100%" height="560"></svg>
         </div>
+
+        <!-- Mobil/alternatif liste görünümü - grafiği sürükleyip yakınlaştırmak
+             istemeyen kullanıcılar için basit bir kart listesi. -->
+        <div id="listView" class="hidden space-y-3 mb-6"></div>
 
         <div id="legend" class="flex flex-wrap justify-center gap-4 text-[11px] text-brandGray mb-8"></div>
 
@@ -67,6 +77,48 @@
 
         <div class="text-center mt-10">
             <p class="text-xs text-brandGray">Bu, EduScor'un uzun vadeli "Eğitim Bilgi Grafiği" vizyonunun ilk adımı — okuldan kariyere giden gerçek, doğrulanmış yolculukları biriktiriyoruz.</p>
+        </div>
+
+        <!-- Mezun Bilgisi Ekleme Modalı -->
+        <div id="addAlumniModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-brandDark">Mezun Bilginizi / Kariyerinizi Ekleyin</h3>
+                    <button id="closeAlumniModal" class="text-brandGray hover:text-brandDark text-xl leading-none">×</button>
+                </div>
+                <p class="text-xs text-brandGray mb-4">Gönderdiğiniz bilgi, yayınlanmadan önce ekibimiz tarafından incelenir.</p>
+                <form id="alumniForm" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Ad Soyad</label>
+                        <input required name="ad_soyad" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Şu anki rol / kariyer</label>
+                        <input required name="kariyer" placeholder="örn. Yazılım Mühendisi, Google" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Mezun olduğunuz lise</label>
+                        <input required name="lise" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Eğitim/kariyer yolculuğunuz (kısaca)</label>
+                        <textarea name="yolculuk" rows="3" placeholder="örn. X Lisesi → Y Üniversitesi → Z Şirketi" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">İletişim e-postanız</label>
+                        <input required type="email" name="eposta" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                    </div>
+                    <!-- ÖNEMLİ: EduScor bir K-12 platformu olduğu için, reşit
+                         olmayanların kendi bilgilerini paylaşmasını önlemek
+                         amacıyla bu onay zorunlu tutuluyor. -->
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input required type="checkbox" name="yas_onay" class="mt-0.5 shrink-0">
+                        <span class="text-[11px] text-brandGray">18 yaşından büyüğüm ve paylaştığım bilgiler bana aittir. Gönderdiğim bilgi yayınlanmadan önce EduScor ekibi tarafından incelenir.</span>
+                    </label>
+                    <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm py-2.5 rounded-lg transition-all">Gönder</button>
+                    <p id="alumniFormMsg" class="text-xs text-center hidden"></p>
+                </form>
+            </div>
         </div>
 
     </main>
@@ -100,6 +152,94 @@
 
             renderGraph(people, journeys, institutionParam);
             renderLegend();
+            renderListView(people, journeys);
+            setupViewToggle();
+            setupAlumniModal();
+        }
+
+        // ÖNEMLİ: Grafiği sürükleyip yakınlaştırmak istemeyen ya da küçük
+        // ekranlarda zorlanan kullanıcılar için basit bir liste/kart
+        // görünümü - her kişi için okul->kariyer özetini kart olarak gösterir.
+        function renderListView(people, journeys) {
+            const journeysByPerson = {};
+            journeys.forEach(j => { (journeysByPerson[j.person_id] = journeysByPerson[j.person_id] || []).push(j); });
+
+            document.getElementById('listView').innerHTML = people.map(p => {
+                const steps = (journeysByPerson[p.id] || []).sort((a, b) => a.order_index - b.order_index);
+                const okul = steps.find(s => s.stage === 'lise' || s.stage === 'ortaokul');
+                const okulAdi = okul ? (okul.institutions ? okul.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : okul.custom_label) : '—';
+                return `
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
+                        <div class="flex-1">
+                            <p class="font-bold text-sm text-brandDark">${p.name}</p>
+                            <p class="text-xs text-brandRed font-semibold">${p.career_title}</p>
+                            <p class="text-[11px] text-brandGray mt-0.5">🏫 ${okulAdi}</p>
+                        </div>
+                        <button data-person-id="${p.id}" class="list-detail-btn text-xs font-semibold text-brandRed hover:underline shrink-0">Detay →</button>
+                    </div>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.list-detail-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const p = people.find(x => x.id === btn.dataset.personId);
+                    showPersonDetail(p, journeysByPerson[btn.dataset.personId] || []);
+                    document.getElementById('personDetail').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            });
+        }
+
+        function setupViewToggle() {
+            const graphBtn = document.getElementById('viewGraphBtn');
+            const listBtn = document.getElementById('viewListBtn');
+            const graphView = document.getElementById('graphView');
+            const listView = document.getElementById('listView');
+            graphBtn.addEventListener('click', () => {
+                graphView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                graphBtn.className = 'text-xs font-bold px-4 py-1.5 rounded-full bg-brandDark text-white transition-all';
+                listBtn.className = 'text-xs font-bold px-4 py-1.5 rounded-full bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all';
+            });
+            listBtn.addEventListener('click', () => {
+                graphView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                listBtn.className = 'text-xs font-bold px-4 py-1.5 rounded-full bg-brandDark text-white transition-all';
+                graphBtn.className = 'text-xs font-bold px-4 py-1.5 rounded-full bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all';
+            });
+        }
+
+        function setupAlumniModal() {
+            const modal = document.getElementById('addAlumniModal');
+            document.getElementById('addAlumniBtn').addEventListener('click', () => modal.classList.remove('hidden'));
+            document.getElementById('closeAlumniModal').addEventListener('click', () => modal.classList.add('hidden'));
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+            document.getElementById('alumniForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fd = new FormData(e.target);
+                const msgEl = document.getElementById('alumniFormMsg');
+                const btn = e.target.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                const { error } = await sb.from('alumni_submissions').insert({
+                    ad_soyad: fd.get('ad_soyad'),
+                    kariyer: fd.get('kariyer'),
+                    lise: fd.get('lise'),
+                    yolculuk: fd.get('yolculuk'),
+                    eposta: fd.get('eposta'),
+                    yas_onaylandi: fd.get('yas_onay') === 'on',
+                });
+                msgEl.classList.remove('hidden');
+                if (error) {
+                    msgEl.className = 'text-xs text-center text-red-600';
+                    msgEl.textContent = 'Bir hata oluştu, lütfen tekrar deneyin.';
+                    btn.disabled = false;
+                } else {
+                    msgEl.className = 'text-xs text-center text-green-700 font-semibold';
+                    msgEl.textContent = '✓ Gönderildi! İncelendikten sonra yayınlanacak.';
+                    e.target.reset();
+                    setTimeout(() => document.getElementById('addAlumniModal').classList.add('hidden'), 2000);
+                }
+            });
         }
 
         function renderLegend() {
@@ -306,23 +446,30 @@
             const el = document.getElementById('personDetail');
             el.classList.remove('hidden');
             const sorted = [...steps].sort((a, b) => a.order_index - b.order_index);
+            // ÖNEMLİ: Adımları düz bir liste yerine bağlayıcı çizgili, gerçek
+            // bir zaman çizelgesi (timeline) olarak gösteriyoruz - lise
+            // çıkışından bugünkü role kadar kronolojik akış daha belirgin.
             el.innerHTML = `
                 <button onclick="resetHighlightPublic()" class="text-[11px] text-brandGray hover:text-brandRed mb-3 font-semibold">← Tüm okullara dön</button>
                 <h3 class="font-bold text-lg text-brandDark mb-1">${person.name}</h3>
-                <p class="text-sm text-brandRed font-semibold mb-3">${person.career_title}</p>
-                <p class="text-xs text-brandGray mb-4">${person.bio || ''}</p>
-                <div class="space-y-2">
-                    ${sorted.map(s => {
+                <p class="text-sm text-brandRed font-semibold mb-4">${person.career_title}</p>
+                <div class="relative pl-5 mb-4">
+                    <div class="absolute left-[7px] top-2 bottom-2 w-0.5 bg-slate-200"></div>
+                    ${sorted.map((s, idx) => {
                         const label = s.institutions ? s.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : s.custom_label;
+                        const isLast = idx === sorted.length - 1;
                         return `
-                            <div class="flex items-start gap-2">
-                                <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0" style="background:${STAGE_COLORS[s.stage]}20; color:${STAGE_COLORS[s.stage]};">${STAGE_LABELS[s.stage]}</span>
-                                <span class="text-xs text-brandDark">${label}${s.year_note ? ` <span class="text-brandGray">(${s.year_note})</span>` : ''}</span>
+                            <div class="relative pb-5 ${isLast ? '' : ''}">
+                                <span class="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-white" style="background:${STAGE_COLORS[s.stage]}"></span>
+                                <span class="text-[10px] font-bold uppercase tracking-wide" style="color:${STAGE_COLORS[s.stage]};">${STAGE_LABELS[s.stage]}</span>
+                                <p class="text-xs text-brandDark font-semibold mt-0.5">${label}</p>
+                                ${s.year_note ? `<p class="text-[11px] text-brandGray">${s.year_note}</p>` : ''}
                             </div>
                         `;
                     }).join('')}
                 </div>
-                ${person.source_url ? `<a href="${person.source_url}" target="_blank" rel="noopener" class="text-[10px] text-brandGray hover:text-brandRed underline mt-4 inline-block">Kaynak →</a>` : ''}
+                <p class="text-xs text-brandGray mb-4 pt-2 border-t border-slate-100">${person.bio || ''}</p>
+                ${person.source_url ? `<a href="${person.source_url}" target="_blank" rel="noopener" class="text-[10px] text-brandGray hover:text-brandRed underline">Kaynak →</a>` : ''}
             `;
         }
 

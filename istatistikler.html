@@ -23,6 +23,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/countUp.js/2.8.0/countUp.umd.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
@@ -35,10 +36,33 @@
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-8">
-        <h1 class="text-2xl font-bold text-brandDark mb-1">📊 Ziyaret İstatistikleri</h1>
+        <h1 class="text-2xl font-bold text-brandDark mb-1">📊 Platform İstatistikleri</h1>
         <p class="text-sm text-brandGray mb-8">
             Anonim, KVKK uyumlu ziyaret kaydı — IP adresi veya kişisel veri tutulmaz, sadece sayfa/kaynak/cihaz bilgisi.
         </p>
+
+        <!-- Platform Büyümesi - Animasyonlu Sayaçlar -->
+        <div class="bg-brandDark rounded-2xl p-6 sm:p-8 mb-8">
+            <p class="text-xs font-bold text-white/60 uppercase tracking-wider mb-4">Platform Büyümesi</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                <div>
+                    <p class="text-3xl sm:text-4xl font-bold text-white" id="countInstitutions">0</p>
+                    <p class="text-xs text-white/60 mt-1">Listelenen Kurum</p>
+                </div>
+                <div>
+                    <p class="text-3xl sm:text-4xl font-bold text-brandRed" id="countVerified">0</p>
+                    <p class="text-xs text-white/60 mt-1">Doğrulanmış Profil</p>
+                </div>
+                <div>
+                    <p class="text-3xl sm:text-4xl font-bold text-white" id="countAnkaraPct">0</p>
+                    <p class="text-xs text-white/60 mt-1">%Ankara Pilot Verisi</p>
+                </div>
+                <div>
+                    <p class="text-3xl sm:text-4xl font-bold text-white" id="countReviews">0</p>
+                    <p class="text-xs text-white/60 mt-1">Veli Değerlendirmesi</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Özet Kartları -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -81,7 +105,10 @@
 
         <!-- Son Ziyaretler -->
         <div class="bg-white rounded-2xl border border-slate-200 p-5">
-            <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider mb-3">Son 50 Ziyaret</h2>
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <h2 class="text-xs font-bold text-brandGray uppercase tracking-wider">Son 50 Ziyaret</h2>
+                <span id="lastUpdatedBadge" class="text-[10px] text-brandGray"></span>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs">
                     <thead>
@@ -130,6 +157,30 @@
                     </div>
                 </div>
             `;
+        }
+
+        async function loadGrowthStats() {
+            // ÖNEMLİ: Sayfa görüntülemelerinden ayrı olarak, platformun
+            // gerçek büyüme metriklerini (kurum sayısı, doğrulanmış profil
+            // sayısı vb.) çekip CountUp.js ile animasyonlu gösteriyoruz.
+            const [{ count: totalInst }, { count: verifiedInst }, { count: ankaraInst }, { count: reviewCount }] = await Promise.all([
+                sb.from('institutions').select('*', { count: 'exact', head: true }),
+                sb.from('institutions').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+                sb.from('institutions').select('*, locations!inner(*)', { count: 'exact', head: true }).eq('locations.name', 'Ankara'),
+                sb.from('reviews').select('*', { count: 'exact', head: true }),
+            ]);
+
+            const ankaraPct = totalInst > 0 ? Math.round(((ankaraInst || 0) / totalInst) * 100) : 0;
+
+            const animate = (id, endVal, decimals = 0, suffix = '') => {
+                new countUp.CountUp(id, endVal, { duration: 1.8, decimalPlaces: decimals, suffix }).start();
+            };
+            animate('countInstitutions', totalInst || 0);
+            animate('countVerified', verifiedInst || 0);
+            animate('countAnkaraPct', ankaraPct, 0, '%');
+            animate('countReviews', reviewCount || 0);
+
+            document.getElementById('lastUpdatedBadge').textContent = `🕐 Son güncelleme: ${new Date().toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`;
         }
 
         async function load() {
@@ -194,6 +245,7 @@
         }
 
         load();
+        loadGrowthStats();
     </script>
     <footer class="w-full border-t border-slate-200/80 px-4 sm:px-6 py-6 mt-8 text-center">
         <p class="text-xs text-brandGray">

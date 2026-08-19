@@ -59,12 +59,18 @@
 
         <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-xs text-brandGray hover:text-brandRed mb-4 font-semibold">← Geri dön</a>
 
-        <div id="matchBanner" class="hidden bg-brandRed text-white rounded-2xl p-4 mb-4 flex items-center justify-between">
-            <div>
-                <p class="text-[11px] uppercase tracking-wider opacity-80">Sizin Kriterlerinize Göre</p>
-                <p class="text-2xl font-bold" id="matchScoreText">—</p>
+        <div id="matchBanner" class="hidden bg-brandRed text-white rounded-2xl p-4 mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] uppercase tracking-wider opacity-80">Sizin Kriterlerinize Göre</p>
+                    <p class="text-2xl font-bold flex items-center gap-2">
+                        <span id="matchScoreText">—</span>
+                        <button id="matchInfoBtn" class="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 text-xs flex items-center justify-center transition-all" title="Skor nasıl hesaplandı?">ⓘ</button>
+                    </p>
+                </div>
+                <span class="text-3xl">🎯</span>
             </div>
-            <span class="text-3xl">🎯</span>
+            <div id="matchBreakdownPanel" class="hidden mt-3 pt-3 border-t border-white/20 space-y-1.5"></div>
         </div>
 
         <div id="loadingState" class="text-center py-20 text-brandGray text-sm">Kurum bilgileri yükleniyor...</div>
@@ -104,14 +110,62 @@
 
             <!-- Kurum Bilgileri -->
             <div id="infoCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
-                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Kurum Bilgileri</h2>
-                <div id="infoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm"></div>
-                <div id="campusFacts" class="mt-3 flex flex-wrap gap-2"></div>
+                <div class="flex gap-1 mb-4 bg-brandBg rounded-full p-1 w-full sm:w-fit overflow-hidden">
+                    <button id="tabGenelBilgi" class="flex-1 sm:flex-none text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full bg-white text-brandDark shadow-sm transition-all whitespace-nowrap">📋 Genel Bilgi</button>
+                    <button id="tabGaleri" class="flex-1 sm:flex-none text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full text-brandGray transition-all whitespace-nowrap">🖼️ Galeri</button>
+                </div>
+                <div id="panelGenelBilgi">
+                    <div id="infoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm"></div>
+                    <div id="campusFacts" class="mt-3 flex flex-wrap gap-2"></div>
+                </div>
+                <div id="panelGaleri" class="hidden">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">⚽</span><span class="text-[10px] text-brandGray font-semibold">Spor Kulübü</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🎭</span><span class="text-[10px] text-brandGray font-semibold">Tiyatro</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🤖</span><span class="text-[10px] text-brandGray font-semibold">Robotik</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🎵</span><span class="text-[10px] text-brandGray font-semibold">Müzik</span></div>
+                    </div>
+                    <p class="text-[11px] text-brandGray text-center mt-4 italic">Gerçek fotoğraflar, kurum "Profilini Sahiplen"dikçe burada görünecek.</p>
+                </div>
+            </div>
+
+            <!-- Bilgi / Randevu Talep Et -->
+            <button id="openContactModalBtn" class="w-full mb-6 bg-brandDark hover:bg-black text-white font-semibold text-sm py-3 rounded-2xl transition-all flex items-center justify-center gap-2">
+                📞 Okuldan Bilgi / Randevu Talep Et
+            </button>
+
+            <div id="contactModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl max-w-sm w-full p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-brandDark">Bilgi / Randevu Talep Et</h3>
+                        <button id="closeContactModal" class="text-brandGray hover:text-brandDark text-xl leading-none">×</button>
+                    </div>
+                    <p class="text-xs text-brandGray mb-4">Talebiniz, kurumun EduScor profilindeki iletişim bilgilerine iletilir.</p>
+                    <form id="contactForm" class="space-y-3">
+                        <div>
+                            <label class="text-xs font-semibold text-brandDark">Ad Soyad</label>
+                            <input required name="ad_soyad" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-brandDark">Telefon ya da E-posta</label>
+                            <input required name="iletisim" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-brandDark">Mesajınız</label>
+                            <textarea name="mesaj" rows="3" placeholder="örn. Kayıt koşulları hakkında bilgi almak istiyorum." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm py-2.5 rounded-lg transition-all">Gönder</button>
+                        <p id="contactFormMsg" class="text-xs text-center hidden"></p>
+                    </form>
+                </div>
             </div>
 
             <!-- Yıllık Toplam Maliyet -->
             <div id="maliyetCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
-                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Yıllık Toplam Maliyet (Tahmini)</h2>
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider">Yıllık Toplam Maliyet (Tahmini)</h2>
+                    <span id="maliyetDonemBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-brandBg text-brandRed whitespace-nowrap"></span>
+                </div>
                 <div id="maliyetGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3"></div>
                 <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
                     <span class="text-sm font-bold text-brandDark">Toplam</span>
@@ -378,6 +432,57 @@
         const instId = params.get('id');
         const matchScore = params.get('match');
         let schoolLat = null, schoolLng = null;
+
+        // ÖNEMLİ: Bilgi/Randevu Talep Et modalı - kurumla doğrudan iletişim
+        // isteyen veliler için basit bir talep formu.
+        document.getElementById('openContactModalBtn').addEventListener('click', () => {
+            document.getElementById('contactModal').classList.remove('hidden');
+        });
+        document.getElementById('closeContactModal').addEventListener('click', () => {
+            document.getElementById('contactModal').classList.add('hidden');
+        });
+        document.getElementById('contactModal').addEventListener('click', (e) => {
+            if (e.target.id === 'contactModal') document.getElementById('contactModal').classList.add('hidden');
+        });
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const msgEl = document.getElementById('contactFormMsg');
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            const { error } = await sb.from('contact_requests').insert({
+                institution_id: instId,
+                ad_soyad: fd.get('ad_soyad'),
+                iletisim: fd.get('iletisim'),
+                mesaj: fd.get('mesaj'),
+            });
+            msgEl.classList.remove('hidden');
+            if (error) {
+                msgEl.className = 'text-xs text-center text-red-600';
+                msgEl.textContent = 'Bir hata oluştu, lütfen tekrar deneyin.';
+                btn.disabled = false;
+            } else {
+                msgEl.className = 'text-xs text-center text-green-700 font-semibold';
+                msgEl.textContent = '✓ Talebiniz iletildi!';
+                e.target.reset();
+                setTimeout(() => document.getElementById('contactModal').classList.add('hidden'), 1800);
+            }
+        });
+
+        // ÖNEMLİ: Kurum Bilgileri kartındaki "Genel Bilgi" / "Kulüp & Sosyal
+        // Yaşam" (galeri) sekmeleri arasında geçiş.
+        document.getElementById('tabGenelBilgi').addEventListener('click', () => {
+            document.getElementById('panelGenelBilgi').classList.remove('hidden');
+            document.getElementById('panelGaleri').classList.add('hidden');
+            document.getElementById('tabGenelBilgi').className = 'text-xs font-bold px-4 py-1.5 rounded-full bg-white text-brandDark shadow-sm transition-all';
+            document.getElementById('tabGaleri').className = 'text-xs font-bold px-4 py-1.5 rounded-full text-brandGray transition-all';
+        });
+        document.getElementById('tabGaleri').addEventListener('click', () => {
+            document.getElementById('panelGaleri').classList.remove('hidden');
+            document.getElementById('panelGenelBilgi').classList.add('hidden');
+            document.getElementById('tabGaleri').className = 'text-xs font-bold px-4 py-1.5 rounded-full bg-white text-brandDark shadow-sm transition-all';
+            document.getElementById('tabGenelBilgi').className = 'text-xs font-bold px-4 py-1.5 rounded-full text-brandGray transition-all';
+        });
 
         function hesaplaMesafe() {
             const btn = document.getElementById('distanceBtn');
@@ -787,6 +892,37 @@
             document.getElementById('notFoundState').classList.remove('hidden');
         }
 
+        // ÖNEMLİ: Match skorunun (%87.5 gibi) NEDEN bu değeri aldığını
+        // gösteren kırılım paneli - hangi kriterin ortalamanın üstünde (+),
+        // hangisinin altında (-) olduğunu listeler.
+        function setupMatchBreakdown(scores) {
+            const btn = document.getElementById('matchInfoBtn');
+            const panel = document.getElementById('matchBreakdownPanel');
+            const ORTALAMA_ESIK = 60;
+
+            btn.addEventListener('click', () => {
+                if (!panel.classList.contains('hidden')) {
+                    panel.classList.add('hidden');
+                    return;
+                }
+                if (!scores || !scores.length) {
+                    panel.innerHTML = '<p class="text-[11px] text-white/70">Kırılım için yeterli kriter verisi yok.</p>';
+                } else {
+                    panel.innerHTML = scores
+                        .filter(s => s.score != null && s.scoring_criteria)
+                        .map(s => {
+                            const yon = s.score >= ORTALAMA_ESIK ? '+' : '-';
+                            const renk = s.score >= ORTALAMA_ESIK ? 'text-green-200' : 'text-red-100';
+                            return `<div class="flex items-center justify-between gap-2 text-[11px]">
+                                <span class="truncate min-w-0">${s.scoring_criteria.name_tr}</span>
+                                <span class="font-bold ${renk} shrink-0">${yon} ${s.score}</span>
+                            </div>`;
+                        }).join('') || '<p class="text-[11px] text-white/70">Kırılım için yeterli kriter verisi yok.</p>';
+                }
+                panel.classList.remove('hidden');
+            });
+        }
+
         function renderInstitution(inst, scores, ilAdi) {
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
@@ -795,6 +931,7 @@
                 document.getElementById('matchBanner').classList.remove('hidden');
                 document.getElementById('matchBanner').style.background = '';
                 document.getElementById('matchScoreText').textContent = `%${matchScore} Uyumlu (Kişisel Skor: ${matchScore})`;
+                setupMatchBreakdown(scores);
             } else if (scores && scores.length > 0) {
                 // ÖNEMLİ: Kullanıcı kişiselleştirilmiş bir aramadan gelmediyse
                 // (örn. doğrudan link ya da Genel Arama'dan), yine de kriterlerin
@@ -926,7 +1063,8 @@
 
             if (maliyetKalemleri.length > 0) {
                 document.getElementById('maliyetCard').classList.remove('hidden');
-                document.querySelector('#maliyetCard h2').textContent = `Yıllık Toplam Maliyet (Tahmini${inst.ucret_yili ? ', ' + inst.ucret_yili : ''})`;
+                const yil = inst.ucret_yili || new Date().getFullYear();
+                document.getElementById('maliyetDonemBadge').textContent = `📅 ${yil}-${yil + 1} Eğitim Dönemi Verisidir`;
                 document.getElementById('maliyetGrid').innerHTML = maliyetKalemleri.map(k => `
                     <div>
                         <p class="text-brandGray">${k.label}</p>

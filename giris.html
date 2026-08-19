@@ -24,45 +24,145 @@
 
     <main class="max-w-sm mx-auto px-4 py-16">
         <h1 class="text-2xl font-bold text-brandDark mb-2 text-center">Giriş Yap</h1>
-        <p class="text-sm text-brandGray text-center mb-8">Favorileriniz ve okul profilleriniz için giriş yapın.</p>
+        <p class="text-sm text-brandGray text-center mb-6">Favorileriniz ve okul profilleriniz için giriş yapın.</p>
 
         <div id="loggedInBox" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
             <p class="text-sm mb-4">Zaten giriş yapmışsınız: <b id="loggedInEmail"></b></p>
+            <div id="claimStatusBox" class="hidden mb-4"></div>
             <button id="logoutBtn" class="text-xs font-semibold text-brandRed hover:underline">Çıkış Yap</button>
         </div>
 
-        <form id="loginForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div>
-                <label class="text-xs font-semibold text-brandGray">E-posta</label>
-                <input type="email" id="email" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+        <!-- Sekmeli giriş yapısı -->
+        <div id="loginTabsWrapper">
+            <div class="flex gap-1 mb-4 bg-slate-100 rounded-full p-1">
+                <button id="tabVeli" class="flex-1 text-xs font-bold py-2 rounded-full bg-white text-brandDark shadow-sm transition-all px-1 truncate">👨‍👩‍👧 Veli & Öğrenci</button>
+                <button id="tabKurum" class="flex-1 text-xs font-bold py-2 rounded-full text-brandGray transition-all px-1 truncate">🏫 Kurum Yöneticisi</button>
             </div>
-            <div>
-                <label class="text-xs font-semibold text-brandGray">Şifre</label>
-                <input type="password" id="password" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+
+            <!-- Veli & Öğrenci Girişi -->
+            <div id="panelVeli">
+                <form id="loginFormVeli" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-brandGray">E-posta</label>
+                        <input type="email" id="emailVeli" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandGray">Şifre</label>
+                        <input type="password" id="passwordVeli" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                    </div>
+                    <button type="submit" id="submitBtnVeli" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                        Giriş Yap
+                    </button>
+                    <div class="relative text-center">
+                        <span class="text-[10px] text-brandGray bg-white px-2 relative z-10">veya</span>
+                        <div class="absolute top-1/2 left-0 right-0 h-px bg-slate-100"></div>
+                    </div>
+                    <button type="button" id="magicLinkBtn" class="w-full border border-slate-200 hover:border-brandRed text-brandDark font-semibold py-2.5 rounded-full text-sm transition-all">
+                        ✉️ Sihirli Bağlantı ile Giriş Yap
+                    </button>
+                    <p id="messageBoxVeli" class="hidden text-xs text-center rounded-lg p-2"></p>
+                </form>
             </div>
-            <button type="submit" id="submitBtn" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
-                Giriş Yap
-            </button>
-            <p id="messageBox" class="hidden text-xs text-center rounded-lg p-2"></p>
-        </form>
+
+            <!-- Kurum Yöneticisi Girişi -->
+            <div id="panelKurum" class="hidden">
+                <form id="loginFormKurum" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-brandGray">Kurumsal E-posta</label>
+                        <input type="email" id="emailKurum" required placeholder="isim@okuladi.k12.tr" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandGray">Şifre</label>
+                        <input type="password" id="passwordKurum" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                    </div>
+                    <button type="submit" id="submitBtnKurum" class="w-full bg-brandDark hover:bg-black text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                        Kurum Girişi Yap
+                    </button>
+                    <p class="text-[11px] text-brandGray text-center">
+                        Kurumunuzu henüz sahiplenmediniz mi? <a href="kurumlar-icin.html" class="text-brandRed underline">Nasıl yapılır →</a>
+                    </p>
+                    <p id="messageBoxKurum" class="hidden text-xs text-center rounded-lg p-2"></p>
+                </form>
+            </div>
+        </div>
     </main>
 
     <script>
         const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
 
-        function showMessage(text, isError) {
-            const box = document.getElementById('messageBox');
+        // --- Sekme değiştirme ---
+        function activateTab(tab) {
+            const isVeli = tab === 'veli';
+            document.getElementById('panelVeli').classList.toggle('hidden', !isVeli);
+            document.getElementById('panelKurum').classList.toggle('hidden', isVeli);
+            document.getElementById('tabVeli').className = `flex-1 text-xs font-bold py-2 rounded-full transition-all px-1 truncate ${isVeli ? 'bg-white text-brandDark shadow-sm' : 'text-brandGray'}`;
+            document.getElementById('tabKurum').className = `flex-1 text-xs font-bold py-2 rounded-full transition-all px-1 truncate ${!isVeli ? 'bg-white text-brandDark shadow-sm' : 'text-brandGray'}`;
+        }
+        document.getElementById('tabVeli').addEventListener('click', () => activateTab('veli'));
+        document.getElementById('tabKurum').addEventListener('click', () => activateTab('kurum'));
+
+        function showMessage(boxId, text, isError) {
+            const box = document.getElementById(boxId);
             box.textContent = text;
             box.className = `text-xs text-center rounded-lg p-2 ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
             box.classList.remove('hidden');
         }
 
+        // ÖNEMLİ: Alan bazlı doğrulama hataları - QA isteği üzerine, genel bir
+        // mesaj kutusu yerine hatalı alanın TAM ALTINDA kırmızı metin gösterir.
+        function showFieldError(inputEl, text) {
+            const errEl = inputEl.parentElement.querySelector('.field-error');
+            inputEl.classList.add('border-red-400');
+            if (errEl) { errEl.textContent = text; errEl.classList.remove('hidden'); }
+        }
+        function clearFieldError(inputEl) {
+            const errEl = inputEl.parentElement.querySelector('.field-error');
+            inputEl.classList.remove('border-red-400');
+            if (errEl) errEl.classList.add('hidden');
+        }
+        function validateEmailPassword(emailEl, passEl) {
+            let ok = true;
+            clearFieldError(emailEl); clearFieldError(passEl);
+            if (!emailEl.value.trim() || !emailEl.value.includes('@')) {
+                showFieldError(emailEl, 'Geçerli bir e-posta adresi girin.'); ok = false;
+            }
+            if (!passEl.value || passEl.value.length < 6) {
+                showFieldError(passEl, 'Şifre en az 6 karakter olmalı.'); ok = false;
+            }
+            return ok;
+        }
+
         async function checkSession() {
             const { data: { session } } = await sb.auth.getSession();
-            if (session) {
-                document.getElementById('loggedInBox').classList.remove('hidden');
-                document.getElementById('loggedInEmail').textContent = session.user.email;
-                document.getElementById('loginForm').classList.add('hidden');
+            if (!session) return;
+
+            document.getElementById('loggedInBox').classList.remove('hidden');
+            document.getElementById('loggedInEmail').textContent = session.user.email;
+            document.getElementById('loginTabsWrapper').classList.add('hidden');
+
+            // ÖNEMLİ: Kullanıcının bekleyen/onaylanmış bir kurum sahiplenme
+            // talebi varsa, durumunu burada gösteriyoruz.
+            const { data: claims } = await sb.from('institution_claims')
+                .select('status, institutions ( name )')
+                .eq('user_id', session.user.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (claims && claims.length) {
+                const c = claims[0];
+                const box = document.getElementById('claimStatusBox');
+                box.classList.remove('hidden');
+                if (c.status === 'pending') {
+                    box.innerHTML = `<div class="bg-amber-50 text-amber-800 text-xs rounded-lg p-3">⏳ <b>${c.institutions?.name || 'Kurumunuz'}</b> için sahiplenme talebiniz incelemede.</div>`;
+                } else if (c.status === 'approved') {
+                    box.innerHTML = `<div class="bg-green-50 text-green-800 text-xs rounded-lg p-3">✓ <b>${c.institutions?.name || 'Kurumunuz'}</b> sahipliğiniz onaylandı.</div>`;
+                } else if (c.status === 'rejected') {
+                    box.innerHTML = `<div class="bg-red-50 text-red-800 text-xs rounded-lg p-3">✗ Talebiniz reddedildi. Detay için bize ulaşın.</div>`;
+                }
             }
         }
         checkSession();
@@ -72,35 +172,60 @@
             window.location.reload();
         });
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
+        async function handleLogin(emailEl, passEl, msgBoxId, submitBtn) {
+            if (!validateEmailPassword(emailEl, passEl)) return;
+
             submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
             submitBtn.textContent = 'Giriş yapılıyor...';
 
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            const { data, error } = await sb.auth.signInWithPassword({
+                email: emailEl.value.trim(), password: passEl.value,
+            });
 
             if (error) {
-                showMessage(error.message === 'Invalid login credentials' ? 'E-posta ya da şifre hatalı.' : error.message, true);
+                showMessage(msgBoxId, error.message === 'Invalid login credentials' ? 'E-posta ya da şifre hatalı.' : error.message, true);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Giriş Yap';
+                submitBtn.textContent = originalText;
                 return;
             }
 
-            // Profil kaydı yoksa şimdi oluştur (oturum artık aktif, RLS izin verir)
             const { data: existingProfile } = await sb.from('profiles').select('id').eq('id', data.user.id).maybeSingle();
             if (!existingProfile) {
-                await sb.from('profiles').insert({
-                    id: data.user.id,
-                    full_name: data.user.user_metadata?.full_name || null,
-                });
+                await sb.from('profiles').insert({ id: data.user.id, full_name: data.user.user_metadata?.full_name || null });
             }
 
-            showMessage('Giriş başarılı! Yönlendiriliyorsunuz...', false);
+            showMessage(msgBoxId, 'Giriş başarılı! Yönlendiriliyorsunuz...', false);
             setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        }
+
+        document.getElementById('loginFormVeli').addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleLogin(document.getElementById('emailVeli'), document.getElementById('passwordVeli'), 'messageBoxVeli', document.getElementById('submitBtnVeli'));
+        });
+        document.getElementById('loginFormKurum').addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleLogin(document.getElementById('emailKurum'), document.getElementById('passwordKurum'), 'messageBoxKurum', document.getElementById('submitBtnKurum'));
+        });
+
+        document.getElementById('magicLinkBtn').addEventListener('click', async () => {
+            const emailEl = document.getElementById('emailVeli');
+            clearFieldError(emailEl);
+            if (!emailEl.value.trim() || !emailEl.value.includes('@')) {
+                showFieldError(emailEl, 'Sihirli bağlantı için önce e-postanızı yazın.');
+                return;
+            }
+            const btn = document.getElementById('magicLinkBtn');
+            btn.disabled = true;
+            btn.textContent = 'Gönderiliyor...';
+            const { error } = await sb.auth.signInWithOtp({ email: emailEl.value.trim() });
+            if (error) {
+                showMessage('messageBoxVeli', error.message, true);
+            } else {
+                showMessage('messageBoxVeli', '✓ E-postanıza bir giriş bağlantısı gönderdik.', false);
+            }
+            btn.disabled = false;
+            btn.textContent = '✉️ Sihirli Bağlantı ile Giriş Yap';
         });
     </script>
     <footer class="w-full border-t border-slate-200/80 px-4 sm:px-6 py-6 mt-8 text-center">
