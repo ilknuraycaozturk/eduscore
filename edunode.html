@@ -97,8 +97,33 @@
                         <input required name="kariyer" placeholder="örn. Yazılım Mühendisi, Google" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-brandDark">Mezun olduğunuz lise</label>
-                        <input required name="lise" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                        <label class="text-xs font-semibold text-brandDark">İlkokul <span class="text-brandGray font-normal">(opsiyonel)</span></label>
+                        <div class="relative">
+                            <input id="ilkokulAutocompleteInput" autocomplete="off" placeholder="Okul adını yazmaya başlayın..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                            <input type="hidden" id="ilkokulInstitutionId">
+                            <div id="ilkokulSuggestions" class="hidden absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Ortaokul <span class="text-brandGray font-normal">(opsiyonel)</span></label>
+                        <div class="relative">
+                            <input id="ortaokulAutocompleteInput" autocomplete="off" placeholder="Okul adını yazmaya başlayın..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                            <input type="hidden" id="ortaokulInstitutionId">
+                            <div id="ortaokulSuggestions" class="hidden absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Mezun olduğunuz lise <span class="text-brandRed">*</span></label>
+                        <div class="relative">
+                            <input required id="liseAutocompleteInput" autocomplete="off" placeholder="Okul adını yazmaya başlayın..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
+                            <input type="hidden" id="liseInstitutionId">
+                            <div id="liseSuggestions" class="hidden absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></div>
+                        </div>
+                        <p id="liseSecimUyarisi" class="hidden text-[11px] text-amber-700 mt-1">⚠️ Lütfen listeden bir okul seçin.</p>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-brandDark">Üniversite <span class="text-brandGray font-normal">(opsiyonel, serbest metin)</span></label>
+                        <input id="universiteInput" placeholder="örn. ODTÜ Bilgisayar Mühendisliği" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-brandDark">Eğitim/kariyer yolculuğunuz (kısaca)</label>
@@ -214,8 +239,79 @@
             document.getElementById('closeAlumniModal').addEventListener('click', () => modal.classList.add('hidden'));
             modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
 
+            // ÖNEMLİ: Kullanıcı okulları elle yazmak yerine, gerçek
+            // veritabanımızdaki okullardan aratıp SEÇİYOR - bu sayede okul
+            // eşleştirmesi tahminle değil, kesin institution_id ile yapılıyor
+            // (okul onay akışı için şart). Aynı mantığı 3 seviye (ilkokul,
+            // ortaokul, lise) için tekrar kullanıyoruz.
+            function setupSchoolAutocomplete(inputId, idInputId, suggestionsId) {
+                const input = document.getElementById(inputId);
+                const idInput = document.getElementById(idInputId);
+                const suggestionsBox = document.getElementById(suggestionsId);
+                let searchTimeout;
+
+                input.addEventListener('input', () => {
+                    idInput.value = '';
+                    if (inputId === 'liseAutocompleteInput') {
+                        document.getElementById('liseSecimUyarisi').classList.add('hidden');
+                    }
+                    clearTimeout(searchTimeout);
+                    const q = input.value.trim();
+                    if (q.length < 2) {
+                        suggestionsBox.classList.add('hidden');
+                        return;
+                    }
+                    searchTimeout = setTimeout(async () => {
+                        const qNorm = q.toLowerCase()
+                            .replace(/İ|I/g, 'i').replace(/ı/g, 'i').replace(/ç/g, 'c')
+                            .replace(/ğ/g, 'g').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u');
+                        const { data } = await sb.from('institutions')
+                            .select('id, name, locations(name)')
+                            .ilike('name_normalized', `%${qNorm}%`)
+                            .limit(8);
+                        if (!data || !data.length) {
+                            suggestionsBox.innerHTML = '<p class="text-xs text-brandGray p-3">Okul bulunamadı.</p>';
+                            suggestionsBox.classList.remove('hidden');
+                            return;
+                        }
+                        suggestionsBox.innerHTML = data.map(inst => `
+                            <button type="button" class="suggestion-item w-full text-left px-3 py-2 text-xs hover:bg-brandBg border-b border-slate-50 last:border-0" data-id="${inst.id}" data-name="${inst.name.replace(/"/g, '&quot;')}">
+                                <span class="font-semibold text-brandDark">${inst.name}</span>
+                                ${inst.locations ? `<span class="text-brandGray"> — ${inst.locations.name}</span>` : ''}
+                            </button>
+                        `).join('');
+                        suggestionsBox.classList.remove('hidden');
+                        suggestionsBox.querySelectorAll('.suggestion-item').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                input.value = btn.dataset.name;
+                                idInput.value = btn.dataset.id;
+                                suggestionsBox.classList.add('hidden');
+                            });
+                        });
+                    }, 300);
+                });
+                document.addEventListener('click', (e) => {
+                    if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                        suggestionsBox.classList.add('hidden');
+                    }
+                });
+            }
+            setupSchoolAutocomplete('ilkokulAutocompleteInput', 'ilkokulInstitutionId', 'ilkokulSuggestions');
+            setupSchoolAutocomplete('ortaokulAutocompleteInput', 'ortaokulInstitutionId', 'ortaokulSuggestions');
+            setupSchoolAutocomplete('liseAutocompleteInput', 'liseInstitutionId', 'liseSuggestions');
+
             document.getElementById('alumniForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+
+                // ÖNEMLİ: Lise ZORUNLU - listeden gerçek bir okul seçilmediyse
+                // göndermeyi engelliyoruz. İlkokul/ortaokul opsiyonel.
+                const liseIdInput = document.getElementById('liseInstitutionId');
+                if (!liseIdInput.value) {
+                    document.getElementById('liseSecimUyarisi').classList.remove('hidden');
+                    document.getElementById('liseAutocompleteInput').focus();
+                    return;
+                }
+
                 const fd = new FormData(e.target);
                 const msgEl = document.getElementById('alumniFormMsg');
                 const btn = e.target.querySelector('button[type="submit"]');
@@ -223,7 +319,11 @@
                 const { error } = await sb.from('alumni_submissions').insert({
                     ad_soyad: fd.get('ad_soyad'),
                     kariyer: fd.get('kariyer'),
-                    lise: fd.get('lise'),
+                    lise: document.getElementById('liseAutocompleteInput').value,
+                    lise_institution_id: liseIdInput.value,
+                    ilkokul_institution_id: document.getElementById('ilkokulInstitutionId').value || null,
+                    ortaokul_institution_id: document.getElementById('ortaokulInstitutionId').value || null,
+                    universite_adi: document.getElementById('universiteInput').value || null,
                     yolculuk: fd.get('yolculuk'),
                     eposta: fd.get('eposta'),
                     yas_onaylandi: fd.get('yas_onay') === 'on',
@@ -237,6 +337,9 @@
                     msgEl.className = 'text-xs text-center text-green-700 font-semibold';
                     msgEl.textContent = '✓ Gönderildi! İncelendikten sonra yayınlanacak.';
                     e.target.reset();
+                    liseIdInput.value = '';
+                    document.getElementById('ilkokulInstitutionId').value = '';
+                    document.getElementById('ortaokulInstitutionId').value = '';
                     setTimeout(() => document.getElementById('addAlumniModal').classList.add('hidden'), 2000);
                 }
             });
