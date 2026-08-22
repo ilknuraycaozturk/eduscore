@@ -508,10 +508,14 @@
             .formula-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
-        @media (max-width: 768px) {
+        /* ÖNEMLİ: Nav menü kırılma noktası bilerek 1100px'e alındı (768px değil).
+           7 menü öğesi + logo, 768px-1100px aralığında hamburger menüye geçmeden
+           tek satıra sığmıyor ve metinler/butonlar üst üste biniyordu. Diğer mobil
+           stiller (hero, arama kutusu vb.) aşağıdaki ayrı 768px bloğunda kalmaya devam eder. */
+        @media (max-width: 1100px) {
             .nav-container { padding: 16px 24px; }
             .menu-toggle { display: flex; }
-            
+
             .nav-menu {
                 position: fixed;
                 top: 75px;
@@ -543,7 +547,9 @@
                 text-align: center;
                 box-sizing: border-box;
             }
+        }
 
+        @media (max-width: 768px) {
             .hero-section { padding: 140px 24px 60px 24px; }
             .hero-title { font-size: 36px; }
             
