@@ -13,7 +13,11 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @keyframes toastIn { from { opacity:0; transform:translateY(-8px);} to {opacity:1; transform:translateY(0);} }
+        .toast-anim { animation: toastIn .25s ease-out; }
+    </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
 
@@ -22,105 +26,194 @@
         <a href="kayit.html" class="text-xs sm:text-sm font-semibold text-brandGray hover:text-brandDark transition-colors">Hesabım yok, kayıt ol</a>
     </header>
 
-    <main class="max-w-sm mx-auto px-4 py-16">
-        <h1 class="text-2xl font-bold text-brandDark mb-2 text-center">Giriş Yap</h1>
-        <p class="text-sm text-brandGray text-center mb-6">Favorileriniz ve okul profilleriniz için giriş yapın.</p>
+    <!-- Toast bildirim alanı: sağ üst, animasyonlu -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-xs sm:max-w-sm"></div>
 
-        <div id="loggedInBox" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
-            <p class="text-sm mb-4">Zaten giriş yapmışsınız: <b id="loggedInEmail"></b></p>
-            <div id="claimStatusBox" class="hidden mb-4"></div>
-            <button id="logoutBtn" class="text-xs font-semibold text-brandRed hover:underline">Çıkış Yap</button>
-        </div>
+    <main class="max-w-5xl mx-auto px-4 py-10 sm:py-16">
+        <div class="grid md:grid-cols-2 gap-0 md:gap-10 items-center">
 
-        <!-- Sekmeli giriş yapısı -->
-        <div id="loginTabsWrapper">
-            <div class="flex gap-1 mb-4 bg-slate-100 rounded-full p-1">
-                <button id="tabVeli" class="flex-1 text-xs font-bold py-2 rounded-full bg-white text-brandDark shadow-sm transition-all px-1 truncate">👨‍👩‍👧 Veli & Öğrenci</button>
-                <button id="tabKurum" class="flex-1 text-xs font-bold py-2 rounded-full text-brandGray transition-all px-1 truncate">🏫 Kurum Yöneticisi</button>
+            <!-- SOL PANEL: Dinamik değer önermesi -->
+            <div id="valuePropPanel" class="hidden md:flex flex-col justify-center h-full pr-6 border-r border-slate-200/70">
+                <div id="valuePropVeli">
+                    <h2 class="text-2xl font-bold text-brandDark mb-3 leading-snug">Doğru okul kararını<br>güvenle verin.</h2>
+                    <p class="text-sm text-brandGray leading-relaxed">Kişiselleştirilmiş okul uyum skorlarınızı kaydedin, tercih listelerinizi saklayın ve binlerce okulu tek yerden karşılaştırın.</p>
+                </div>
+                <div id="valuePropKurum" class="hidden">
+                    <h2 class="text-2xl font-bold text-brandDark mb-3 leading-snug">Kurumunuzu doğru<br>ailelere ulaştırın.</h2>
+                    <p class="text-sm text-brandGray leading-relaxed">Doğrulanmış kurum profilinizi yönetin, mezun başarı hikayelerinizi paylaşın ve EduScor Kurum Panelinden verilerinizi güncelleyin.</p>
+                </div>
             </div>
 
-            <!-- Veli & Öğrenci Girişi -->
-            <div id="panelVeli">
-                <form id="loginFormVeli" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                    <div>
-                        <label class="text-xs font-semibold text-brandGray">E-posta</label>
-                        <input type="email" id="emailVeli" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
-                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-brandGray">Şifre</label>
-                        <input type="password" id="passwordVeli" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
-                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
-                    </div>
-                    <button type="submit" id="submitBtnVeli" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
-                        Giriş Yap
-                    </button>
-                    <div class="relative text-center">
-                        <span class="text-[10px] text-brandGray bg-white px-2 relative z-10">veya</span>
-                        <div class="absolute top-1/2 left-0 right-0 h-px bg-slate-100"></div>
-                    </div>
-                    <button type="button" id="magicLinkBtn" class="w-full border border-slate-200 hover:border-brandRed text-brandDark font-semibold py-2.5 rounded-full text-sm transition-all">
-                        ✉️ Sihirli Bağlantı ile Giriş Yap
-                    </button>
-                    <p id="messageBoxVeli" class="hidden text-xs text-center rounded-lg p-2"></p>
-                </form>
-            </div>
+            <!-- SAĞ PANEL: Form alanı -->
+            <div class="w-full max-w-sm mx-auto md:mx-0 md:pl-6">
+                <h1 class="text-2xl font-bold text-brandDark mb-2 text-center md:text-left">Giriş Yap</h1>
+                <p class="text-sm text-brandGray text-center md:text-left mb-6">Favorileriniz ve okul profilleriniz için giriş yapın.</p>
 
-            <!-- Kurum Yöneticisi Girişi -->
-            <div id="panelKurum" class="hidden">
-                <form id="loginFormKurum" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                    <div>
-                        <label class="text-xs font-semibold text-brandGray">Kurumsal E-posta</label>
-                        <input type="email" id="emailKurum" required placeholder="isim@okuladi.k12.tr" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
-                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                <div id="loggedInBox" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
+                    <p class="text-sm mb-4">Zaten giriş yapmışsınız: <b id="loggedInEmail"></b></p>
+                    <div id="claimStatusBox" class="hidden mb-4"></div>
+                    <button id="logoutBtn" class="text-xs font-semibold text-brandRed hover:underline">Çıkış Yap</button>
+                </div>
+
+                <!-- Sekmeli giriş yapısı: mobilde tam genişlik, touch-friendly -->
+                <div id="loginTabsWrapper">
+                    <div class="flex gap-1 mb-4 bg-slate-100 rounded-full p-1">
+                        <button id="tabVeli" class="flex-1 text-xs font-bold py-2.5 rounded-full bg-white text-brandDark shadow-sm transition-all px-1 truncate">👨‍👩‍👧 Veli & Öğrenci</button>
+                        <button id="tabKurum" class="flex-1 text-xs font-bold py-2.5 rounded-full text-brandGray transition-all px-1 truncate">🏫 Kurum Yöneticisi</button>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-brandGray">Şifre</label>
-                        <input type="password" id="passwordKurum" required class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
-                        <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+
+                    <!-- Veli & Öğrenci Girişi (B2C) -->
+                    <div id="panelVeli">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
+                            <button type="button" id="googleBtnVeli" class="w-full flex items-center justify-center gap-2 border border-slate-200 hover:border-slate-300 bg-white text-brandDark font-semibold py-2.5 rounded-full text-sm transition-all">
+                                <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4c-7.7 0-14.4 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5l-6.6-5.4C29.6 35.5 26.9 36.5 24 36.5c-5.2 0-9.6-3.3-11.2-8l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.6l6.6 5.4C41.7 35.9 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+                                Google ile devam et
+                            </button>
+                            <button type="button" id="appleBtnVeli" class="w-full flex items-center justify-center gap-2 border border-slate-200 hover:border-slate-300 bg-brandDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                                 Apple ile devam et
+                            </button>
+                            <div class="relative text-center py-1">
+                                <span class="text-[10px] text-brandGray bg-white px-2 relative z-10">veya e-posta ile</span>
+                                <div class="absolute top-1/2 left-0 right-0 h-px bg-slate-100"></div>
+                            </div>
+                            <form id="loginFormVeli" class="space-y-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-brandGray">E-posta</label>
+                                    <input type="email" id="emailVeli" required autocomplete="email" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                                    <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-brandGray">Şifre</label>
+                                    <div class="relative mt-1">
+                                        <input type="password" id="passwordVeli" required autocomplete="current-password" class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                                        <button type="button" data-toggle-for="passwordVeli" class="pw-toggle absolute right-2 top-1/2 -translate-y-1/2 text-xs text-brandGray hover:text-brandDark">👁️</button>
+                                    </div>
+                                    <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                                    <button type="button" class="forgotPwBtn text-[11px] text-brandGray hover:text-brandRed underline mt-1" data-email-field="emailVeli">Şifremi unuttum</button>
+                                </div>
+                                <button type="submit" id="submitBtnVeli" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                                    Giriş Yap
+                                </button>
+                                <button type="button" id="magicLinkBtn" class="w-full border border-slate-200 hover:border-brandRed text-brandDark font-semibold py-2.5 rounded-full text-sm transition-all">
+                                    ✉️ Sihirli Bağlantı ile Giriş Yap
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <button type="submit" id="submitBtnKurum" class="w-full bg-brandDark hover:bg-black text-white font-semibold py-2.5 rounded-full text-sm transition-all">
-                        Kurum Girişi Yap
-                    </button>
-                    <p class="text-[11px] text-brandGray text-center">
-                        Kurumunuzu henüz sahiplenmediniz mi? <a href="kurumlar-icin.html" class="text-brandRed underline">Nasıl yapılır →</a>
-                    </p>
-                    <p id="messageBoxKurum" class="hidden text-xs text-center rounded-lg p-2"></p>
-                </form>
+
+                    <!-- Kurum Yöneticisi Girişi (B2B) -->
+                    <div id="panelKurum" class="hidden">
+                        <form id="loginFormKurum" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-brandGray">Kurumsal E-posta</label>
+                                <input type="email" id="emailKurum" required placeholder="isim@okuladi.k12.tr" autocomplete="email" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                                <p id="genericEmailWarning" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded-md p-2 mt-1">
+                                    ⚠️ Bu genel bir e-posta sağlayıcısı gibi görünüyor. Kurumsal doğrulama için okulunuzun resmi e-posta uzantısını (örn. @okuladi.k12.tr) kullanmanız önerilir.
+                                </p>
+                                <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-brandGray">Şifre</label>
+                                <div class="relative mt-1">
+                                    <input type="password" id="passwordKurum" required autocomplete="current-password" class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                                    <button type="button" data-toggle-for="passwordKurum" class="pw-toggle absolute right-2 top-1/2 -translate-y-1/2 text-xs text-brandGray hover:text-brandDark">👁️</button>
+                                </div>
+                                <p class="field-error hidden text-[11px] text-red-600 mt-1"></p>
+                                <button type="button" class="forgotPwBtn text-[11px] text-brandGray hover:text-brandRed underline mt-1" data-email-field="emailKurum">Şifremi unuttum</button>
+                            </div>
+
+                            <!-- MFA adımı: sadece TOTP kayıtlı kullanıcılar için görünür olur -->
+                            <div id="mfaStepKurum" class="hidden space-y-2 bg-slate-50 rounded-lg p-3">
+                                <label class="text-xs font-semibold text-brandGray">Doğrulama Kodu (Authenticator uygulaması)</label>
+                                <input type="text" id="mfaCodeKurum" inputmode="numeric" maxlength="6" placeholder="6 haneli kod" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed tracking-widest text-center">
+                                <button type="button" id="mfaVerifyBtn" class="w-full bg-brandDark text-white font-semibold py-2 rounded-full text-xs">Kodu Doğrula ve Devam Et</button>
+                            </div>
+
+                            <button type="submit" id="submitBtnKurum" class="w-full bg-brandDark hover:bg-black text-white font-semibold py-2.5 rounded-full text-sm transition-all">
+                                Kurum Girişi Yap
+                            </button>
+                            <p class="text-[11px] text-brandGray text-center">
+                                Kurumunuzu henüz sahiplenmediniz mi? <a href="kurumlar-icin.html" class="text-brandRed underline">Nasıl yapılır →</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
+    <!-- Şifremi Unuttum modalı -->
+    <div id="forgotPwModal" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 class="font-bold text-brandDark mb-2">Şifremi Sıfırla</h3>
+            <p class="text-xs text-brandGray mb-3">E-posta adresinize güvenli bir şifre sıfırlama bağlantısı göndereceğiz.</p>
+            <input type="email" id="forgotPwEmail" placeholder="E-posta adresiniz" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed mb-3">
+            <div class="flex gap-2">
+                <button id="forgotPwCancel" class="flex-1 border border-slate-200 rounded-full py-2 text-xs font-semibold text-brandGray">Vazgeç</button>
+                <button id="forgotPwSend" class="flex-1 bg-brandRed text-white rounded-full py-2 text-xs font-semibold">Bağlantı Gönder</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
 
-        // --- Sekme değiştirme ---
+        // --- Context-aware redirect: okul-detay.html?redirect_to=... gibi akışlardan gelindiyse geri dön ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get('redirect_to');
+        function goAfterLogin() {
+            window.location.href = redirectTo ? decodeURIComponent(redirectTo) : 'index.html';
+        }
+
+        // --- Toast bildirimleri (sağ üst, animasyonlu) ---
+        function showToast(text, type) {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            const styles = type === 'error' ? 'bg-red-600' : type === 'warn' ? 'bg-amber-500' : 'bg-green-600';
+            el.className = `toast-anim ${styles} text-white text-xs font-semibold rounded-xl px-4 py-3 shadow-lg`;
+            el.textContent = text;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 4000);
+        }
+
+        // --- Sekme değiştirme (+ sol panel değer önermesini günceller) ---
         function activateTab(tab) {
             const isVeli = tab === 'veli';
             document.getElementById('panelVeli').classList.toggle('hidden', !isVeli);
             document.getElementById('panelKurum').classList.toggle('hidden', isVeli);
-            document.getElementById('tabVeli').className = `flex-1 text-xs font-bold py-2 rounded-full transition-all px-1 truncate ${isVeli ? 'bg-white text-brandDark shadow-sm' : 'text-brandGray'}`;
-            document.getElementById('tabKurum').className = `flex-1 text-xs font-bold py-2 rounded-full transition-all px-1 truncate ${!isVeli ? 'bg-white text-brandDark shadow-sm' : 'text-brandGray'}`;
+            document.getElementById('valuePropVeli').classList.toggle('hidden', !isVeli);
+            document.getElementById('valuePropKurum').classList.toggle('hidden', isVeli);
+            document.getElementById('tabVeli').className = `flex-1 text-xs font-bold py-2.5 rounded-full transition-all px-1 truncate ${isVeli ? 'bg-white text-brandDark shadow-sm' : 'text-brandGray'}`;
+            document.getElementById('tabKurum').className = `flex-1 text-xs font-bold py-2.5 rounded-full transition-all px-1 truncate ${!isVeli ? 'bg-white text-brandDark shadow-sm' : 'text-brandGray'}`;
         }
         document.getElementById('tabVeli').addEventListener('click', () => activateTab('veli'));
         document.getElementById('tabKurum').addEventListener('click', () => activateTab('kurum'));
+        document.getElementById('valuePropPanel').classList.remove('hidden');
 
-        function showMessage(boxId, text, isError) {
-            const box = document.getElementById(boxId);
-            box.textContent = text;
-            box.className = `text-xs text-center rounded-lg p-2 ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
-            box.classList.remove('hidden');
-        }
+        // --- Şifre göster/gizle ---
+        document.querySelectorAll('.pw-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = document.getElementById(btn.dataset.toggleFor);
+                input.type = input.type === 'password' ? 'text' : 'password';
+                btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+            });
+        });
 
-        // ÖNEMLİ: Alan bazlı doğrulama hataları - QA isteği üzerine, genel bir
-        // mesaj kutusu yerine hatalı alanın TAM ALTINDA kırmızı metin gösterir.
+        // --- Kurumsal e-posta: jenerik sağlayıcı uyarısı ---
+        const GENERIC_DOMAINS = ['gmail.com','hotmail.com','outlook.com','yahoo.com','icloud.com','yandex.com'];
+        document.getElementById('emailKurum').addEventListener('input', (e) => {
+            const val = e.target.value.trim().toLowerCase();
+            const domain = val.split('@')[1] || '';
+            document.getElementById('genericEmailWarning').classList.toggle('hidden', !GENERIC_DOMAINS.includes(domain));
+        });
+
         function showFieldError(inputEl, text) {
-            const errEl = inputEl.parentElement.querySelector('.field-error');
+            const errEl = inputEl.parentElement.querySelector('.field-error') || inputEl.closest('div').querySelector('.field-error');
             inputEl.classList.add('border-red-400');
             if (errEl) { errEl.textContent = text; errEl.classList.remove('hidden'); }
         }
         function clearFieldError(inputEl) {
-            const errEl = inputEl.parentElement.querySelector('.field-error');
+            const errEl = inputEl.parentElement.querySelector('.field-error') || inputEl.closest('div').querySelector('.field-error');
             inputEl.classList.remove('border-red-400');
             if (errEl) errEl.classList.add('hidden');
         }
@@ -136,6 +229,16 @@
             return ok;
         }
 
+        // --- Rate limiting: 5 başarısız denemeden sonra 15 dk kilit (login_attempts tablosu) ---
+        async function isLocked(identifier) {
+            const { data, error } = await sb.rpc('is_login_locked', { p_identifier: identifier });
+            if (error) return false; // RPC yoksa/erişilemezse akışı bloklamayalım
+            return data === true;
+        }
+        async function logAttempt(identifier, success) {
+            try { await sb.from('login_attempts').insert({ identifier, success }); } catch (e) { /* sessiz geç */ }
+        }
+
         async function checkSession() {
             const { data: { session } } = await sb.auth.getSession();
             if (!session) return;
@@ -143,9 +246,8 @@
             document.getElementById('loggedInBox').classList.remove('hidden');
             document.getElementById('loggedInEmail').textContent = session.user.email;
             document.getElementById('loginTabsWrapper').classList.add('hidden');
+            document.getElementById('valuePropPanel').classList.add('hidden');
 
-            // ÖNEMLİ: Kullanıcının bekleyen/onaylanmış bir kurum sahiplenme
-            // talebi varsa, durumunu burada gösteriyoruz.
             const { data: claims } = await sb.from('institution_claims')
                 .select('status, institutions ( name )')
                 .eq('user_id', session.user.id)
@@ -159,7 +261,7 @@
                 if (c.status === 'pending') {
                     box.innerHTML = `<div class="bg-amber-50 text-amber-800 text-xs rounded-lg p-3">⏳ <b>${c.institutions?.name || 'Kurumunuz'}</b> için sahiplenme talebiniz incelemede.</div>`;
                 } else if (c.status === 'approved') {
-                    box.innerHTML = `<div class="bg-green-50 text-green-800 text-xs rounded-lg p-3">✓ <b>${c.institutions?.name || 'Kurumunuz'}</b> sahipliğiniz onaylandı.</div>`;
+                    box.innerHTML = `<div class="bg-green-50 text-green-800 text-xs rounded-lg p-3">✓ <b>${c.institutions?.name || 'Kurumunuz'}</b> sahipliğiniz onaylandı. <a href="kurum-paneli.html" class="underline font-semibold">Panele git →</a></div>`;
                 } else if (c.status === 'rejected') {
                     box.innerHTML = `<div class="bg-red-50 text-red-800 text-xs rounded-lg p-3">✗ Talebiniz reddedildi. Detay için bize ulaşın.</div>`;
                 }
@@ -172,19 +274,29 @@
             window.location.reload();
         });
 
-        async function handleLogin(emailEl, passEl, msgBoxId, submitBtn) {
+        let pendingKurumLogin = null; // MFA doğrulaması beklenirken login bilgisi burada tutulur
+
+        async function handleLogin(emailEl, passEl, submitBtn, isKurum) {
             if (!validateEmailPassword(emailEl, passEl)) return;
+
+            const identifier = emailEl.value.trim().toLowerCase();
+            if (await isLocked(identifier)) {
+                showToast('Çok fazla başarısız deneme. Lütfen 15 dakika sonra tekrar deneyin.', 'error');
+                return;
+            }
 
             submitBtn.disabled = true;
             const originalText = submitBtn.textContent;
             submitBtn.textContent = 'Giriş yapılıyor...';
 
             const { data, error } = await sb.auth.signInWithPassword({
-                email: emailEl.value.trim(), password: passEl.value,
+                email: identifier, password: passEl.value,
             });
 
+            await logAttempt(identifier, !error);
+
             if (error) {
-                showMessage(msgBoxId, error.message === 'Invalid login credentials' ? 'E-posta ya da şifre hatalı.' : error.message, true);
+                showToast(error.message === 'Invalid login credentials' ? 'E-posta ya da şifre hatalı.' : error.message, 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
                 return;
@@ -195,17 +307,49 @@
                 await sb.from('profiles').insert({ id: data.user.id, full_name: data.user.user_metadata?.full_name || null });
             }
 
-            showMessage(msgBoxId, 'Giriş başarılı! Yönlendiriliyorsunuz...', false);
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+            // --- MFA kontrolü: sadece Kurum girişinde, kullanıcı zaten TOTP kaydettiyse ---
+            if (isKurum) {
+                const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+                if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+                    pendingKurumLogin = true;
+                    document.getElementById('mfaStepKurum').classList.remove('hidden');
+                    submitBtn.classList.add('hidden');
+                    showToast('Hesabınızda 2FA aktif. Lütfen doğrulama kodunu girin.', 'warn');
+                    return;
+                }
+            }
+
+            showToast('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+            setTimeout(goAfterLogin, 900);
         }
+
+        document.getElementById('mfaVerifyBtn').addEventListener('click', async () => {
+            const code = document.getElementById('mfaCodeKurum').value.trim();
+            if (code.length !== 6) { showToast('6 haneli kodu eksiksiz girin.', 'error'); return; }
+
+            const { data: factors } = await sb.auth.mfa.listFactors();
+            const totpFactor = factors?.totp?.[0];
+            if (!totpFactor) { showToast('Doğrulayıcı bulunamadı.', 'error'); return; }
+
+            const { data: challenge, error: challengeError } = await sb.auth.mfa.challenge({ factorId: totpFactor.id });
+            if (challengeError) { showToast(challengeError.message, 'error'); return; }
+
+            const { error: verifyError } = await sb.auth.mfa.verify({
+                factorId: totpFactor.id, challengeId: challenge.id, code
+            });
+            if (verifyError) { showToast('Kod hatalı, tekrar deneyin.', 'error'); return; }
+
+            showToast('Doğrulama başarılı! Yönlendiriliyorsunuz...', 'success');
+            setTimeout(goAfterLogin, 900);
+        });
 
         document.getElementById('loginFormVeli').addEventListener('submit', (e) => {
             e.preventDefault();
-            handleLogin(document.getElementById('emailVeli'), document.getElementById('passwordVeli'), 'messageBoxVeli', document.getElementById('submitBtnVeli'));
+            handleLogin(document.getElementById('emailVeli'), document.getElementById('passwordVeli'), document.getElementById('submitBtnVeli'), false);
         });
         document.getElementById('loginFormKurum').addEventListener('submit', (e) => {
             e.preventDefault();
-            handleLogin(document.getElementById('emailKurum'), document.getElementById('passwordKurum'), 'messageBoxKurum', document.getElementById('submitBtnKurum'));
+            handleLogin(document.getElementById('emailKurum'), document.getElementById('passwordKurum'), document.getElementById('submitBtnKurum'), true);
         });
 
         document.getElementById('magicLinkBtn').addEventListener('click', async () => {
@@ -220,12 +364,49 @@
             btn.textContent = 'Gönderiliyor...';
             const { error } = await sb.auth.signInWithOtp({ email: emailEl.value.trim() });
             if (error) {
-                showMessage('messageBoxVeli', error.message, true);
+                showToast(error.message, 'error');
             } else {
-                showMessage('messageBoxVeli', '✓ E-postanıza bir giriş bağlantısı gönderdik.', false);
+                showToast('✓ E-postanıza bir giriş bağlantısı gönderdik.', 'success');
             }
             btn.disabled = false;
             btn.textContent = '✉️ Sihirli Bağlantı ile Giriş Yap';
+        });
+
+        // --- Sosyal Giriş (SSO) ---
+        document.getElementById('googleBtnVeli').addEventListener('click', async () => {
+            const { error } = await sb.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin + '/index.html' }
+            });
+            if (error) showToast(error.message, 'error');
+        });
+        document.getElementById('appleBtnVeli').addEventListener('click', async () => {
+            const { error } = await sb.auth.signInWithOAuth({
+                provider: 'apple',
+                options: { redirectTo: window.location.origin + '/index.html' }
+            });
+            if (error) showToast(error.message, 'error');
+        });
+
+        // --- Şifremi Unuttum modalı ---
+        const forgotModal = document.getElementById('forgotPwModal');
+        document.querySelectorAll('.forgotPwBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const emailVal = document.getElementById(btn.dataset.emailField).value.trim();
+                document.getElementById('forgotPwEmail').value = emailVal;
+                forgotModal.classList.remove('hidden');
+            });
+        });
+        document.getElementById('forgotPwCancel').addEventListener('click', () => forgotModal.classList.add('hidden'));
+        document.getElementById('forgotPwSend').addEventListener('click', async () => {
+            const email = document.getElementById('forgotPwEmail').value.trim();
+            if (!email || !email.includes('@')) { showToast('Geçerli bir e-posta girin.', 'error'); return; }
+            const { error } = await sb.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/giris.html'
+            });
+            forgotModal.classList.add('hidden');
+            if (error) showToast(error.message, 'error');
+            else showToast('✓ Şifre sıfırlama bağlantısı e-postanıza gönderildi.', 'success');
         });
     </script>
     <footer class="w-full border-t border-slate-200/80 px-4 sm:px-6 py-6 mt-8 text-center">
