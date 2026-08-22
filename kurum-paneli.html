@@ -41,6 +41,29 @@
                 <p id="institutionNameText" class="font-bold text-brandDark"></p>
             </div>
 
+            <!-- Güvenlik Ayarları: İki Faktörlü Doğrulama (MFA/TOTP) -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-brandGray uppercase tracking-wide font-bold mb-1">Güvenlik</p>
+                        <p class="font-bold text-brandDark">İki Faktörlü Doğrulama (2FA)</p>
+                        <p class="text-xs text-brandGray mt-1">Kurum yöneticisi hesapları için önerilir. Google Authenticator, Authy gibi bir uygulama gerekir.</p>
+                    </div>
+                    <span id="mfaStatusBadge" class="text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap"></span>
+                </div>
+                <button id="mfaEnableBtn" class="mt-3 w-full bg-brandDark hover:bg-black text-white font-semibold text-xs py-2.5 rounded-full transition-all">2FA'yı Etkinleştir</button>
+                <button id="mfaDisableBtn" class="hidden mt-3 w-full border border-red-200 text-red-600 hover:bg-red-50 font-semibold text-xs py-2.5 rounded-full transition-all">2FA'yı Devre Dışı Bırak</button>
+
+                <div id="mfaEnrollBox" class="hidden mt-4 border-t border-slate-100 pt-4 text-center">
+                    <p class="text-xs text-brandGray mb-3">1. Authenticator uygulamanızla aşağıdaki kodu tarayın:</p>
+                    <div id="mfaQrCode" class="flex justify-center mb-3"></div>
+                    <p class="text-xs text-brandGray mb-3">2. Uygulamada beliren 6 haneli kodu girin:</p>
+                    <input type="text" id="mfaEnrollCode" inputmode="numeric" maxlength="6" placeholder="000000" class="w-40 mx-auto block px-3 py-2 border border-slate-200 rounded-lg text-sm text-center tracking-widest outline-none focus:border-brandRed mb-3">
+                    <button id="mfaConfirmBtn" class="bg-brandRed hover:bg-brandRedDark text-white font-semibold text-xs px-6 py-2.5 rounded-full transition-all">Doğrula ve Etkinleştir</button>
+                    <p id="mfaEnrollMsg" class="hidden text-xs mt-3 rounded-lg p-2"></p>
+                </div>
+            </div>
+
             <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-3">Bekleyen Mezun Bildirimleri</h2>
             <div id="submissionsList" class="space-y-3"></div>
             <p id="emptyMsg" class="hidden text-sm text-brandGray text-center py-8">Şu an bekleyen bir gönderim yok.</p>
@@ -73,7 +96,83 @@
             document.getElementById('panelBox').classList.remove('hidden');
 
             await loadSubmissions(institutionId);
+            await loadMfaStatus();
         }
+
+        // --- MFA (TOTP) Durumu ve Kurulum ---
+        let currentTotpFactorId = null;
+
+        async function loadMfaStatus() {
+            const { data, error } = await sb.auth.mfa.listFactors();
+            if (error) return;
+            const totp = data.totp?.find(f => f.status === 'verified');
+            const badge = document.getElementById('mfaStatusBadge');
+            const enableBtn = document.getElementById('mfaEnableBtn');
+            const disableBtn = document.getElementById('mfaDisableBtn');
+
+            if (totp) {
+                currentTotpFactorId = totp.id;
+                badge.textContent = '✓ Aktif';
+                badge.className = 'text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap bg-green-50 text-green-700';
+                enableBtn.classList.add('hidden');
+                disableBtn.classList.remove('hidden');
+            } else {
+                badge.textContent = 'Pasif';
+                badge.className = 'text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap bg-slate-100 text-brandGray';
+                enableBtn.classList.remove('hidden');
+                disableBtn.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('mfaEnableBtn').addEventListener('click', async () => {
+            const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp' });
+            if (error) { alert('2FA başlatılamadı: ' + error.message); return; }
+
+            currentTotpFactorId = data.id;
+            document.getElementById('mfaQrCode').innerHTML = `<img src="${data.totp.qr_code}" alt="QR Kod" class="w-40 h-40 border border-slate-200 rounded-lg p-1">`;
+            document.getElementById('mfaEnrollBox').classList.remove('hidden');
+            document.getElementById('mfaEnableBtn').classList.add('hidden');
+        });
+
+        document.getElementById('mfaConfirmBtn').addEventListener('click', async () => {
+            const code = document.getElementById('mfaEnrollCode').value.trim();
+            const msgEl = document.getElementById('mfaEnrollMsg');
+            if (code.length !== 6) {
+                msgEl.textContent = '6 haneli kodu eksiksiz girin.';
+                msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-red-50 text-red-700';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+
+            const { data: challenge, error: challengeError } = await sb.auth.mfa.challenge({ factorId: currentTotpFactorId });
+            if (challengeError) {
+                msgEl.textContent = challengeError.message;
+                msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-red-50 text-red-700';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+
+            const { error: verifyError } = await sb.auth.mfa.verify({
+                factorId: currentTotpFactorId, challengeId: challenge.id, code
+            });
+
+            if (verifyError) {
+                msgEl.textContent = 'Kod hatalı, tekrar deneyin.';
+                msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-red-50 text-red-700';
+                msgEl.classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('mfaEnrollBox').classList.add('hidden');
+            await loadMfaStatus();
+        });
+
+        document.getElementById('mfaDisableBtn').addEventListener('click', async () => {
+            if (!confirm('2FA\'yı devre dışı bırakmak istediğinize emin misiniz? Hesabınızın güvenliği azalacak.')) return;
+            const { error } = await sb.auth.mfa.unenroll({ factorId: currentTotpFactorId });
+            if (error) { alert('Devre dışı bırakılamadı: ' + error.message); return; }
+            await loadMfaStatus();
+        });
 
         async function loadSubmissions(institutionId) {
             const { data: submissions } = await sb.from('alumni_submissions')
