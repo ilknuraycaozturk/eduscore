@@ -104,6 +104,16 @@
 
         <div id="resultsSection" class="hidden">
             <div id="resultsSummary" class="bg-slate-100 text-brandDark text-xs rounded-xl px-4 py-3 mb-4"></div>
+
+            <div id="personalizeCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4 hidden">
+                <p class="text-xs font-bold text-brandRed uppercase tracking-wide mb-1">2. Adım</p>
+                <p class="font-bold text-brandDark text-sm mb-1">Sizin İçin Neler Önemli?</p>
+                <p class="text-xs text-brandGray mb-4">Aşağıdaki listeyi girebileceğiniz okullardan oluşturduk. Şimdi kendi önceliklerinize göre yeniden sıralayalım — okulun genel puanı değişmez, sadece SİZE göre sıralama değişir.</p>
+                <div id="weightSliders" class="space-y-3"></div>
+                <button onclick="personalizeResults()" class="mt-4 w-full bg-brandDark hover:bg-black text-white font-semibold text-sm py-2.5 rounded-full transition-all">✨ Bana Göre Sırala</button>
+                <p id="personalizeMsg" class="hidden text-xs mt-3 rounded-lg p-2"></p>
+            </div>
+
             <div id="resultsList" class="space-y-3"></div>
         </div>
 
@@ -122,6 +132,25 @@
             'mesleki-teknik-anadolu-lisesi': 'Mesleki ve Teknik Anadolu Lisesi',
             'lise': 'Lise',
         };
+
+        // eduscor-match-decision: MCDM için ağırlıklandırılabilecek kriterler.
+        // akademik_basari bilinçli olarak dışarıda bırakıldı - zaten LGS yüzdelik
+        // filtresiyle bir "sert kısıt" (hard constraint) olarak kullanıldı, tekrar
+        // ağırlıklandırmak çifte sayım olurdu.
+        const PERSONALIZABLE_CRITERIA = [
+            { key: 'yabanci_dil', label: 'Yabancı Dil Eğitimi' },
+            { key: 'fiziksel_altyapi', label: 'Fiziksel Altyapı' },
+            { key: 'sosyal_kulturel', label: 'Sosyal / Kültürel Etkinlikler' },
+            { key: 'ogretmen_kalitesi', label: 'Öğretmen Kalitesi' },
+            { key: 'guvenlik_disiplin', label: 'Güvenlik ve Disiplin' },
+            { key: 'universite_yerlestirme', label: 'Üniversiteye Yerleştirme' },
+            { key: 'burs_ucret', label: 'Burs / Erişilebilirlik' },
+        ];
+
+        // Bir sonraki search() çağrısı için ham veriyi (kriter skorları dahil)
+        // sonradan kişiselleştirme adımında yeniden kullanabilmek için saklıyoruz.
+        let lastMatches = [];
+        let lastHardConstraints = {};
 
         async function search() {
             const yuzdelik = parseFloat(document.getElementById('yuzdelikInput').value);
@@ -202,7 +231,7 @@
                     const akademik = scores['akademik_basari'];
                     if (!akademik) return;  // veri yoksa gerçekçi bir kıyas yapılamaz, dahil etmiyoruz
                     if (akademik.score <= kullaniciSkor) {
-                        matches.push({ inst, akademik, yuzdelikDilim: (100 - akademik.score).toFixed(2) });
+                        matches.push({ inst, akademik, allScores: scores, yuzdelikDilim: (100 - akademik.score).toFixed(2) });
                     }
                 });
 
@@ -210,7 +239,11 @@
                 matches.sort((a, b) => b.akademik.score - a.akademik.score);
                 const top = matches.slice(0, 40);
 
+                lastMatches = top;
+                lastHardConstraints = { min_yuzdelik_dilim: yuzdelik, program_slug: programSlug || null, kurum_turu: typeFilter || null, il: ilFilter || null };
+
                 renderResults(top, matches.length, yuzdelik);
+                setupPersonalizeSliders();
             } catch (err) {
                 showDebugError('search() hatası: ' + err.message + '\n' + (err.stack || ''));
             } finally {
@@ -219,7 +252,143 @@
             }
         }
 
-        function renderResults(top, totalCount, yuzdelik) {
+        function setupPersonalizeSliders() {
+            // Sadece mevcut sonuç kümesinde en az bir kurumda verisi olan
+            // kriterler için slider gösteriyoruz - hiç verisi olmayan bir
+            // kritere ağırlık verdirmek kullanıcıyı yanıltır.
+            const availableKeys = new Set();
+            lastMatches.forEach(m => Object.keys(m.allScores).forEach(k => availableKeys.add(k)));
+
+            const usable = PERSONALIZABLE_CRITERIA.filter(c => availableKeys.has(c.key));
+            const card = document.getElementById('personalizeCard');
+            if (usable.length === 0) {
+                card.classList.add('hidden');
+                return;
+            }
+            card.classList.remove('hidden');
+
+            document.getElementById('weightSliders').innerHTML = usable.map(c => `
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <label class="font-semibold text-brandDark">${c.label}</label>
+                        <span class="text-brandGray weight-val" data-for="${c.key}">Orta</span>
+                    </div>
+                    <input type="range" min="0" max="4" value="2" step="1" data-weight-key="${c.key}"
+                           class="weight-slider w-full accent-brandRed"
+                           oninput="document.querySelector('.weight-val[data-for=&quot;${c.key}&quot;]').textContent = ['Önemsiz','Az Önemli','Orta','Önemli','Çok Önemli'][this.value]">
+                </div>
+            `).join('');
+        }
+
+        async function personalizeResults() {
+            const btn = document.querySelector('#personalizeCard button');
+            btn.disabled = true;
+            btn.textContent = '⏳ Hesaplanıyor...';
+
+            // Slider değerleri (0-4) -> ağırlık (0,1,2,3,4). "Önemsiz" seçilen
+            // kriter tamamen dışlanır (ağırlık 0 = hesaplamaya katkısı olmaz).
+            const weights = {};
+            document.querySelectorAll('.weight-slider').forEach(s => {
+                weights[s.dataset.weightKey] = Number(s.value);
+            });
+
+            const ranked = lastMatches.map(m => {
+                let weightedSum = 0, weightTotal = 0, criteriaUsed = 0;
+                Object.entries(weights).forEach(([key, w]) => {
+                    if (w === 0) return;
+                    const entry = m.allScores[key];
+                    if (!entry) return; // bu kurumda bu kriter yok, atla
+                    weightedSum += entry.score * w;
+                    weightTotal += w;
+                    criteriaUsed++;
+                });
+                const matchScore = weightTotal > 0 ? weightedSum / weightTotal : null;
+                return { ...m, matchScore, criteriaUsed };
+            });
+
+            // Kişisel eşleşme skoru olanları öne al, olmayanları (hiç ortak
+            // kriteri olmayan kurumlar) en sona at ama listeden atmıyoruz.
+            ranked.sort((a, b) => {
+                if (a.matchScore === null && b.matchScore === null) return 0;
+                if (a.matchScore === null) return 1;
+                if (b.matchScore === null) return -1;
+                return b.matchScore - a.matchScore;
+            });
+
+            renderPersonalizedResults(ranked);
+
+            // Giriş yapılmışsa profili ve eşleştirme çalıştırmasını kaydet
+            // (eduscor-match-decision: kurumsal skor değişse bile bu kaydın
+            // anlamı bozulmasın diye o anki skorların "anlık görüntüsünü" de saklıyoruz)
+            const msgEl = document.getElementById('personalizeMsg');
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                if (session) {
+                    const { data: profile, error: profileErr } = await sb.from('user_preference_profiles')
+                        .upsert({
+                            user_id: session.user.id,
+                            profile_label: 'Tercih Sihirbazı - ' + new Date().toLocaleDateString('tr-TR'),
+                            criteria_weights: weights,
+                            hard_constraints: lastHardConstraints,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .select()
+                        .single();
+                    if (profileErr) throw profileErr;
+
+                    const snapshot = {};
+                    ranked.forEach(r => { snapshot[r.inst.id] = r.allScores; });
+
+                    await sb.from('match_runs').insert({
+                        user_preference_profile_id: profile.id,
+                        method: 'WSM_v1_partial_criteria',
+                        candidate_institution_ids: ranked.map(r => r.inst.id),
+                        result: ranked.map(r => ({ institution_id: r.inst.id, match_score: r.matchScore, criteria_used: r.criteriaUsed })),
+                        institution_score_snapshot: snapshot,
+                    });
+
+                    msgEl.textContent = '✓ Tercihleriniz kaydedildi, sonraki girişlerinizde hatırlanacak.';
+                    msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-green-50 text-green-700';
+                } else {
+                    msgEl.textContent = 'ℹ️ Sonuçlarınızı kaydetmek ve geçmişte görmek için giriş yapabilirsiniz (şu an sadece bu oturumda geçerli).';
+                    msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-slate-100 text-brandGray';
+                }
+            } catch (err) {
+                msgEl.textContent = 'Kaydetme hatası (sıralama yine de uygulandı): ' + err.message;
+                msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-amber-50 text-amber-700';
+            }
+            msgEl.classList.remove('hidden');
+
+            btn.disabled = false;
+            btn.textContent = '✨ Bana Göre Sırala';
+        }
+
+        function renderPersonalizedResults(ranked) {
+            const list = document.getElementById('resultsList');
+            list.innerHTML = ranked.map((m, idx) => {
+                const loc = m.inst.locations ? m.inst.locations.name : '';
+                const verifiedBadge = m.inst.is_verified
+                    ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
+                    : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+                const scoreDisplay = m.matchScore !== null
+                    ? `<div class="text-lg font-bold text-brandDark">${m.matchScore.toFixed(0)}<span class="text-xs font-normal text-brandGray">/100</span></div>
+                       <div class="text-[10px] text-brandGray uppercase tracking-wide">${m.criteriaUsed} kriterden hesaplandı</div>`
+                    : `<div class="text-xs text-brandGray italic">Ortak veri yok</div>`;
+                return `
+                    <a href="okul-detay.html?id=${m.inst.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
+                        <div class="w-10 h-10 rounded-full bg-brandDark text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
+                        <div class="flex-grow">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <h3 class="font-bold text-sm text-brandDark">${m.inst.name}</h3>
+                                ${verifiedBadge}
+                            </div>
+                            <p class="text-xs text-brandGray">📍 ${loc} · Taban dilim: %${m.yuzdelikDilim}</p>
+                        </div>
+                        <div class="text-right shrink-0">${scoreDisplay}</div>
+                    </a>
+                `;
+            }).join('');
+        }
             const section = document.getElementById('resultsSection');
             section.classList.remove('hidden');
 
