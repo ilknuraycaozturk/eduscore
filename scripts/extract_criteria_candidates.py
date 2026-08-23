@@ -39,6 +39,7 @@ import sys
 
 import requests
 import trafilatura
+from bs4 import BeautifulSoup
 
 MIN_CONFIDENCE_TO_SAVE = 0.6
 BATCH_SIZE = 200
@@ -83,6 +84,48 @@ RULES = [
     ("burs_ucret", "burs_sistemi_var", [r"\bburs\w*\b.{0,30}(veril|sunul|uygulan)"], 0.6, None),
     ("burs_ucret", "meb_ucretsiz_okuma", [r"MEB ücretsiz okuma"], 0.8, None),
 ]
+
+
+# ---------------------------------------------------------------------------
+# MEB k12.tr ŞABLONU: bu siteler serbest metin değil, SABİT ETİKET-DEĞER
+# TABLOSU kullanıyor (ör. "Öğretmen: 1", "Öğrenci: 7"). Bu, TED gibi özel
+# okul sitelerindeki serbest metinden çok daha güvenilir - MEB'in kendi
+# resmi beyanı, tahmin gerektirmiyor. Bu yüzden bu yoldan gelen adaylar
+# YÜKSEK güven puanıyla (0.9) kaydedilir.
+# ---------------------------------------------------------------------------
+def extract_meb_template_candidates(html: str):
+    """MEB k12.tr 'okulumuz_hakkinda.php' şablonundaki öğretmen/öğrenci
+    sayılarını okuyup gerçek öğrenci/öğretmen oranını hesaplar."""
+    found = []
+    try:
+        soup = BeautifulSoup(html, "html.parser")
+    except Exception:
+        return found
+
+    ogretmen, ogrenci = None, None
+    for span in soup.find_all("span"):
+        label = span.get_text(strip=True).rstrip(":").strip()
+        # Değer, span'ın hemen ardından gelen metin (aynı div içinde)
+        tail = span.next_sibling
+        value_text = (tail or "").strip() if isinstance(tail, str) else ""
+        if not value_text:
+            continue
+        if label == "Öğretmen" and value_text.isdigit():
+            ogretmen = int(value_text)
+        elif label == "Öğrenci" and value_text.isdigit():
+            ogrenci = int(value_text)
+
+    if ogretmen and ogrenci and ogretmen > 0:
+        oran = round(ogrenci / ogretmen, 1)
+        found.append({
+            "criteria_key": "ogretmen_kalitesi",
+            "field_id": "ogrenci_ogretmen_orani",
+            "candidate_value": str(oran),
+            "confidence": 0.9,
+            "evidence_snippet": f"MEB resmi tablo: Öğretmen={ogretmen}, Öğrenci={ogrenci} → oran={oran}",
+        })
+
+    return found
 
 
 def run_rules(main_text: str):
@@ -154,6 +197,7 @@ def main():
             continue
 
         candidates = run_rules(main_text)
+        candidates += extract_meb_template_candidates(snap["raw_html"])
         rows = []
         for c in candidates:
             rows.append({
