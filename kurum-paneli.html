@@ -228,9 +228,23 @@
             },
             burs_ucret: {
                 fields: [
-                    { id: 'burs_orani', type: 'number', label: 'Burslu öğrenci oranı (%)' },
+                    { id: 'burs_sistemi_var', type: 'checkbox', label: 'Okul burs/indirim sistemi sunuyor' },
+                    { id: 'en_yuksek_burs_orani', type: 'number', label: 'En yüksek burs/indirim oranı (%)' },
+                    { id: 'lgs_basari_bursu', type: 'checkbox', label: 'LGS/sınav başarısına dayalı burs var' },
+                    { id: 'meb_ucretsiz_okuma', type: 'checkbox', label: 'MEB ücretsiz okuma imkânı sunuluyor' },
+                    { id: 'taksitli_odeme', type: 'checkbox', label: 'Taksitli ödeme seçeneği var' },
                 ],
-                compute: (v) => Math.min(100, Math.round(Number(v.burs_orani) || 0)),
+                // v1 -> v2: Eski tasarım tek bir "burslu öğrenci oranı %" istiyordu, ama
+                // bu neredeyse hiçbir okulda yayınlanmıyor (TED Ankara Koleji ile gerçek
+                // veride test edilirken keşfedildi). Yeni tasarım, okulların kolayca
+                // beyan edebileceği somut mekanizmaları soruyor.
+                compute: (v) => Math.min(100, Math.round(
+                    (v.burs_sistemi_var ? 20 : 0) +
+                    Math.min(Number(v.en_yuksek_burs_orani) || 0, 100) * 0.4 +
+                    (v.lgs_basari_bursu ? 15 : 0) +
+                    (v.meb_ucretsiz_okuma ? 15 : 0) +
+                    (v.taksitli_odeme ? 10 : 0)
+                )),
             },
         };
 
