@@ -148,6 +148,34 @@ const I18N_DICT = {
         tr: "Sınıf mevcudiyet standartları, teknolojik altyapı, laboratuvar ve yeşil alan rasyoları analiz edilir.",
         en: "Classroom capacity standards, technological infrastructure, laboratory and green space ratios are analyzed.",
     },
+
+    // --- nasil-calisir.html: Yeni hesaplama mantığı bölümü (23 Ağustos 2026) ---
+    h2_kriterler: { tr: "2. Kriterler Kararınızı Nasıl Destekler", en: "2. How Criteria Support Your Decision" },
+    how_criteria_intro: {
+        tr: 'Her kurum <b>9 somut kriterde</b> değerlendirilir: Akademik Başarı, Yabancı Dil Eğitimi, Üniversiteye Yerleştirme, Fiziksel Altyapı, Sosyal/Kültürel Etkinlikler, Öğretmen Kalitesi, Güvenlik/Disiplin, Konum/Ulaşım, Burs/Ücret. Kurumlardan öznel bir puan ("kendinizi 100 üzerinden değerlendirin") istemiyoruz — bunun yerine <b>somut, doğrulanabilir gerçekler</b> soruyoruz (ör. "haftalık kaç saat yabancı dil dersi var?", "kamera sistemi var mı?"). Skoru bu gerçeklerden, sabit ve şeffaf bir formülle biz hesaplıyoruz.',
+        en: 'Every institution is evaluated on <b>9 concrete criteria</b>: Academic Achievement, Foreign Language Education, University Placement, Physical Infrastructure, Social/Cultural Activities, Teacher Quality, Security/Discipline, Location/Transport, Scholarships/Fees. We don\'t ask institutions for a subjective score ("rate yourself out of 100") — instead we ask <b>concrete, verifiable facts</b> (e.g. "how many hours of foreign language instruction per week?", "is there a camera system?"). We compute the score from these facts using a fixed, transparent formula.',
+    },
+    how_formula_label: { tr: "Formül", en: "Formula" },
+    how_formula_text: {
+        tr: "Kurum Skoru = Σ(Kriter Puanı × Sabit Ağırlık) / Σ(Sabit Ağırlık)",
+        en: "Institution Score = Σ(Criterion Score × Fixed Weight) / Σ(Fixed Weight)",
+    },
+    how_formula_note: {
+        tr: "— sadece VERİSİ OLAN kriterler üzerinden hesaplanır.",
+        en: "— calculated only over criteria for which data EXISTS.",
+    },
+    how_missing_criteria: {
+        tr: '<b>Eksik kriterler asla "0 puan" sayılmaz</b> — hesaplamaya hiç dahil edilmez. Her kurum sayfasında, skorun kaç kriterden (9 üzerinden) hesaplandığını ve buna bağlı güven seviyesini (Düşük / Sınırlı / Orta) her zaman görürsünüz.',
+        en: '<b>Missing criteria are never counted as "0 points"</b> — they are simply excluded from the calculation. On every institution page, you always see how many of the 9 criteria the score is based on, along with the corresponding confidence level (Low / Limited / Medium).',
+    },
+    how_personalization: {
+        tr: "<b>Kişiselleştirme:</b> Tercih Sihirbazı'nda, LGS yerleşim filtresinden sonra, kalan kriterleri KENDİ önceliklerinize göre (Önemsiz → Çok Önemli) ağırlıklandırabilirsiniz. Bu kişisel sıralama, kurumun resmi skorunu asla değiştirmez — ayrı ve size özel bir hesaplamadır.",
+        en: "<b>Personalization:</b> In the Preference Wizard, after the LGS placement filter, you can weight the remaining criteria according to YOUR OWN priorities (Unimportant → Very Important). This personal ranking never changes the institution's official score — it's a separate, personalized calculation just for you.",
+    },
+    how_oecd_note: {
+        tr: '<b>OECD referansı:</b> 9 kriterin boyut yapısı, OECD\'nin <i>Education at a Glance</i> ve PISA çerçevelerindeki çok boyutlu gösterge mantığından esinlenilmiştir. OECD\'nin okulları tek bir sayısal skorla sıralayan resmî, onaylı bir formülü <b>yoktur</b> — skorlama modelimiz kendi başına deneysel ve pilot doğrulaması süren bir sistemdir. Detaylar için <a href="metodoloji.html" class="underline font-semibold">Metodoloji</a> sayfasına bakabilirsiniz.',
+        en: '<b>OECD reference:</b> The dimension structure of the 9 criteria is inspired by the multi-dimensional indicator logic in OECD\'s <i>Education at a Glance</i> and PISA frameworks. OECD does <b>not</b> have an official, endorsed formula that ranks schools with a single numerical score — our scoring model is itself experimental and undergoing pilot validation. See the <a href="metodoloji.html" class="underline font-semibold">Methodology</a> page for details.',
+    },
 };
 
 function getLang() {
