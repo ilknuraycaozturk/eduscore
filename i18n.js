@@ -256,10 +256,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // sayfadan sayfaya farklı olduğunda dropdown header'la çakışır ("kayma").
     const header = document.querySelector("header");
     function positionMobileMenu() {
-        if (header) {
-            mobileLinks.style.top = header.offsetHeight + "px";
-            mobileLinks.style.height = "calc(100vh - " + header.offsetHeight + "px)";
-        }
+        if (header) mobileLinks.style.top = header.offsetHeight + "px";
+        // NOT: Tam ekran yükseklik KASITLI OLARAK kaldırıldı - menü sadece
+        // link kadar yer kaplasın, alttaki sayfa içeriği (kartlar vb.) görünür kalsın.
     }
     positionMobileMenu();
     window.addEventListener("resize", positionMobileMenu);
