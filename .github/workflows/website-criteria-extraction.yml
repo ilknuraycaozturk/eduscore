@@ -1,0 +1,54 @@
+name: Kurum Web Sitesi Kriter Çıkarımı (Fetch + Extract)
+
+on:
+  schedule:
+    # Her gün 11:00 TR saati (08:00 UTC) - website'li kurum sayısı henüz az
+    # olduğu için günlük modda başlıyor. Diğer scraper'lardaki gibi, kurum
+    # sayısı büyüdükçe aylık moda geçirilmesi değerlendirilmeli.
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      run_fetch:
+        description: 'Fetch fazını çalıştır (ağa çıkar, yeni siteleri tarar)'
+        type: boolean
+        default: true
+      run_extract:
+        description: 'Extract fazını çalıştır (sadece kayıtlı snapshot''ları işler, ağa çıkmaz)'
+        type: boolean
+        default: true
+
+jobs:
+  fetch:
+    if: ${{ github.event_name == 'schedule' || inputs.run_fetch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bağımlılıkları kur
+        run: pip install requests beautifulsoup4
+      - name: Web sitelerini kibarca tara (FETCH fazı)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/derive_criteria_from_website.py
+
+  extract:
+    needs: [fetch]
+    if: ${{ always() && (github.event_name == 'schedule' || inputs.run_extract) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bağımlılıkları kur
+        run: pip install requests trafilatura
+      - name: Kayıtlı snapshot'lardan aday gösterge çıkar (EXTRACT fazı, ağa çıkmaz)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/extract_criteria_candidates.py
