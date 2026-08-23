@@ -256,7 +256,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // sayfadan sayfaya farklı olduğunda dropdown header'la çakışır ("kayma").
     const header = document.querySelector("header");
     function positionMobileMenu() {
-        if (header) mobileLinks.style.top = header.offsetHeight + "px";
+        if (header) {
+            mobileLinks.style.top = header.offsetHeight + "px";
+            mobileLinks.style.height = "calc(100vh - " + header.offsetHeight + "px)";
+        }
     }
     positionMobileMenu();
     window.addEventListener("resize", positionMobileMenu);
