@@ -38,7 +38,25 @@ const I18N_DICT = {
     search_location_placeholder: { tr: "İl, ilçe veya mahalle...", en: "Province, district or neighborhood..." },
     search_query_placeholder: { tr: "Kurum adı veya anahtar kelime...", en: "School name or keyword..." },
     search_submit: { tr: "Sorgula", en: "Search" },
-    search_near_me: { tr: "📍 Yakınımda Ara", en: "📍 Search Near Me" },
+    search_near_me: { tr: "Yakınımda Ara", en: "Search Near Me" },
+    search_near_me_selected: { tr: "📍 Yakınımda Ara (seçili)", en: "📍 Search Near Me (selected)" },
+    search_step_segment: { tr: "Kurum / Segment Tipi", en: "Institution / Segment Type" },
+    search_step_location: { tr: "Bölge / Konum", en: "Region / Location" },
+    search_step_query: { tr: "Tercih Detayı", en: "Preference Detail" },
+    search_segment_placeholder: { tr: "Segment Seçin", en: "Select a Segment" },
+    search_segment_notice: {
+        tr: '🔜 Bu segment için veri aktarımı henüz devam ediyor — şu an en kapsamlı verimiz <b>Lise</b>, <b>Ortaokul</b>, <b>İlkokul</b> ve <b>Anaokulu</b> için.',
+        en: '🔜 Data collection for this segment is still in progress — our most comprehensive data currently covers <b>High School</b>, <b>Middle School</b>, <b>Primary School</b>, and <b>Preschool</b>.',
+    },
+    seg_preschool: { tr: "01. Okul Öncesi / Anaokulu", en: "01. Preschool / Kindergarten" },
+    seg_primary: { tr: "02. İlkokul", en: "02. Primary School" },
+    seg_middle: { tr: "03. Ortaokul", en: "03. Middle School" },
+    seg_high: { tr: "04. Lise", en: "04. High School" },
+    radius_5: { tr: "5 km içinde", en: "Within 5 km" },
+    radius_10: { tr: "10 km içinde", en: "Within 10 km" },
+    radius_20: { tr: "20 km içinde", en: "Within 20 km" },
+    radius_50: { tr: "50 km içinde", en: "Within 50 km" },
+    radius_unlimited: { tr: "Sınırsız (sadece sırala)", en: "Unlimited (sort only)" },
 
     // --- Genel Butonlar ---
     btn_view_details: { tr: "Detayları Gör", en: "View Details" },
@@ -135,6 +153,12 @@ function applyI18n() {
 
     document.querySelectorAll("[data-i18n]").forEach((el) => {
         el.textContent = t(el.getAttribute("data-i18n"));
+    });
+    // data-i18n-html: çeviri HTML içeriyorsa (ör. <b>kalın</b>) innerHTML kullanılır.
+    // Sadece sözlükteki sabit, geliştirici tarafından yazılan metinler için -
+    // asla kullanıcı girdisiyle doldurulmaz (XSS riski yok).
+    document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+        el.innerHTML = t(el.getAttribute("data-i18n-html"));
     });
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
         el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
