@@ -64,6 +64,57 @@
                 </div>
             </div>
 
+            <!-- Kurum Bilgileri: Web Sitesi, Ücretler, Değerlendirme Kriterleri -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4">
+                <p class="text-xs text-brandGray uppercase tracking-wide font-bold mb-1">Kurum Bilgileriniz</p>
+                <p class="font-bold text-brandDark mb-1">Web Sitesi ve Ücret Bilgileri</p>
+                <p class="text-xs text-brandGray mb-4">Bu bilgiler kurum yöneticisi beyanı olarak işaretlenir ve bağımsız doğrulama sürecine tabidir.</p>
+
+                <label class="block text-xs font-semibold text-brandDark mb-1">Web Sitesi</label>
+                <input type="url" id="institutionWebsite" placeholder="https://ornekokul.k12.tr" class="w-full mb-3 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+
+                <div class="grid grid-cols-2 gap-2 mb-1">
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Eğitim Ücreti (₺/yıl)</label>
+                        <input type="number" id="ucretEgitim" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Yemek Ücreti (₺/yıl)</label>
+                        <input type="number" id="ucretYemek" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Servis Ücreti (₺/yıl)</label>
+                        <input type="number" id="ucretServis" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Kitap/Materyal (₺/yıl)</label>
+                        <input type="number" id="ucretKitap" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Kıyafet (₺/yıl)</label>
+                        <input type="number" id="ucretKiyafet" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Etüt/Kurs (₺/yıl)</label>
+                        <input type="number" id="ucretEtutKurs" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Diğer (₺/yıl)</label>
+                        <input type="number" id="ucretDiger" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brandDark mb-1">Ücret Yılı</label>
+                        <input type="number" id="ucretYili" placeholder="2026" value="2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed">
+                    </div>
+                </div>
+
+                <p class="text-xs text-brandGray uppercase tracking-wide font-bold mt-5 mb-2">Değerlendirme Kriterleri (0–100)</p>
+                <div id="criteriaInputs" class="space-y-3"></div>
+
+                <button id="saveInstitutionInfoBtn" class="mt-4 w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm py-2.5 rounded-full transition-all">Kaydet</button>
+                <p id="saveInfoMsg" class="hidden text-xs mt-3 rounded-lg p-2"></p>
+            </div>
+
             <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-3">Bekleyen Mezun Bildirimleri</h2>
             <div id="submissionsList" class="space-y-3"></div>
             <p id="emptyMsg" class="hidden text-sm text-brandGray text-center py-8">Şu an bekleyen bir gönderim yok.</p>
@@ -83,7 +134,7 @@
             const { data: claims } = await sb.from('institution_claims')
                 .select('institution_id, institutions ( id, name )')
                 .eq('user_id', session.user.id)
-                .eq('status', 'approved')
+                .eq('status', 'onaylandi')
                 .limit(1);
 
             if (!claims || !claims.length) {
@@ -97,7 +148,112 @@
 
             await loadSubmissions(institutionId);
             await loadMfaStatus();
+            await loadInstitutionInfo(institutionId);
         }
+
+        // --- Kurum Bilgileri: Web Sitesi, Ücretler, Kriter Skorları ---
+        let currentInstitutionId = null;
+        let currentCriteria = [];
+
+        async function loadInstitutionInfo(institutionId) {
+            currentInstitutionId = institutionId;
+
+            const { data: inst } = await sb.from('institutions')
+                .select('website, ucret_egitim, ucret_yemek, ucret_servis, ucret_kitap, ucret_kiyafet, ucret_etut_kurs, ucret_diger, ucret_yili')
+                .eq('id', institutionId)
+                .single();
+
+            if (inst) {
+                document.getElementById('institutionWebsite').value = inst.website || '';
+                document.getElementById('ucretEgitim').value = inst.ucret_egitim ?? '';
+                document.getElementById('ucretYemek').value = inst.ucret_yemek ?? '';
+                document.getElementById('ucretServis').value = inst.ucret_servis ?? '';
+                document.getElementById('ucretKitap').value = inst.ucret_kitap ?? '';
+                document.getElementById('ucretKiyafet').value = inst.ucret_kiyafet ?? '';
+                document.getElementById('ucretEtutKurs').value = inst.ucret_etut_kurs ?? '';
+                document.getElementById('ucretDiger').value = inst.ucret_diger ?? '';
+                document.getElementById('ucretYili').value = inst.ucret_yili ?? 2026;
+            }
+
+            const { data: criteria } = await sb.from('scoring_criteria')
+                .select('id, key, name_tr, description')
+                .order('display_order');
+            currentCriteria = criteria || [];
+
+            const { data: existingScores } = await sb.from('institution_criteria_scores')
+                .select('criteria_id, score')
+                .eq('institution_id', institutionId);
+            const scoreMap = {};
+            (existingScores || []).forEach(s => { scoreMap[s.criteria_id] = s.score; });
+
+            const container = document.getElementById('criteriaInputs');
+            container.innerHTML = currentCriteria.map(c => `
+                <div>
+                    <label class="block text-xs font-semibold text-brandDark mb-1">${c.name_tr}</label>
+                    <p class="text-[11px] text-brandGray mb-1">${c.description || ''}</p>
+                    <input type="number" min="0" max="100" data-criteria-id="${c.id}" class="criteria-input w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed" placeholder="0-100" value="${scoreMap[c.id] ?? ''}">
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('saveInstitutionInfoBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveInstitutionInfoBtn');
+            const msgEl = document.getElementById('saveInfoMsg');
+            btn.disabled = true;
+            btn.textContent = 'Kaydediliyor...';
+
+            const toNum = (id) => {
+                const v = document.getElementById(id).value;
+                return v === '' ? null : Number(v);
+            };
+
+            const { error: instError } = await sb.from('institutions').update({
+                website: document.getElementById('institutionWebsite').value || null,
+                ucret_egitim: toNum('ucretEgitim'),
+                ucret_yemek: toNum('ucretYemek'),
+                ucret_servis: toNum('ucretServis'),
+                ucret_kitap: toNum('ucretKitap'),
+                ucret_kiyafet: toNum('ucretKiyafet'),
+                ucret_etut_kurs: toNum('ucretEtutKurs'),
+                ucret_diger: toNum('ucretDiger'),
+                ucret_yili: toNum('ucretYili'),
+            }).eq('id', currentInstitutionId);
+
+            const criteriaInputs = document.querySelectorAll('.criteria-input');
+            const upserts = [];
+            criteriaInputs.forEach(input => {
+                if (input.value === '') return;
+                const score = Number(input.value);
+                if (score < 0 || score > 100) return;
+                upserts.push({
+                    institution_id: currentInstitutionId,
+                    criteria_id: input.dataset.criteriaId,
+                    score: score,
+                    source_note: 'Kurum yöneticisi beyanı (kurum-paneli.html)',
+                    is_verified: false,
+                    trust_verification_status: 'pending',
+                });
+            });
+
+            let criteriaError = null;
+            if (upserts.length > 0) {
+                const { error } = await sb.from('institution_criteria_scores')
+                    .upsert(upserts, { onConflict: 'institution_id,criteria_id' });
+                criteriaError = error;
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Kaydet';
+
+            if (instError || criteriaError) {
+                msgEl.textContent = 'Hata: ' + (instError?.message || criteriaError?.message);
+                msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-red-50 text-red-700';
+            } else {
+                msgEl.textContent = '✓ Kaydedildi. Bilgileriniz "doğrulama bekliyor" durumunda işaretlendi.';
+                msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-green-50 text-green-700';
+            }
+            msgEl.classList.remove('hidden');
+        });
 
         // --- MFA (TOTP) Durumu ve Kurulum ---
         let currentTotpFactorId = null;
@@ -240,3 +396,4 @@
 
 </body>
 </html>
+
