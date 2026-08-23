@@ -108,8 +108,9 @@
                     </div>
                 </div>
 
-                <p class="text-xs text-brandGray uppercase tracking-wide font-bold mt-5 mb-2">Değerlendirme Kriterleri (0–100)</p>
-                <div id="criteriaInputs" class="space-y-3"></div>
+                <p class="text-xs text-brandGray uppercase tracking-wide font-bold mt-5 mb-2">Değerlendirme Göstergeleri</p>
+                <p class="text-[11px] text-brandGray mb-3">Somut rakam/işaret girin — puanı sistem otomatik hesaplar.</p>
+                <div id="criteriaInputs" class="space-y-4"></div>
 
                 <button id="saveInstitutionInfoBtn" class="mt-4 w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm py-2.5 rounded-full transition-all">Kaydet</button>
                 <p id="saveInfoMsg" class="hidden text-xs mt-3 rounded-lg p-2"></p>
@@ -155,6 +156,84 @@
         let currentInstitutionId = null;
         let currentCriteria = [];
 
+        // --- Kriter → Somut Gösterge Eşleşmesi ve Hesaplama Formülleri ---
+        // NOT: Bunlar HİPOTEZ formüllerdir (eduscor-scoring-model), henüz pilot veriyle
+        // doğrulanmamıştır. Kurum, ham gösterge (sayı/evet-hayır) girer; skoru sistem hesaplar.
+        const AUTOMATIC_CRITERIA = ['akademik_basari', 'universite_yerlestirme', 'konum_ulasim'];
+
+        const INDICATOR_CONFIG = {
+            yabanci_dil: {
+                fields: [
+                    { id: 'hazirlik_sinifi', type: 'checkbox', label: 'Hazırlık sınıfı var' },
+                    { id: 'haftalik_saat', type: 'number', label: 'Haftalık yabancı dil ders saati' },
+                    { id: 'ikinci_dil', type: 'checkbox', label: 'İkinci yabancı dil sunuluyor' },
+                    { id: 'uluslararasi_program', type: 'checkbox', label: 'IB / Cambridge gibi uluslararası program var' },
+                ],
+                compute: (v) => Math.min(100, Math.round(
+                    (v.hazirlik_sinifi ? 25 : 0) +
+                    Math.min(Number(v.haftalik_saat) || 0, 10) * 3 +
+                    (v.ikinci_dil ? 20 : 0) +
+                    (v.uluslararasi_program ? 25 : 0)
+                )),
+            },
+            fiziksel_altyapi: {
+                fields: [
+                    { id: 'lab_sayisi', type: 'number', label: 'Laboratuvar sayısı (fen/bilgisayar/dil toplam)' },
+                    { id: 'kutuphane', type: 'checkbox', label: 'Kütüphane var' },
+                    { id: 'spor_salonu', type: 'checkbox', label: 'Kapalı spor salonu var' },
+                    { id: 'akilli_tahta', type: 'checkbox', label: 'Tüm sınıflarda akıllı tahta var' },
+                ],
+                compute: (v) => Math.min(100, Math.round(
+                    Math.min(Number(v.lab_sayisi) || 0, 4) * 10 +
+                    (v.kutuphane ? 20 : 0) +
+                    (v.spor_salonu ? 20 : 0) +
+                    (v.akilli_tahta ? 20 : 0)
+                )),
+            },
+            sosyal_kulturel: {
+                fields: [
+                    { id: 'kulup_sayisi', type: 'number', label: 'Aktif öğrenci kulübü sayısı' },
+                    { id: 'yillik_etkinlik', type: 'number', label: 'Yıllık düzenlenen etkinlik/proje sayısı' },
+                    { id: 'yarisma_katilimi', type: 'checkbox', label: 'Ulusal/uluslararası yarışmalara düzenli katılım var' },
+                ],
+                compute: (v) => Math.min(100, Math.round(
+                    Math.min(Number(v.kulup_sayisi) || 0, 10) * 5 +
+                    Math.min(Number(v.yillik_etkinlik) || 0, 10) * 3 +
+                    (v.yarisma_katilimi ? 20 : 0)
+                )),
+            },
+            ogretmen_kalitesi: {
+                fields: [
+                    { id: 'ogrenci_ogretmen_orani', type: 'number', label: 'Öğrenci / öğretmen oranı (örn. 12)' },
+                    { id: 'yuksek_lisans_orani', type: 'number', label: 'Yüksek lisans/doktoralı öğretmen oranı (%)' },
+                ],
+                compute: (v) => {
+                    const oran = Number(v.ogrenci_ogretmen_orani) || 30;
+                    const oranPuan = oran <= 10 ? 50 : Math.max(10, 50 - (oran - 10) * 2);
+                    const lisansPuan = Math.min(Number(v.yuksek_lisans_orani) || 0, 100) * 0.5;
+                    return Math.min(100, Math.round(oranPuan + lisansPuan));
+                },
+            },
+            guvenlik_disiplin: {
+                fields: [
+                    { id: 'kamera_sistemi', type: 'checkbox', label: 'Kampüs geneli kamera sistemi var' },
+                    { id: 'guvenlik_personeli', type: 'checkbox', label: 'Sürekli güvenlik personeli var' },
+                    { id: 'yazili_yonetmelik', type: 'checkbox', label: 'Yazılı disiplin yönetmeliği yayınlanmış' },
+                ],
+                compute: (v) => Math.min(100, Math.round(
+                    (v.kamera_sistemi ? 35 : 0) +
+                    (v.guvenlik_personeli ? 35 : 0) +
+                    (v.yazili_yonetmelik ? 30 : 0)
+                )),
+            },
+            burs_ucret: {
+                fields: [
+                    { id: 'burs_orani', type: 'number', label: 'Burslu öğrenci oranı (%)' },
+                ],
+                compute: (v) => Math.min(100, Math.round(Number(v.burs_orani) || 0)),
+            },
+        };
+
         async function loadInstitutionInfo(institutionId) {
             currentInstitutionId = institutionId;
 
@@ -181,19 +260,43 @@
             currentCriteria = criteria || [];
 
             const { data: existingScores } = await sb.from('institution_criteria_scores')
-                .select('criteria_id, score')
+                .select('criteria_id, score, raw_indicators')
                 .eq('institution_id', institutionId);
             const scoreMap = {};
-            (existingScores || []).forEach(s => { scoreMap[s.criteria_id] = s.score; });
+            (existingScores || []).forEach(s => { scoreMap[s.criteria_id] = s; });
 
             const container = document.getElementById('criteriaInputs');
-            container.innerHTML = currentCriteria.map(c => `
-                <div>
-                    <label class="block text-xs font-semibold text-brandDark mb-1">${c.name_tr}</label>
-                    <p class="text-[11px] text-brandGray mb-1">${c.description || ''}</p>
-                    <input type="number" min="0" max="100" data-criteria-id="${c.id}" class="criteria-input w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-brandRed" placeholder="0-100" value="${scoreMap[c.id] ?? ''}">
-                </div>
-            `).join('');
+            container.innerHTML = currentCriteria.map(c => {
+                if (AUTOMATIC_CRITERIA.includes(c.key)) {
+                    return `
+                        <div class="border-l-2 border-slate-200 pl-3">
+                            <p class="text-xs font-semibold text-brandGray">${c.name_tr}</p>
+                            <p class="text-[11px] text-brandGray italic">Bu kriter otomatik veri kaynaklarından (LGS/YKS/konum) hesaplanır — kurum girişi gerekmez.</p>
+                        </div>`;
+                }
+                const config = INDICATOR_CONFIG[c.key];
+                if (!config) return '';
+                const existing = scoreMap[c.id];
+                const raw = existing?.raw_indicators || {};
+                const fieldsHtml = config.fields.map(f => {
+                    const val = raw[f.id];
+                    if (f.type === 'checkbox') {
+                        return `<label class="flex items-center gap-2 text-xs text-brandDark mb-1.5">
+                            <input type="checkbox" class="indicator-field" data-criteria-key="${c.key}" data-field-id="${f.id}" data-field-type="checkbox" ${val ? 'checked' : ''}>
+                            ${f.label}
+                        </label>`;
+                    }
+                    return `<div class="mb-1.5">
+                        <label class="block text-[11px] text-brandGray mb-0.5">${f.label}</label>
+                        <input type="number" min="0" class="indicator-field w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-brandRed" data-criteria-key="${c.key}" data-field-id="${f.id}" data-field-type="number" value="${val ?? ''}">
+                    </div>`;
+                }).join('');
+                return `
+                    <div class="border-l-2 border-brandRed/30 pl-3">
+                        <p class="text-xs font-bold text-brandDark mb-1">${c.name_tr} ${existing ? `<span class="text-brandGray font-normal">(hesaplanan skor: ${existing.score})</span>` : ''}</p>
+                        ${fieldsHtml}
+                    </div>`;
+            }).join('');
         }
 
         document.getElementById('saveInstitutionInfoBtn').addEventListener('click', async () => {
@@ -219,17 +322,35 @@
                 ucret_yili: toNum('ucretYili'),
             }).eq('id', currentInstitutionId);
 
-            const criteriaInputs = document.querySelectorAll('.criteria-input');
             const upserts = [];
-            criteriaInputs.forEach(input => {
-                if (input.value === '') return;
-                const score = Number(input.value);
-                if (score < 0 || score > 100) return;
+            currentCriteria.forEach(c => {
+                const config = INDICATOR_CONFIG[c.key];
+                if (!config) return; // otomatik kriter veya tanımsız - beyan alınmıyor
+
+                const fieldEls = document.querySelectorAll(`.indicator-field[data-criteria-key="${c.key}"]`);
+                if (!fieldEls.length) return;
+
+                const values = {};
+                let anyFilled = false;
+                fieldEls.forEach(el => {
+                    const fid = el.dataset.fieldId;
+                    if (el.dataset.fieldType === 'checkbox') {
+                        values[fid] = el.checked;
+                        if (el.checked) anyFilled = true;
+                    } else {
+                        values[fid] = el.value === '' ? null : Number(el.value);
+                        if (el.value !== '') anyFilled = true;
+                    }
+                });
+                if (!anyFilled) return; // hiçbir alan doldurulmadıysa bu kriteri atla
+
+                const computedScore = config.compute(values);
                 upserts.push({
                     institution_id: currentInstitutionId,
-                    criteria_id: input.dataset.criteriaId,
-                    score: score,
-                    source_note: 'Kurum yöneticisi beyanı (kurum-paneli.html)',
+                    criteria_id: c.id,
+                    score: computedScore,
+                    raw_indicators: values,
+                    source_note: 'Kurum yöneticisi beyanı — somut göstergelerden sistem tarafından hesaplandı (kurum-paneli.html)',
                     is_verified: false,
                     trust_verification_status: 'pending',
                 });
