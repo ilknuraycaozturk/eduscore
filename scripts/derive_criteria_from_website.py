@@ -191,6 +191,18 @@ def crawl_institution(inst, base_url, headers, session):
     return saved
 
 
+def get_progress(base_url, headers, key, default):
+    try:
+        rows = pg_get(base_url, headers, f"/rest/v1/scrape_progress?key=eq.{key}&select=value")
+        return rows[0]["value"] if rows else default
+    except Exception:
+        return default
+
+
+def set_progress(base_url, headers, key, value):
+    pg_upsert(base_url, headers, "scrape_progress", [{"key": key, "value": str(value)}], "key")
+
+
 def main():
     base_url = os.environ.get("SUPABASE_URL")
     service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -205,10 +217,33 @@ def main():
     }
     session = requests.Session()
 
-    institutions = pg_get(base_url, headers,
-                           f"/rest/v1/institutions?website=not.is.null&select=id,name,website&limit={MAX_INSTITUTIONS_PER_RUN}")
+    # İlerleme takibi: mevcut MEB/LGS/YKS scraper'larıyla aynı desen (scrape_progress).
+    # Her çalıştırma AYNI ilk N kurumu değil, kaldığı yerden devam eder. Tüm
+    # website'li kurumlar bir tur tamamlanınca (wrap) baştan başlar - içerik
+    # hash kontrolü sayesinde değişmeyen sayfalar tekrar yazılmaz, sadece
+    # değişenler güncellenir (kibarlık ilkesiyle tutarlı, gereksiz DB yazması yok).
+    offset = int(get_progress(base_url, headers, "kriter_crawl_offset", 0))
 
-    print(f"{len(institutions)} kurum işlenecek (bu çalıştırmada, max {MAX_INSTITUTIONS_PER_RUN}).")
+    count_headers = dict(headers)
+    count_headers["Prefer"] = "count=exact"
+    count_resp = requests.get(
+        f"{base_url}/rest/v1/institutions?website=not.is.null&select=id&limit=1",
+        headers=count_headers, timeout=30,
+    )
+    total_count = 0
+    if "content-range" in count_resp.headers:
+        total_count = int(count_resp.headers["content-range"].split("/")[-1])
+
+    if total_count and offset >= total_count:
+        offset = 0  # tam tur tamamlandı, baştan başla
+
+    institutions = pg_get(
+        base_url, headers,
+        f"/rest/v1/institutions?website=not.is.null&select=id,name,website"
+        f"&order=id&limit={MAX_INSTITUTIONS_PER_RUN}&offset={offset}",
+    )
+
+    print(f"{len(institutions)} kurum işlenecek (offset={offset}/{total_count}, max {MAX_INSTITUTIONS_PER_RUN}).")
 
     total_saved = 0
     for inst in institutions:
@@ -221,7 +256,13 @@ def main():
             print(f"  ✗ Hata: {exc}")
         time.sleep(POLITENESS_DELAY_SEC)
 
-    print(f"\nToplam: {total_saved} sayfa snapshot'ı kaydedildi.")
+    new_offset = offset + len(institutions)
+    if total_count and new_offset >= total_count:
+        new_offset = 0
+        print("\n✅ Tüm website'li kurumlar bir tur tamamlandı, offset sıfırlandı.")
+    set_progress(base_url, headers, "kriter_crawl_offset", new_offset)
+
+    print(f"\nToplam: {total_saved} sayfa snapshot'ı kaydedildi. Sıradaki offset: {new_offset}")
 
 
 if __name__ == "__main__":
