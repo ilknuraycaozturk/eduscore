@@ -31,17 +31,26 @@
         thead th { color: #8A7A72; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #EAE0D9; }
         tbody tr { border-bottom: 1px solid #F3ECE7; }
     </style>
+    <style>
+        .eduscor-nav-container { max-width:1280px; margin:0 auto; padding:20px 40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+        .eduscor-logo { font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#3D2D27; text-decoration:none; display:inline-flex; align-items:center; }
+        .eduscor-logo span { color:#E8543A; }
+        .nav-link { text-decoration:none; color:#3D2D27; font-weight:500; font-size:15px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); position:relative; }
+        .nav-link:hover, .nav-link.active { color:#E8543A; }
+        .nav-link::after { content:''; position:absolute; bottom:-6px; left:0; width:0; height:2px; background-color:#E8543A; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); border-radius:2px; }
+        .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
 
-    <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-y-2 fixed top-0 left-0 z-50">
-        <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 fixed top-0 left-0 z-50"><div class="eduscor-nav-container">
+        <a href="index.html" class="eduscor-logo">Edu<span>Scor</span></a>
         <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold">
-            <a href="index.html" class="text-brandGray hover:text-brandDark transition-colors">🏠 Ana Sayfa</a>
-            <a href="nasil-calisir.html" class="text-brandGray hover:text-brandDark transition-colors">❓ Nasıl Çalışır?</a>
-            <a href="explorer.html" class="text-brandGray hover:text-brandDark transition-colors">🔍 Genel Arama</a>
+            <a href="index.html" class="nav-link">🏠 Ana Sayfa</a>
+            <a href="nasil-calisir.html" class="nav-link">❓ Nasıl Çalışır?</a>
+            <a href="explorer.html" class="nav-link">🔍 Genel Arama</a>
         </div>
-    </header>
+    </div></header>
 
     <main class="max-w-3xl mx-auto px-4 py-10" style="margin-top:88px;">
 
