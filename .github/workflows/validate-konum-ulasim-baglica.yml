@@ -1,0 +1,31 @@
+name: Konum/Ulaşım Kriteri Doğrulama - Bağlıca Örneklemi (10 kurum)
+
+on:
+  workflow_dispatch:
+    # Sadece manuel tetiklenir - otomatik cron yok. Bu, konum_ulasim kriterinin
+    # ücretsiz Nominatim + Overpass ile hesaplanabilirliğini test eden tek seferlik
+    # bir DOĞRULAMA çalıştırmasıdır. Veritabanına HİÇBİR ŞEY YAZMAZ.
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları kur
+        run: pip install requests
+
+      - name: Bağlıca örneklemini doğrula (Nominatim + Overpass, ücretsiz)
+        run: python scripts/validate_konum_ulasim_baglica.py
+
+      - name: Sonuç CSV'sini artifact olarak yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: baglica-konum-ulasim-validation
+          path: baglica_konum_ulasim_validation.csv
+          retention-days: 14
