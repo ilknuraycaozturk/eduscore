@@ -118,6 +118,36 @@ const I18N_DICT = {
         tr: "Her okul, yetiştirdiği başarılı isimlerle kanıtlanmış bir düğüm (node). Bir okula tıklayın, o okulun mezunlarını hangi kariyer başarılarına taşıdığını keşfedin.",
         en: "Every school is a proven node through the successful names it has produced. Click a school to discover the career achievements of its graduates.",
     },
+
+    // --- Ana Sayfa: Manifesto Kutusu ---
+    manifesto_title: { tr: "Eğitim Kararı Şansa Bırakılmaz", en: "Education Decisions Shouldn't Be Left to Chance" },
+    manifesto_subtitle: {
+        tr: "EduScor, eğitim kurumlarını ticari kaygılardan uzak, tamamen şeffaf ve bilimsel ağırlıklandırma algoritmalarıyla puanlar. Velilerin ve öğrencilerin doğru veriye ulaşmasını hedefler.",
+        en: "EduScor scores educational institutions free from commercial concerns, using fully transparent and scientific weighting algorithms. It aims to help parents and students reach accurate data.",
+    },
+    manifesto_edunode_title: { tr: "Öne Çıkan Başarı Hikayeleri", en: "Featured Success Stories" },
+    manifesto_edunode_subtitle: {
+        tr: "Hangi okul, hangi kariyere taşıdı? EduNode'da gerçek, doğrulanmış yolculukları keşfedin.",
+        en: "Which school led to which career? Discover real, verified journeys on EduNode.",
+    },
+    manifesto_edunode_cta: { tr: "Keşfet →", en: "Explore →" },
+
+    // --- Ana Sayfa: 3 Numaralı Kart ---
+    card1_title: { tr: "Akademik Gelişim", en: "Academic Development" },
+    card1_desc: {
+        tr: "Kurumların kitlesel başarı oranları, sınav çıktıları ve proje üretim kapasiteleri objektif metriklerle ölçülür.",
+        en: "Institutions' aggregate success rates, exam outcomes, and project output capacity are measured with objective metrics.",
+    },
+    card2_title: { tr: "Sosyal & Sosyo-Kültürel", en: "Social & Socio-Cultural" },
+    card2_desc: {
+        tr: "Sanat, spor and kulüp faaliyetlerinin çeşitliliği ile öğrencilerin sosyal ekosisteme katılım endeksleri puanlanır.",
+        en: "The diversity of arts, sports, and club activities, along with students' social ecosystem participation indices, are scored.",
+    },
+    card3_title: { tr: "Fiziksel Donanım", en: "Physical Infrastructure" },
+    card3_desc: {
+        tr: "Sınıf mevcudiyet standartları, teknolojik altyapı, laboratuvar ve yeşil alan rasyoları analiz edilir.",
+        en: "Classroom capacity standards, technological infrastructure, laboratory and green space ratios are analyzed.",
+    },
 };
 
 function getLang() {
