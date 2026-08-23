@@ -85,17 +85,17 @@ const I18N_DICT = {
     nav_genel_aramaya: { tr: "Genel aramaya", en: "to explore" },
 
     // --- Sayfa başlıkları (H1) ---
-    h1_edunode: { tr: "🕸️ EduNode — Okulların Kariyer Ağı", en: "🕸️ EduNode — Career Network of Schools" },
-    h1_favorilerim: { tr: "★ Favorilerim", en: "★ My Favorites" },
+    h1_edunode: { tr: "EduNode — Okulların Kariyer Ağı", en: "EduNode — Career Network of Schools" },
+    h1_favorilerim: { tr: "Favorilerim", en: "My Favorites" },
     h1_giris: { tr: "Giriş Yap", en: "Log In" },
     h1_gizlilik: { tr: "Gizlilik Politikası", en: "Privacy Policy" },
-    h1_istatistikler: { tr: "📊 Platform İstatistikleri", en: "📊 Platform Statistics" },
+    h1_istatistikler: { tr: "Platform İstatistikleri", en: "Platform Statistics" },
     h1_kayit: { tr: "Kayıt Ol", en: "Sign Up" },
-    h1_kurum_paneli: { tr: "🏫 Kurum Paneli", en: "🏫 Institution Panel" },
+    h1_kurum_paneli: { tr: "Kurum Paneli", en: "Institution Panel" },
     h1_kurumlar_icin: { tr: "Kurumunuzun Profilini Sahiplenin", en: "Claim Your Institution's Profile" },
-    h1_lise_skoru: { tr: "🎓 Lise Skoru Hesaplayıcı", en: "🎓 High School Score Calculator" },
+    h1_lise_skoru: { tr: "Lise Skoru Hesaplayıcı", en: "High School Score Calculator" },
     h1_nasil_calisir: { tr: "EduScor Nasıl Çalışır?", en: "How EduScor Works" },
-    h1_tercih_sihirbazi: { tr: "🧭 Lise Tercih Sihirbazı", en: "🧭 High School Preference Wizard" },
+    h1_tercih_sihirbazi: { tr: "Lise Tercih Sihirbazı", en: "High School Preference Wizard" },
 
     // --- Giriş paragrafları (H1'in hemen altındaki tanıtım metni) ---
     intro_nasil_calisir: {
