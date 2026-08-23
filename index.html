@@ -612,18 +612,18 @@
                 <div class="step-box">
                     <span class="step-label">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-                        Kurum / Segment Tipi
+                        <span data-i18n="search_step_segment">Kurum / Segment Tipi</span>
                     </span>
                     <div class="custom-select">
                         <select name="institution_segment" id="institutionSegmentSelect">
-                            <option value="" disabled selected>Segment Seçin</option>
+                            <option value="" disabled selected data-i18n="search_segment_placeholder">Segment Seçin</option>
                             
                             <!-- K-12 & Temel Eğitim -->
                             <optgroup label="Temel Eğitim Kademeleri">
-                                <option value="seg-preschool">01. Okul Öncesi / Anaokulu</option>
-                                <option value="seg-primary">02. İlkokul</option>
-                                <option value="seg-middle">03. Ortaokul</option>
-                                <option value="seg-high">04. Lise</option>
+                                <option value="seg-preschool" data-i18n="seg_preschool">01. Okul Öncesi / Anaokulu</option>
+                                <option value="seg-primary" data-i18n="seg_primary">02. İlkokul</option>
+                                <option value="seg-middle" data-i18n="seg_middle">03. Ortaokul</option>
+                                <option value="seg-high" data-i18n="seg_high">04. Lise</option>
                             </optgroup>
 
                             <!-- Yükseköğretim & Alternatif Modeller -->
@@ -659,7 +659,7 @@
                             </optgroup>
                         </select>
                     </div>
-                    <p id="segmentVeriYokNotice" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5 mt-1.5">
+                    <p id="segmentVeriYokNotice" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5 mt-1.5" data-i18n-html="search_segment_notice">
                         🔜 Bu segment için veri aktarımı henüz devam ediyor — şu an en kapsamlı verimiz <b>Lise</b>, <b>Ortaokul</b>, <b>İlkokul</b> ve <b>Anaokulu</b> için.
                     </p>
                 </div>
@@ -668,21 +668,21 @@
                 <div class="step-box">
                     <span class="step-label">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        Bölge / Konum
+                        <span data-i18n="search_step_location">Bölge / Konum</span>
                     </span>
                     <div class="custom-select">
                         <input type="text" name="location" data-i18n-placeholder="search_location_placeholder" placeholder="İl, ilçe veya mahalle..." autocomplete="off">
                     </div>
                     <button type="button" class="location-btn" id="nearMeBtn">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
-                        Yakınımda Ara
+                        <span data-i18n="search_near_me">Yakınımda Ara</span>
                     </button>
                     <select id="radiusSelect" style="font-size:11px; border:1px solid #E2D8D0; border-radius:8px; padding:4px 6px; margin-top:4px; color:#8A7A72;">
-                        <option value="5">5 km içinde</option>
-                        <option value="10" selected>10 km içinde</option>
-                        <option value="20">20 km içinde</option>
-                        <option value="50">50 km içinde</option>
-                        <option value="0">Sınırsız (sadece sırala)</option>
+                        <option value="5" data-i18n="radius_5">5 km içinde</option>
+                        <option value="10" selected data-i18n="radius_10">10 km içinde</option>
+                        <option value="20" data-i18n="radius_20">20 km içinde</option>
+                        <option value="50" data-i18n="radius_50">50 km içinde</option>
+                        <option value="0" data-i18n="radius_unlimited">Sınırsız (sadece sırala)</option>
                     </select>
                 </div>
 
@@ -700,7 +700,7 @@
                 <!-- Arama Butonu -->
                 <div class="search-action">
                     <button type="submit" class="search-submit">
-                        Sorgula
+                        <span data-i18n="search_submit">Sorgula</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                     </button>
                 </div>
