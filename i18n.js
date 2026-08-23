@@ -251,7 +251,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const mobileLinks = document.getElementById("mobileNavLinks");
     if (!menuToggle || !mobileLinks) return;
 
+    // ÖNEMLİ: Dropdown'ın üst konumu SABİT piksel yerine GERÇEK header
+    // yüksekliğinden hesaplanır - aksi halde header'ın kendi padding'i
+    // sayfadan sayfaya farklı olduğunda dropdown header'la çakışır ("kayma").
+    const header = document.querySelector("header");
+    function positionMobileMenu() {
+        if (header) mobileLinks.style.top = header.offsetHeight + "px";
+    }
+    positionMobileMenu();
+    window.addEventListener("resize", positionMobileMenu);
+
     menuToggle.addEventListener("click", () => {
+        positionMobileMenu();
         menuToggle.classList.toggle("active");
         mobileLinks.classList.toggle("active");
     });
