@@ -104,31 +104,42 @@
 
         <!-- 2. Puanlama Sistemi -->
         <section class="mb-10">
-            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">2. Kriterler Kararınızı Nasıl Destekler</h2>
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="h2_kriterler">2. Kriterler Kararınızı Nasıl Destekler</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <p class="text-sm text-brandGray mb-4">
-                    Amacımız "en iyi puan" değil, <b>size en uygun seçenek</b>. Bu yüzden tek bir sıralama yerine,
-                    her kurum tipi için birden çok kritere (akademik başarı, yabancı dil eğitimi, fiziksel altyapı vb.)
-                    ayrı ayrı ağırlık veriyoruz. Lise Skoru Hesaplayıcı'da siz de kendi önceliklerinize göre bu
-                    ağırlıkları değiştirebilirsiniz:
+                <p class="text-sm text-brandGray mb-4" data-i18n-html="how_criteria_intro">
+                    Her kurum <b>9 somut kriterde</b> değerlendirilir: Akademik Başarı, Yabancı Dil Eğitimi, Üniversiteye
+                    Yerleştirme, Fiziksel Altyapı, Sosyal/Kültürel Etkinlikler, Öğretmen Kalitesi, Güvenlik/Disiplin,
+                    Konum/Ulaşım, Burs/Ücret. Kurumlardan öznel bir puan ("kendinizi 100 üzerinden değerlendirin")
+                    istemiyoruz — bunun yerine <b>somut, doğrulanabilir gerçekler</b> soruyoruz (ör. "haftalık kaç saat
+                    yabancı dil dersi var?", "kamera sistemi var mı?"). Skoru bu gerçeklerden, sabit ve şeffaf bir
+                    formülle biz hesaplıyoruz.
                 </p>
                 <div class="bg-brandBg rounded-xl p-5 mb-4 border border-brandRed/10">
-                    <p class="text-[10px] uppercase tracking-wide text-brandGray mb-2 font-bold">Formül</p>
+                    <p class="text-[10px] uppercase tracking-wide text-brandGray mb-2 font-bold" data-i18n="how_formula_label">Formül</p>
                     <p class="text-sm sm:text-base font-mono text-brandDark leading-relaxed flex flex-wrap items-center gap-1">
-                        <span>Kişisel Skor = Σ (</span>
-                        <span class="tooltip-term relative inline-block border-b-2 border-dotted border-brandRed cursor-help font-semibold" data-tooltip="Bir okulun bu tek kriterdeki (örn. Akademik Başarı) ham puanı, 0-100 arası ölçeklenmiş.">Kriter Puanı</span>
-                        <span>×</span>
-                        <span class="tooltip-term relative inline-block border-b-2 border-dotted border-brandRed cursor-help font-semibold" data-tooltip="Bu kriterin, tüm veliler için ortalama önemini yansıtan varsayılan katsayı (örn. Akademik Başarı = 1.0).">Temel Ağırlık</span>
-                        <span>×</span>
-                        <span class="tooltip-term relative inline-block border-b-2 border-dotted border-brandRed cursor-help font-semibold" data-tooltip="Sizin bu kritere verdiğiniz 1-5 arası önem derecesine göre 0.50×-1.5× arasında değişen kişisel çarpan.">Aile Önem Çarpanı</span>
-                        <span>) / Σ Ağırlıklar</span>
+                        <span data-i18n="how_formula_text">Kurum Skoru = Σ(Kriter Puanı × Sabit Ağırlık) / Σ(Sabit Ağırlık)</span>
                     </p>
-                    <p class="text-[11px] text-brandGray mt-3">👆 Terimlerin üzerine gelin, ne anlama geldiğini görün.</p>
+                    <p class="text-[11px] text-brandGray mt-3" data-i18n="how_formula_note">— sadece VERİSİ OLAN kriterler üzerinden hesaplanır.</p>
                 </div>
-                <p class="text-xs text-brandGray">
-                    Önem derecenizi 1 (önemsiz) ile 5 (çok önemli) arasında seçtiğinizde, o kriterin ağırlığı buna göre
-                    0.50× ile 1.5× arasında yeniden hesaplanır. <b>Veri olmayan kriterler hesaplamaya hiç dahil edilmez</b> —
-                    hiçbir zaman tahmini/uydurma bir sayı göstermeyiz.
+                <p class="text-xs text-brandGray mb-4" data-i18n-html="how_missing_criteria">
+                    <b>Eksik kriterler asla "0 puan" sayılmaz</b> — hesaplamaya hiç dahil edilmez. Her kurum sayfasında,
+                    skorun kaç kriterden (9 üzerinden) hesaplandığını ve buna bağlı güven seviyesini
+                    (Düşük / Sınırlı / Orta) her zaman görürsünüz.
+                </p>
+                <p class="text-xs text-brandGray" data-i18n-html="how_personalization">
+                    <b>Kişiselleştirme:</b> Tercih Sihirbazı'nda, LGS yerleşim filtresinden sonra, kalan kriterleri
+                    KENDİ önceliklerinize göre (Önemsiz → Çok Önemli) ağırlıklandırabilirsiniz. Bu kişisel sıralama,
+                    kurumun resmi skorunu asla değiştirmez — ayrı ve size özel bir hesaplamadır.
+                </p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 mt-4">
+                <p class="text-xs text-amber-900" data-i18n-html="how_oecd_note">
+                    <b>OECD referansı:</b> 9 kriterin boyut yapısı, OECD'nin <i>Education at a Glance</i> ve PISA
+                    çerçevelerindeki çok boyutlu gösterge mantığından esinlenilmiştir. OECD'nin okulları tek bir
+                    sayısal skorla sıralayan resmî, onaylı bir formülü <b>yoktur</b> — skorlama modelimiz kendi
+                    başına deneysel ve pilot doğrulaması süren bir sistemdir. Detaylar için
+                    <a href="metodoloji.html" class="underline font-semibold">Metodoloji</a> sayfasına bakabilirsiniz.
                 </p>
             </div>
         </section>
