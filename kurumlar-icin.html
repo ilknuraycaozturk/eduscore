@@ -22,6 +22,22 @@
         .nav-link:hover, .nav-link.active { color:#E8543A; }
         .nav-link::after { content:''; position:absolute; bottom:-6px; left:0; width:0; height:2px; background-color:#E8543A; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); border-radius:2px; }
         .nav-link:hover::after, .nav-link.active::after { width:100%; }
+        .eduscor-menu-toggle { display:none; flex-direction:column; gap:5px; cursor:pointer; border:none; background:none; padding:4px; }
+        .eduscor-menu-toggle span { display:block; width:22px; height:2px; background-color:#3D2D27; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .eduscor-menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .eduscor-menu-toggle.active span:nth-child(2) { opacity: 0; }
+        .eduscor-menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        @media (max-width: 640px) {
+            .eduscor-menu-toggle { display:flex; }
+            .eduscor-mobile-links {
+                display:none; position:fixed; top:64px; left:0; width:100%;
+                background:#fff; flex-direction:column !important; align-items:flex-start !important;
+                padding:20px 24px; gap:16px !important; box-shadow:0 4px 10px rgba(0,0,0,0.08);
+                border-bottom:1px solid #F3EFEA; max-height:calc(100vh - 64px); overflow-y:auto;
+            }
+            .eduscor-mobile-links.active { display:flex; }
+        }
+
     </style>
     <script src="i18n.js"></script>
 </head>
@@ -31,12 +47,14 @@
 <div class="eduscor-nav-container">
 
         <a href="index.html" class="eduscor-logo">Edu<span>Scor</span></a>
-        <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold">
+        <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold eduscor-mobile-links" id="mobileNavLinks">
             <a href="index.html" class="nav-link" data-i18n="nav_home_emoji">Ana Sayfa</a>
             <a href="explorer.html" class="nav-link" data-i18n="nav_explorer_emoji">Genel Arama</a>
             <a href="giris.html" class="nav-link" data-i18n="nav_giris_yap">Giriş Yap</a>
         </div>
-    <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0;">EN</button></div></header>
+    <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0;">EN</button><button class="eduscor-menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
+        <span></span><span></span><span></span>
+    </button></div></header>
 
     <main class="max-w-3xl mx-auto px-4 py-12" style="margin-top:88px;">
 
