@@ -65,6 +65,41 @@ const I18N_DICT = {
     nav_geri_don: { tr: "← Geri dön", en: "← Go back" },
     nav_genel_aramaya_git: { tr: "Genel Aramaya Git →", en: "Go to Explore →" },
     nav_genel_aramaya: { tr: "Genel aramaya", en: "to explore" },
+
+    // --- Sayfa başlıkları (H1) ---
+    h1_edunode: { tr: "🕸️ EduNode — Okulların Kariyer Ağı", en: "🕸️ EduNode — Career Network of Schools" },
+    h1_favorilerim: { tr: "★ Favorilerim", en: "★ My Favorites" },
+    h1_giris: { tr: "Giriş Yap", en: "Log In" },
+    h1_gizlilik: { tr: "Gizlilik Politikası", en: "Privacy Policy" },
+    h1_istatistikler: { tr: "📊 Platform İstatistikleri", en: "📊 Platform Statistics" },
+    h1_kayit: { tr: "Kayıt Ol", en: "Sign Up" },
+    h1_kurum_paneli: { tr: "🏫 Kurum Paneli", en: "🏫 Institution Panel" },
+    h1_kurumlar_icin: { tr: "Kurumunuzun Profilini Sahiplenin", en: "Claim Your Institution's Profile" },
+    h1_lise_skoru: { tr: "🎓 Lise Skoru Hesaplayıcı", en: "🎓 High School Score Calculator" },
+    h1_nasil_calisir: { tr: "EduScor Nasıl Çalışır?", en: "How EduScor Works" },
+    h1_tercih_sihirbazi: { tr: "🧭 Lise Tercih Sihirbazı", en: "🧭 High School Preference Wizard" },
+
+    // --- Giriş paragrafları (H1'in hemen altındaki tanıtım metni) ---
+    intro_nasil_calisir: {
+        tr: "EduScor, eğitim kararlarını şansa bırakmamanız için kurulmuş bir platform. Nasıl arama yaptığımızı, puanları nasıl hesapladığımızı ve verilerimizin nereden geldiğini burada tam şeffaflıkla açıklıyoruz.",
+        en: "EduScor is a platform built so you don't leave education decisions to chance. Here we explain, with full transparency, how we search, how we calculate scores, and where our data comes from.",
+    },
+    intro_kurumlar_icin: {
+        tr: "EduScor'daki okulunuzun/kurumunuzun bilgilerini siz güncelleyin, \"Doğrulanmış\" rozetini kazanın ve velilere en doğru bilgiyi doğrudan siz ulaştırın.",
+        en: "Update your school's/institution's information on EduScor yourself, earn the \"Verified\" badge, and deliver the most accurate information to parents directly.",
+    },
+    intro_tercih_sihirbazi: {
+        tr: "LGS yüzdelik diliminizi ve tercihlerinizi girin, gerçekçi olarak yerleşebileceğiniz liseleri görün.",
+        en: "Enter your LGS percentile and preferences to see high schools you can realistically be placed into.",
+    },
+    intro_lise_skoru: {
+        tr: "Türkiye'deki liseleri, sizin için önemli olan kriterlere göre ağırlıklandırıp kişiselleştirilmiş bir sıralama oluşturuyoruz. Her kritere 1 (önemsiz) ile 5 (çok önemli) arası bir puan verin.",
+        en: "We weight high schools across Turkey according to the criteria that matter to you, creating a personalized ranking. Rate each criterion from 1 (unimportant) to 5 (very important).",
+    },
+    intro_edunode: {
+        tr: "Her okul, yetiştirdiği başarılı isimlerle kanıtlanmış bir düğüm (node). Bir okula tıklayın, o okulun mezunlarını hangi kariyer başarılarına taşıdığını keşfedin.",
+        en: "Every school is a proven node through the successful names it has produced. Click a school to discover the career achievements of its graduates.",
+    },
 };
 
 function getLang() {
