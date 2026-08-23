@@ -69,12 +69,12 @@ const I18N_DICT = {
     lang_toggle_label: { tr: "EN", en: "TR" }, // buton hep "diğer dile geç" yazar
 
     // --- Ortak nav linkleri (emoji dahil, tüm sayfalarda tekrarlanan) ---
-    nav_home_emoji: { tr: "🏠 Ana Sayfa", en: "🏠 Home" },
-    nav_explorer_emoji: { tr: "🔍 Genel Arama", en: "🔍 Explore" },
-    nav_lise_skoru_emoji: { tr: "🎓 Lise Skoru", en: "🎓 School Score" },
-    nav_tercih_sihirbazi_emoji: { tr: "🧭 Tercih Sihirbazı", en: "🧭 Preference Wizard" },
-    nav_edunode_emoji: { tr: "🕸️ EduNode", en: "🕸️ EduNode" },
-    nav_favorilerim_emoji: { tr: "★ Favorilerim", en: "★ My Favorites" },
+    nav_home_emoji: { tr: "Ana Sayfa", en: "Home" },
+    nav_explorer_emoji: { tr: "Genel Arama", en: "Explore" },
+    nav_lise_skoru_emoji: { tr: "Lise Skoru", en: "School Score" },
+    nav_tercih_sihirbazi_emoji: { tr: "Tercih Sihirbazı", en: "Preference Wizard" },
+    nav_edunode_emoji: { tr: "EduNode", en: "EduNode" },
+    nav_favorilerim_emoji: { tr: "Favorilerim", en: "My Favorites" },
     nav_giris_yap: { tr: "Giriş Yap", en: "Log In" },
     nav_zaten_hesabim_var: { tr: "Zaten hesabım var", en: "I already have an account" },
     nav_giris_sayfasina_don: { tr: "← Giriş sayfasına dön", en: "← Back to login" },
