@@ -176,6 +176,22 @@ const I18N_DICT = {
         tr: '<b>OECD referansı:</b> 9 kriterin boyut yapısı, OECD\'nin <i>Education at a Glance</i> ve PISA çerçevelerindeki çok boyutlu gösterge mantığından esinlenilmiştir. OECD\'nin okulları tek bir sayısal skorla sıralayan resmî, onaylı bir formülü <b>yoktur</b> — skorlama modelimiz kendi başına deneysel ve pilot doğrulaması süren bir sistemdir. Detaylar için <a href="metodoloji.html" class="underline font-semibold">Metodoloji</a> sayfasına bakabilirsiniz.',
         en: '<b>OECD reference:</b> The dimension structure of the 9 criteria is inspired by the multi-dimensional indicator logic in OECD\'s <i>Education at a Glance</i> and PISA frameworks. OECD does <b>not</b> have an official, endorsed formula that ranks schools with a single numerical score — our scoring model is itself experimental and undergoing pilot validation. See the <a href="metodoloji.html" class="underline font-semibold">Methodology</a> page for details.',
     },
+
+    // --- nasil-calisir.html: 23 Ağustos güncellemesi (güncel segment kapsamı, kurum
+    // beyanı kaynağı, dürüst veri kapsama notu) ---
+    how_search_segment: {
+        tr: 'Okul öncesinden lise sona kadar 4 segmentte kapsamlı verimiz var; diğer segmentler (yetişkin eğitimi, kurslar, üniversite vb.) "🔜 Yakında" etiketiyle işaretli, veri toplama süreci devam ediyor.',
+        en: 'We have comprehensive data across 4 segments from preschool through high school; other segments (adult education, courses, university, etc.) are marked "🔜 Coming Soon" — data collection is ongoing.',
+    },
+    source_kurum_title: { tr: "Kurumların Kendi Beyanı", en: "Institutions' Own Declarations" },
+    source_kurum_desc: {
+        tr: 'Onaylı kurum yöneticileri, kendi kurum panellerinden somut göstergeler girer (ör. "haftalık kaç saat yabancı dil dersi var?", "kamera sistemi var mı?") — biz bu göstergelerden skoru hesaplarız. Bu veri, bağımsız doğrulama tamamlanana kadar "Taslak" olarak işaretlenir.',
+        en: 'Approved institution admins enter concrete indicators through their own institution panel (e.g. "how many hours of foreign language instruction per week?", "is there a camera system?") — we compute the score from these indicators. This data is marked as "Draft" until independent verification is complete.',
+    },
+    how_current_coverage_note: {
+        tr: '<b>Dürüstçe belirtelim:</b> Platform henüz erken aşamada olduğu için çoğu kurumun skoru şu an 9 kriterden sadece 1-3 tanesiyle hesaplanıyor — bu yüzden birçok kurum sayfasında "Düşük Güven" rozetini göreceksiniz. Bu, kurumun kalitesiz olduğu anlamına gelmez; sadece o kurum hakkında henüz yeterli doğrulanmış veri toplayamadığımız anlamına gelir. Veri kapsamımız sürekli genişliyor.',
+        en: '<b>To be honest:</b> Since the platform is still in an early stage, most institutions\' scores are currently calculated from only 1-3 of the 9 criteria — which is why you\'ll see a "Low Confidence" badge on many institution pages. This does not mean the institution is low-quality; it simply means we haven\'t yet gathered enough verified data about it. Our data coverage is continuously expanding.',
+    },
 };
 
 function getLang() {
