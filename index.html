@@ -620,9 +620,9 @@
                             
                             <!-- K-12 & Temel Eğitim -->
                             <optgroup label="Temel Eğitim Kademeleri">
-                                <option value="seg-preschool" data-i18n="seg_preschool">01. Okul Öncesi / Anaokulu</option>
-                                <option value="seg-primary" data-i18n="seg_primary">02. İlkokul</option>
-                                <option value="seg-middle" data-i18n="seg_middle">03. Ortaokul</option>
+                                <option value="seg-preschool" data-i18n="seg_preschool">01. Okul Öncesi / Anaokulu 🔜</option>
+                                <option value="seg-primary" data-i18n="seg_primary">02. İlkokul 🔜</option>
+                                <option value="seg-middle" data-i18n="seg_middle">03. Ortaokul 🔜</option>
                                 <option value="seg-high" data-i18n="seg_high">04. Lise</option>
                             </optgroup>
 
@@ -659,9 +659,6 @@
                             </optgroup>
                         </select>
                     </div>
-                    <p id="segmentVeriYokNotice" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2.5 py-1.5 mt-1.5" data-i18n-html="search_segment_notice">
-                        🔜 Bu segment için veri aktarımı henüz devam ediyor — şu an en kapsamlı verimiz <b>Lise</b>, <b>Ortaokul</b>, <b>İlkokul</b> ve <b>Anaokulu</b> için.
-                    </p>
                 </div>
 
                 <!-- Adım 2: Konum -->
@@ -924,16 +921,7 @@
                 card.style.display = 'none';
             }
 
-            // ÖNEMLİ: Henüz veri aktarımı tamamlanmamış segmentler seçilirse
-            // kullanıcı "Sorgula"ya basıp boş sonuçla karşılaşmasın diye
-            // önceden uyarıyoruz.
-            const selectedOption = selectEl.options[selectEl.selectedIndex];
-            const veriYokNotice = document.getElementById('segmentVeriYokNotice');
-            if (selectedOption && selectedOption.dataset.veriYok === '1') {
-                veriYokNotice.classList.remove('hidden');
-            } else {
-                veriYokNotice.classList.add('hidden');
-            }
+            // segmentVeriYokNotice kaldırıldı (kullanıcı isteğiyle) - artık bu kontrol gereksiz
         }
         document.getElementById('institutionSegmentSelect').addEventListener('change', onSegmentChange);
         onSegmentChange();  // sayfa yenilenirken bir segment zaten seçiliyse durumu yansıt
