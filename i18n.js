@@ -243,3 +243,23 @@ function applyI18n() {
 }
 
 document.addEventListener("DOMContentLoaded", applyI18n);
+
+// Paylaşılan hamburger menü mantığı - id="menuToggle" / id="mobileNavLinks"
+// bulunan HERHANGİ bir sayfada otomatik çalışır, yoksa sessizce hiçbir şey yapmaz.
+document.addEventListener("DOMContentLoaded", () => {
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileLinks = document.getElementById("mobileNavLinks");
+    if (!menuToggle || !mobileLinks) return;
+
+    menuToggle.addEventListener("click", () => {
+        menuToggle.classList.toggle("active");
+        mobileLinks.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!mobileLinks.contains(e.target) && !menuToggle.contains(e.target) && mobileLinks.classList.contains("active")) {
+            menuToggle.classList.remove("active");
+            mobileLinks.classList.remove("active");
+        }
+    });
+});
