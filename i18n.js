@@ -49,6 +49,22 @@ const I18N_DICT = {
     // --- Footer / Genel ---
     footer_tagline: { tr: "Şeffaf, bağımsız eğitim karar zekası platformu.", en: "A transparent, independent education decision intelligence platform." },
     lang_toggle_label: { tr: "EN", en: "TR" }, // buton hep "diğer dile geç" yazar
+
+    // --- Ortak nav linkleri (emoji dahil, tüm sayfalarda tekrarlanan) ---
+    nav_home_emoji: { tr: "🏠 Ana Sayfa", en: "🏠 Home" },
+    nav_explorer_emoji: { tr: "🔍 Genel Arama", en: "🔍 Explore" },
+    nav_lise_skoru_emoji: { tr: "🎓 Lise Skoru", en: "🎓 School Score" },
+    nav_tercih_sihirbazi_emoji: { tr: "🧭 Tercih Sihirbazı", en: "🧭 Preference Wizard" },
+    nav_edunode_emoji: { tr: "🕸️ EduNode", en: "🕸️ EduNode" },
+    nav_favorilerim_emoji: { tr: "★ Favorilerim", en: "★ My Favorites" },
+    nav_giris_yap: { tr: "Giriş Yap", en: "Log In" },
+    nav_zaten_hesabim_var: { tr: "Zaten hesabım var", en: "I already have an account" },
+    nav_giris_sayfasina_don: { tr: "← Giriş sayfasına dön", en: "← Back to login" },
+    nav_hesabim_yok: { tr: "Hesabım yok, kayıt ol", en: "No account, sign up" },
+    nav_okulunuzu_sahiplenin_cta: { tr: "Okulunuzu Sahiplenin →", en: "Claim Your School →" },
+    nav_geri_don: { tr: "← Geri dön", en: "← Go back" },
+    nav_genel_aramaya_git: { tr: "Genel Aramaya Git →", en: "Go to Explore →" },
+    nav_genel_aramaya: { tr: "Genel aramaya", en: "to explore" },
 };
 
 function getLang() {
