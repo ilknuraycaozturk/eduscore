@@ -211,6 +211,12 @@
             display: inline-block;
         }
 
+        /* i18n wrapper span'ları vurgulanmış renk/stili miras almasın */
+        .hero-title span.i18n-plain {
+            color: inherit;
+            display: inline;
+        }
+
         .hero-subtitle {
             font-size: 18px;
             color: var(--gray-text);
@@ -566,6 +572,7 @@
             .manifesto-box h3 { font-size: 24px; }
         }
     </style>
+    <script src="i18n.js"></script>
 </head>
 <body>
 
@@ -574,13 +581,14 @@
         <nav class="nav-container">
             <a href="#" class="logo">Edu<span>Scor</span></a>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="#" class="nav-link active">Ana Sayfa</a></li>
-                <li><a href="nasil-calisir.html" class="nav-link">Nasıl Çalışır?</a></li>
-                <li><a href="metodoloji.html" class="nav-link">Metodoloji</a></li>
-                <li><a href="edunode.html" class="nav-link">EduNode</a></li>
-                <li><a href="giris.html" class="nav-link">Giriş Yap</a></li>
-                <li><a href="kurumlar-icin.html" class="cta-btn-outline">Okulunuzu Sahiplenin</a></li>
-                <li><a href="explorer.html" class="cta-btn">Platformu Keşfet</a></li>
+                <li><a href="#" class="nav-link active" data-i18n="nav_home">Ana Sayfa</a></li>
+                <li><a href="nasil-calisir.html" class="nav-link" data-i18n="nav_how">Nasıl Çalışır?</a></li>
+                <li><a href="metodoloji.html" class="nav-link" data-i18n="nav_methodology">Metodoloji</a></li>
+                <li><a href="edunode.html" class="nav-link" data-i18n="nav_edunode">EduNode</a></li>
+                <li><a href="giris.html" class="nav-link" data-i18n="nav_login">Giriş Yap</a></li>
+                <li><a href="kurumlar-icin.html" class="cta-btn-outline" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a></li>
+                <li><a href="explorer.html" class="cta-btn" data-i18n="nav_explorer">Platformu Keşfet</a></li>
+                <li><button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;">EN</button></li>
             </ul>
             <button class="menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
                 <span></span>
@@ -592,9 +600,9 @@
 
     <!-- Hero Bölümü -->
     <section class="hero-section">
-        <div class="hero-badge">Eğitim Karar Destek Platformu</div>
-        <h1 class="hero-title">En Doğru Eğitim Kararını <span>Veriyle</span> Alın</h1>
-        <p class="hero-subtitle">Kulaktan dolma bilgilerle değil, şeffaf kriterler ve bağımsız veri modelleriyle — sadece puan değil, size en uygun seçeneği bulmanıza yardımcı oluyoruz.</p>
+        <div class="hero-badge" data-i18n="hero_badge">Eğitim Karar Destek Platformu</div>
+        <h1 class="hero-title"><span class="i18n-plain" data-i18n="hero_title_part1">En Doğru Eğitim Kararını</span> <span data-i18n="hero_title_span">Veriyle</span> <span class="i18n-plain" data-i18n="hero_title_part2">Alın</span></h1>
+        <p class="hero-subtitle" data-i18n="hero_subtitle">Kulaktan dolma bilgilerle değil, şeffaf kriterler ve bağımsız veri modelleriyle — sadece puan değil, size en uygun seçeneği bulmanıza yardımcı oluyoruz.</p>
         
         <!-- Arama Arayüzü -->
         <div class="search-container">
@@ -663,7 +671,7 @@
                         Bölge / Konum
                     </span>
                     <div class="custom-select">
-                        <input type="text" name="location" placeholder="İl, ilçe veya mahalle..." autocomplete="off">
+                        <input type="text" name="location" data-i18n-placeholder="search_location_placeholder" placeholder="İl, ilçe veya mahalle..." autocomplete="off">
                     </div>
                     <button type="button" class="location-btn" id="nearMeBtn">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
@@ -685,7 +693,7 @@
                         Tercih Detayı
                     </span>
                     <div class="custom-select">
-                        <input type="text" name="query" placeholder="Kurum adı veya anahtar kelime...">
+                        <input type="text" name="query" data-i18n-placeholder="search_query_placeholder" placeholder="Kurum adı veya anahtar kelime...">
                     </div>
                 </div>
 
