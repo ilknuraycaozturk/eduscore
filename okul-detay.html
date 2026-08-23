@@ -581,7 +581,7 @@
                 .select(`
                     id, name, address, website, google_maps_url, lat, lng, phone, email,
                     is_public, is_verified, description, category_id, location_id, institution_type_id,
-                    age_min, age_max, class_size_avg, student_count, campus_info, success_score, success_score_note,
+                    age_min, age_max, class_size_avg, student_count, campus_info, success_score, success_score_note, success_score_criteria_count,
                     fee_info, transport_note, instagram_url, facebook_url,
                     ucret_egitim, ucret_yemek, ucret_servis, ucret_kitap, ucret_kiyafet, ucret_etut_kurs, ucret_diger, ucret_yili,
                     servis_bilgisi, guvenlik_bilgisi, sosyal_sportif_bilgisi, kontenjan_bilgisi, ogretmen_deneyimi_notu,
@@ -1024,7 +1024,6 @@
             if (inst.age_min != null && inst.age_max != null) infoItems.push({ label: 'Yaş Aralığı', value: `${inst.age_min}-${inst.age_max}` });
             if (inst.student_count) infoItems.push({ label: '👥 Öğrenci Sayısı', value: inst.student_count });
             if (inst.class_size_avg) infoItems.push({ label: 'Ort. Sınıf Mevcudu', value: inst.class_size_avg });
-            if (inst.success_score != null) infoItems.push({ label: 'Genel Başarı Skoru', value: inst.success_score });
             if (inst.fee_info) infoItems.push({ label: 'Ücret', value: inst.fee_info });
             if (inst.transport_note) infoItems.push({ label: 'Ulaşım', value: inst.transport_note });
             if (inst.servis_bilgisi) infoItems.push({ label: 'Servis', value: inst.servis_bilgisi });
@@ -1041,13 +1040,42 @@
                         <p class="font-bold text-brandDark break-words">${it.value}</p>
                     </div>
                 `).join('');
+            }
 
-                if (inst.success_score_note) {
-                    document.getElementById('infoGrid').innerHTML += `
-                        <div class="col-span-1 sm:col-span-2 lg:col-span-4">
-                            <p class="text-[11px] text-brandGray mt-1">${inst.success_score_note}</p>
-                        </div>`;
-                }
+            // Genel Başarı Skoru - eduscor-ai-governance-explainability: skor kaç
+            // kriterden hesaplandığı HER ZAMAN görünür olmalı (9 üzerinden). Tek
+            // kriterden hesaplanmış bir skoru "tam güvenilir" gibi göstermek
+            // yanıltıcıdır (bkz. R1 - veri hacmi yanlılığı riski).
+            if (inst.success_score != null) {
+                const n = inst.success_score_criteria_count || 1;
+                let confidenceLabel, confidenceColor;
+                if (n <= 1) { confidenceLabel = 'Düşük Güven'; confidenceColor = 'bg-red-50 text-red-700'; }
+                else if (n === 2) { confidenceLabel = 'Sınırlı Güven'; confidenceColor = 'bg-amber-50 text-amber-700'; }
+                else { confidenceLabel = 'Orta Güven'; confidenceColor = 'bg-amber-50 text-amber-700'; }
+
+                document.getElementById('infoCard').classList.remove('hidden');
+                document.getElementById('infoGrid').innerHTML += `
+                    <div class="col-span-1 sm:col-span-2 lg:col-span-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                                <p class="text-[10px] text-brandGray uppercase tracking-wide">Genel Başarı Skoru</p>
+                                <p class="font-bold text-brandDark text-lg">${inst.success_score}<span class="text-xs font-normal text-brandGray">/100</span></p>
+                            </div>
+                            <span class="${confidenceColor} text-[10px] font-bold px-2 py-1 rounded-full">
+                                ${n}/9 kriterden hesaplandı · ${confidenceLabel}
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-brandGray mt-2">
+                            Bu skor, mevcut ${n} kriterin ağırlıklı ortalamasıdır (9 kriterden — akademik başarı, yabancı dil, üniversite yerleştirme, fiziksel altyapı, sosyal/kültürel etkinlikler, öğretmen kalitesi, güvenlik/disiplin, konum/ulaşım, burs/ücret). Eksik kriterler henüz veri kaynağı bulunamadığı için dahil edilmemiştir — bu skoru <b>kesin bir sonuç değil, elimizdeki kısmi veriye dayalı bir gösterge</b> olarak değerlendirin.
+                        </p>
+                    </div>`;
+            }
+
+            if (inst.success_score_note) {
+                document.getElementById('infoGrid').innerHTML += `
+                    <div class="col-span-1 sm:col-span-2 lg:col-span-4">
+                        <p class="text-[11px] text-brandGray mt-1">${inst.success_score_note}</p>
+                    </div>`;
             }
 
             // Yıllık Toplam Maliyet kartı - en az bir kalem doluysa göster
