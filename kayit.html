@@ -14,12 +14,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <script src="i18n.js"></script>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
 
     <header class="w-full bg-white border-b border-slate-200/80 px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-y-2">
+<div style="position:fixed;top:12px;right:12px;z-index:9999;"><button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.1);">EN</button></div>
+
         <a href="index.html" class="text-xl font-bold tracking-tight text-brandRed">EduScor</a>
-        <a href="giris.html" class="text-xs sm:text-sm font-semibold text-brandGray hover:text-brandDark transition-colors">Zaten hesabım var</a>
+        <a href="giris.html" class="text-xs sm:text-sm font-semibold text-brandGray hover:text-brandDark transition-colors" data-i18n="nav_zaten_hesabim_var">Zaten hesabım var</a>
     </header>
 
     <main class="max-w-sm mx-auto px-4 py-16">
