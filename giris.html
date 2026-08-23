@@ -162,7 +162,25 @@
         const urlParams = new URLSearchParams(window.location.search);
         const redirectTo = urlParams.get('redirect_to');
         function goAfterLogin() {
-            window.location.href = redirectTo ? decodeURIComponent(redirectTo) : 'index.html';
+            if (redirectTo) {
+                window.location.href = decodeURIComponent(redirectTo);
+                return;
+            }
+            (async () => {
+                const { data: { session } } = await sb.auth.getSession();
+                if (session) {
+                    const { data: claims } = await sb.from('institution_claims')
+                        .select('status')
+                        .eq('user_id', session.user.id)
+                        .eq('status', 'onaylandi')
+                        .limit(1);
+                    if (claims && claims.length) {
+                        window.location.href = 'kurum-paneli.html';
+                        return;
+                    }
+                }
+                window.location.href = 'index.html';
+            })();
         }
 
         // --- Toast bildirimleri (sağ üst, animasyonlu) ---
@@ -258,11 +276,11 @@
                 const c = claims[0];
                 const box = document.getElementById('claimStatusBox');
                 box.classList.remove('hidden');
-                if (c.status === 'pending') {
+                if (c.status === 'beklemede') {
                     box.innerHTML = `<div class="bg-amber-50 text-amber-800 text-xs rounded-lg p-3">⏳ <b>${c.institutions?.name || 'Kurumunuz'}</b> için sahiplenme talebiniz incelemede.</div>`;
-                } else if (c.status === 'approved') {
+                } else if (c.status === 'onaylandi') {
                     box.innerHTML = `<div class="bg-green-50 text-green-800 text-xs rounded-lg p-3">✓ <b>${c.institutions?.name || 'Kurumunuz'}</b> sahipliğiniz onaylandı. <a href="kurum-paneli.html" class="underline font-semibold">Panele git →</a></div>`;
-                } else if (c.status === 'rejected') {
+                } else if (c.status === 'reddedildi') {
                     box.innerHTML = `<div class="bg-red-50 text-red-800 text-xs rounded-lg p-3">✗ Talebiniz reddedildi. Detay için bize ulaşın.</div>`;
                 }
             }
@@ -417,3 +435,4 @@
 
 </body>
 </html>
+
