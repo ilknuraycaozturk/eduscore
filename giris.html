@@ -32,11 +32,11 @@
 <body class="bg-brandBg text-brandDark min-h-screen">
 
     <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 fixed top-0 left-0 z-50">
-<div style="position:fixed;top:12px;right:12px;z-index:9999;"><button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.1);">EN</button></div><div class="eduscor-nav-container">
+<div class="eduscor-nav-container">
 
         <a href="index.html" class="eduscor-logo">Edu<span>Scor</span></a>
         <a href="kayit.html" class="nav-link" data-i18n="nav_hesabim_yok">Hesabım yok, kayıt ol</a>
-    </div></header>
+    <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0;">EN</button></div></header>
 
     <!-- Toast bildirim alanı: sağ üst, animasyonlu -->
     <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-xs sm:max-w-sm"></div>
