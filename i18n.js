@@ -122,7 +122,11 @@ function t(key) {
         console.warn(`i18n: bilinmeyen anahtar "${key}"`);
         return key;
     }
-    return entry[getLang()] || entry.tr;
+    const lang = getLang();
+    // ÖNEMLİ: boş string ("") geçerli bir çeviri olabilir (ör. "Alın" fiilinin
+    // İngilizce'de karşılığı yok). `||` operatörü boş string'i "değer yok"
+    // sayıp yanlışlıkla Türkçe'ye geri düşüyordu - bunun yerine tip kontrolü yapıyoruz.
+    return typeof entry[lang] === "string" ? entry[lang] : entry.tr;
 }
 
 function applyI18n() {
