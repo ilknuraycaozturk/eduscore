@@ -164,10 +164,10 @@
             // gerçek büyüme metriklerini (kurum sayısı, doğrulanmış profil
             // sayısı vb.) çekip CountUp.js ile animasyonlu gösteriyoruz.
             const [{ count: totalInst }, { count: verifiedInst }, { count: ankaraInst }, { count: reviewCount }] = await Promise.all([
-                sb.from('institutions').select('*', { count: 'exact', head: true }),
-                sb.from('institutions').select('*', { count: 'exact', head: true }).eq('is_verified', true),
-                sb.from('institutions').select('*, locations!inner(*)', { count: 'exact', head: true }).eq('locations.name', 'Ankara'),
-                sb.from('reviews').select('*', { count: 'exact', head: true }),
+                sb.from('institutions').select('*', { count: 'exact', head: true }).eq('is_test', false),
+                sb.from('institutions').select('*', { count: 'exact', head: true }).eq('is_test', false).eq('is_verified', true),
+                sb.from('institutions').select('*, locations!inner(*)', { count: 'exact', head: true }).eq('is_test', false).eq('locations.name', 'Ankara'),
+                sb.from('reviews').select('*, institutions!inner(is_test)', { count: 'exact', head: true }).eq('institutions.is_test', false),
             ]);
 
             const ankaraPct = totalInst > 0 ? Math.round(((ankaraInst || 0) / totalInst) * 100) : 0;
