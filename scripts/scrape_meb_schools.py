@@ -21,9 +21,11 @@ GitHub Actions üzerinde ya da yerel makinenizde yapılmalıdır.
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
+import urllib.request
 from pathlib import Path
 
 try:
@@ -34,6 +36,36 @@ except ImportError:
 
 
 MEB_URL = "https://www.meb.gov.tr/baglantilar/okullar/index.php"
+
+
+def _log_progress_to_supabase(message: str) -> None:
+    """TEŞHİS AMAÇLI: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY ortam değişkenleri
+    varsa, scrape_progress tablosuna 'meb_debug_live' anahtarıyla anlık durumu
+    yazar. GitHub Actions log indirme bazı ortamlarda ağ kısıtına takıldığı için
+    (blob storage host'una erişilemiyor), ilerlemeyi doğrudan Supabase'den
+    sorgulayarak görebilmek için eklendi. Hata olursa sessizce geçilir -
+    ana scraping akışını asla bozmamalı.
+    """
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not key:
+        return
+    try:
+        payload = json.dumps({"key": "meb_debug_live", "value": message}).encode("utf-8")
+        req = urllib.request.Request(
+            f"{url}/rest/v1/scrape_progress?on_conflict=key",
+            data=payload,
+            method="POST",
+            headers={
+                "apikey": key,
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "Prefer": "resolution=merge-duplicates,return=minimal",
+            },
+        )
+        urllib.request.urlopen(req, timeout=5)
+    except Exception:
+        pass  # teşhis amaçlı, ana akışı asla kesmemeli
 
 
 def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int = 20000) -> list[dict]:
@@ -47,7 +79,13 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+        try:
+            page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+        except Exception as e:
+            _log_progress_to_supabase(f"il={il_kodu} ilce={ilce_kodu} | DURDU: goto_hatasi err={str(e)[:150]}")
+            print(f"HATA: Sayfa yuklenemedi ({url}): {e}")
+            browser.close()
+            return results
 
         # Tablo AJAX ile dolduğu için satırların görünmesini bekle
         try:
@@ -115,12 +153,18 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
 
         while page_num <= max_pages:
             _scrape_current_page(page, il_kodu, ilce_kodu, results)
+            progress_msg = f"il={il_kodu} ilce={ilce_kodu} sayfa={page_num} kumulatif_kayit={len(results)}"
             print(f"  Sayfa {page_num}: toplam {len(results)} kayıt (kümülatif).")
+            _log_progress_to_supabase(progress_msg)
 
             next_clicked = _go_to_next_page(page, timeout_ms)
             if not next_clicked:
+                _log_progress_to_supabase(progress_msg + " | DURDU: sonraki_sayfa_bulunamadi")
                 break
             page_num += 1
+
+        if page_num > max_pages:
+            _log_progress_to_supabase(f"il={il_kodu} ilce={ilce_kodu} | DURDU: max_pages({max_pages})_asildi kayit={len(results)}")
 
         browser.close()
 
