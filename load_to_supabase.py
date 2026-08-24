@@ -206,7 +206,7 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     dedup yapıyoruz. Aksi halde farklı konum granülerliğinde (mahalle vs
     ilçe) kaydedilmiş aynı okul mükerrer eklenebilir (bu bug'ı canlıda
     yaşadık ve LGS scriptinde düzelttik, aynı düzeltmeyi burada da uyguluyoruz)."""
-    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website")
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website,meb_kurum_kodu,email")
 
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, parent_il_id: str,
@@ -345,6 +345,7 @@ def main():
         address = r.get("raw_info")
         lat, lng = r.get("lat"), r.get("lng")
         website = r.get("website")
+        meb_kurum_kodu = r.get("meb_kurum_kodu")
 
         # dry-run modunda gerçek dedup verisi olmadığı için her zaman ilk 5
         # kaydı önizleme amaçlı işleriz (Nominatim'e de gerçekten istek atarız,
@@ -364,6 +365,16 @@ def main():
                 needs_update["address"] = address
             if not match.get("website") and website:
                 needs_update["website"] = website
+            # ÖNEMLİ (23-24 Ağustos 2026 keşfi): kurum kodu artık "Bilgi"
+            # hücresindeki linkten çıkarılıyor. Elimizde varsa hem kendisini
+            # kaydediyoruz hem de e-posta HİÇ yoksa standart MEB kalıbıyla
+            # (kurum_kodu@meb.k12.tr) otomatik üretiyoruz - bu kalıp kendi
+            # verimizdeki 136 mevcut kayıtta %100 doğrulandı.
+            effective_kod = meb_kurum_kodu or match.get("meb_kurum_kodu")
+            if not match.get("meb_kurum_kodu") and meb_kurum_kodu:
+                needs_update["meb_kurum_kodu"] = meb_kurum_kodu
+            if not match.get("email") and effective_kod:
+                needs_update["email"] = f"{effective_kod}@meb.k12.tr"
             if needs_update and not args.dry_run:
                 resp = requests.patch(
                     f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
@@ -408,6 +419,8 @@ def main():
         item = {
             "name": raw_name, "ilce": ilce_ad, "institution_type_slug": type_slug,
             "address": address, "website": website, "lat": lat, "lng": lng,
+            "meb_kurum_kodu": meb_kurum_kodu,
+            "email": f"{meb_kurum_kodu}@meb.k12.tr" if meb_kurum_kodu else None,
             "is_public": True, "is_verified": False, "description": description,
         }
 
@@ -443,6 +456,11 @@ def main():
                 needs_update["lng"] = lng
             if not match.get("website") and website:
                 needs_update["website"] = website
+            effective_kod2 = meb_kurum_kodu or match.get("meb_kurum_kodu")
+            if not match.get("meb_kurum_kodu") and meb_kurum_kodu:
+                needs_update["meb_kurum_kodu"] = meb_kurum_kodu
+            if not match.get("email") and effective_kod2:
+                needs_update["email"] = f"{effective_kod2}@meb.k12.tr"
             if needs_update:
                 resp = requests.patch(
                     f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
@@ -473,6 +491,8 @@ def main():
             "is_public": True,
             "address": address,
             "website": website,
+            "meb_kurum_kodu": meb_kurum_kodu,
+            "email": f"{meb_kurum_kodu}@meb.k12.tr" if meb_kurum_kodu else None,
             "lat": lat,
             "lng": lng,
             "is_verified": False,
