@@ -1,0 +1,22 @@
+name: Tanı - MEB Website Bulma Aracı Keşfi
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bağımlılıkları kur
+        run: |
+          pip install requests beautifulsoup4 playwright
+          playwright install --with-deps chromium
+      - name: meb.k12.tr'yi incele (sadece konsola yazdırır, hiçbir şey kaydetmez)
+        run: python scripts/diagnose_meb_website_lookup.py
+      - name: MEB okul tablosunda gizli kurum kodu sütunu var mı kontrol et
+        run: python scripts/diagnose_meb_kurum_kodu.py
