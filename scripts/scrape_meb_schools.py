@@ -247,32 +247,34 @@ def _scrape_current_page(page, il_kodu: str, ilce_kodu, results: list[dict]) -> 
 
 def _go_to_next_page(page, timeout_ms: int) -> bool:
     """'Sonraki sayfa' kontrolünü bulup tıklar. Bulunamazsa/tıklanamazsa False döner.
-    NOT: MEB sayfasının tam pagination yapısı bu ortamdan doğrudan görülemediği
-    için burada birkaç YAYGIN desen deneniyor (DataTables tarzı 'next' butonu,
-    numaralı sayfa linkleri, '>' / 'Sonraki' metinli linkler). Gerçek yapı
-    farklıysa, GitHub Actions loglarına bakıp seçicileri güncellememiz gerekebilir.
+
+    NOT: Tanı scriptlerinde gözlemlenen gerçek DOM yapısı:
+      metin='Sonraki' class='dt-paging-button next'
+      metin='Son'     class='dt-paging-button last'
+    Seçiciler bu gerçek yapıya göre güncellendi (23-24 Ağustos 2026).
     """
     candidate_selectors = [
+        # Gerçek DOM'da gözlemlenen class (tanı script'i çıktısından):
+        ".dt-paging-button.next:not(.disabled)",
+        "[class*='dt-paging'][class*='next']:not([class*='disabled'])",
+        # Fallback: metin tabanlı (en geniş kapsam)
+        "a:has-text('Sonraki'):not(.disabled)",
+        "button:has-text('Sonraki'):not([disabled])",
+        # Eski DataTables stili (yedek olarak kalsın)
         "a.paginate_button.next:not(.disabled)",
         "li.paginate_button.next:not(.disabled) a",
         "a[rel='next']",
-        "a:has-text('Sonraki')",
-        "a:has-text('İleri')",
-        "button:has-text('Sonraki')",
     ]
 
     for selector in candidate_selectors:
         try:
             el = page.query_selector(selector)
             if el and el.is_visible() and el.is_enabled():
-                # Tıklamadan önceki ilk satırın metnini al; tıkladıktan sonra
-                # değişip değişmediğine bakarak tablo gerçekten güncellendi mi
-                # kontrol edeceğiz (AJAX yüklenmesini beklemek için).
                 first_row_before = page.query_selector("table tr td")
                 before_text = first_row_before.inner_text() if first_row_before else ""
 
                 el.click()
-                page.wait_for_timeout(500)
+                page.wait_for_timeout(800)
                 try:
                     page.wait_for_function(
                         """(oldText) => {
@@ -285,6 +287,7 @@ def _go_to_next_page(page, timeout_ms: int) -> bool:
                 except Exception:
                     pass  # tablo değişmediyse muhtemelen son sayfadaydık
 
+                print(f"TEŞHİS: Sonraki sayfa tıklandı, seçici: {selector!r}")
                 return True
         except Exception:
             continue
@@ -292,9 +295,7 @@ def _go_to_next_page(page, timeout_ms: int) -> bool:
     print("TEŞHİS: _go_to_next_page hiçbir aday seçiciyle eşleşen tıklanabilir eleman bulamadı.")
 
     # DETAYLI TEŞHİS: Bu anda DOM'daki TÜM olası sayfalama elemanlarının
-    # gerçek durumunu (text/class/visible/enabled) yakala - böylece "Sonraki"
-    # butonunun bu noktada tam olarak neden eşleşmediğini/tıklanamadığını
-    # (disabled mı, DOM'dan tamamen mi kayboldu, farklı bir class mı aldı) görebiliriz.
+    # gerçek durumunu (text/class/visible/enabled) yakala
     try:
         all_pag = page.query_selector_all(
             "a.paginate_button, li.paginate_button, [class*='pagin' i] a, "
