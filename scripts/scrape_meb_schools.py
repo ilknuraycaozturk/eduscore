@@ -45,10 +45,26 @@ def _log_progress_to_supabase(message: str, key: str = "meb_debug_live") -> None
     (blob storage host'una erişilemiyor), ilerlemeyi doğrudan Supabase'den
     sorgulayarak görebilmek için eklendi. Hata olursa sessizce geçilir -
     ana scraping akışını asla bozmamalı.
+
+    EK TEŞHİS: Supabase'e yazma BAŞARISIZ olursa, hatanın kendisini de
+    data/debug_log.txt dosyasına (append) yazıyoruz - bu dosya workflow'da
+    artifact olarak yükleniyor, böylece Supabase'e neden ulaşılamadığını
+    (env eksik mi, ağ hatası mı, HTTP hata kodu mu) görebiliriz.
     """
+    def _write_local_debug(text: str) -> None:
+        try:
+            Path("data").mkdir(parents=True, exist_ok=True)
+            with open("data/debug_log.txt", "a", encoding="utf-8") as f:
+                f.write(text + "\n")
+        except Exception:
+            pass
+
+    _write_local_debug(f"[{key}] {message}")
+
     url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-    if not url or not key:
+    key_val = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not key_val:
+        _write_local_debug(f"SUPABASE_LOG_ATLANDI: url_var={bool(url)} key_var={bool(key_val)}")
         return
     try:
         payload = json.dumps({"key": key, "value": message}).encode("utf-8")
@@ -57,15 +73,16 @@ def _log_progress_to_supabase(message: str, key: str = "meb_debug_live") -> None
             data=payload,
             method="POST",
             headers={
-                "apikey": key,
-                "Authorization": f"Bearer {key}",
+                "apikey": key_val,
+                "Authorization": f"Bearer {key_val}",
                 "Content-Type": "application/json",
                 "Prefer": "resolution=merge-duplicates,return=minimal",
             },
         )
-        urllib.request.urlopen(req, timeout=5)
-    except Exception:
-        pass  # teşhis amaçlı, ana akışı asla kesmemeli
+        resp = urllib.request.urlopen(req, timeout=5)
+        _write_local_debug(f"SUPABASE_LOG_BASARILI: http_status={resp.status}")
+    except Exception as e:
+        _write_local_debug(f"SUPABASE_LOG_HATASI: {type(e).__name__}: {str(e)[:300]}")
 
 
 def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int = 20000) -> list[dict]:
