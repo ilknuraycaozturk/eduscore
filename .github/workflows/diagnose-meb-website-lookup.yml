@@ -20,3 +20,5 @@ jobs:
         run: python scripts/diagnose_meb_website_lookup.py
       - name: MEB okul tablosunda gizli kurum kodu sütunu var mı kontrol et
         run: python scripts/diagnose_meb_kurum_kodu.py
+      - name: Gerçek scrape_okullar() fonksiyonu meb_kurum_kodu'yu koruyor mu test et
+        run: python scripts/diagnose_scrape_okullar_kurum_kodu.py
