@@ -92,6 +92,9 @@ jobs:
 
       - name: MEB verisini çek
         if: steps.determine_batch.outputs.skip_today != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             python scripts/scrape_meb_schools.py --il-kodu-listesi "$AUTO_IL_KODU_LISTESI" --output data/meb_raw.json
