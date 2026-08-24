@@ -38,7 +38,7 @@ except ImportError:
 MEB_URL = "https://www.meb.gov.tr/baglantilar/okullar/index.php"
 
 
-def _log_progress_to_supabase(message: str) -> None:
+def _log_progress_to_supabase(message: str, key: str = "meb_debug_live") -> None:
     """TEŞHİS AMAÇLI: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY ortam değişkenleri
     varsa, scrape_progress tablosuna 'meb_debug_live' anahtarıyla anlık durumu
     yazar. GitHub Actions log indirme bazı ortamlarda ağ kısıtına takıldığı için
@@ -51,7 +51,7 @@ def _log_progress_to_supabase(message: str) -> None:
     if not url or not key:
         return
     try:
-        payload = json.dumps({"key": "meb_debug_live", "value": message}).encode("utf-8")
+        payload = json.dumps({"key": key, "value": message}).encode("utf-8")
         req = urllib.request.Request(
             f"{url}/rest/v1/scrape_progress?on_conflict=key",
             data=payload,
@@ -273,6 +273,29 @@ def _go_to_next_page(page, timeout_ms: int) -> bool:
             continue
 
     print("TEŞHİS: _go_to_next_page hiçbir aday seçiciyle eşleşen tıklanabilir eleman bulamadı.")
+
+    # DETAYLI TEŞHİS: Bu anda DOM'daki TÜM olası sayfalama elemanlarının
+    # gerçek durumunu (text/class/visible/enabled) yakala - böylece "Sonraki"
+    # butonunun bu noktada tam olarak neden eşleşmediğini/tıklanamadığını
+    # (disabled mı, DOM'dan tamamen mi kayboldu, farklı bir class mı aldı) görebiliriz.
+    try:
+        all_pag = page.query_selector_all(
+            "a.paginate_button, li.paginate_button, [class*='pagin' i] a, "
+            "[class*='pagin' i] button, .dataTables_paginate a, .dataTables_paginate button, "
+            "[class*='dt-paging' i]"
+        )
+        detay = []
+        for el in all_pag[:20]:
+            try:
+                detay.append(f"text='{el.inner_text().strip()}' class='{el.get_attribute('class') or ''}' "
+                              f"visible={el.is_visible()} enabled={el.is_enabled()}")
+            except Exception:
+                pass
+        detay_str = " || ".join(detay) if detay else "HICBIR_PAGINATION_ELEMANI_YOK"
+        _log_progress_to_supabase(f"NEXT_PAGE_DETAY: {detay_str}"[:2000], key="meb_debug_next_page_detay")
+    except Exception as e:
+        _log_progress_to_supabase(f"NEXT_PAGE_DETAY_HATASI: {str(e)[:200]}")
+
     return False
 
 
