@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: meb-raw-data
-          path: data/meb_raw.json
+          path: data/
           retention-days: 7
 
   load:
