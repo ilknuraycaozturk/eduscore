@@ -21,6 +21,7 @@ GitHub Actions üzerinde ya da yerel makinenizde yapılmalıdır.
 
 import argparse
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -150,6 +151,21 @@ def _scrape_current_page(page, il_kodu: str, ilce_kodu, results: list[dict]) -> 
                     website = href
                     break
 
+        # ÖNEMLİ (23-24 Ağustos 2026'da keşfedildi): "Bilgi" hücresindeki
+        # (cells[1]) link, görünürde boş metin taşısa da href'inde
+        # /meb_iys_dosyalar/{il}/{ilce}/{KURUM_KODU}/okulumuz_hakkinda.html
+        # deseniyle GERÇEK MEB kurum kodunu içeriyor. Bu kod hem
+        # kurum_kodu@meb.k12.tr e-posta kalıbını üretmek için hem de
+        # kurumu MEBBİS ile eşleştirmek için kullanılabilir.
+        meb_kurum_kodu = None
+        if len(cells) > 1:
+            info_link = cells[1].query_selector("a")
+            if info_link:
+                info_href = info_link.get_attribute("href") or ""
+                m = re.search(r"/meb_iys_dosyalar/\d+/\d+/(\d+)/", info_href)
+                if m:
+                    meb_kurum_kodu = m.group(1)
+
         row_html = row.inner_html()
         lat, lng = _extract_coords(row_html)
 
@@ -160,6 +176,7 @@ def _scrape_current_page(page, il_kodu: str, ilce_kodu, results: list[dict]) -> 
             "raw_name": name,
             "raw_info": info,
             "website": website,
+            "meb_kurum_kodu": meb_kurum_kodu,
             "lat": lat,
             "lng": lng,
             "il_kodu": il_kodu,
