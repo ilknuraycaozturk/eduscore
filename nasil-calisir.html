@@ -74,7 +74,7 @@
         }
 
     </style>
-    <script src="i18n.js?v=3"></script>
+    <script src="i18n.js?v=4"></script>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
 
@@ -103,27 +103,27 @@
 
         <!-- 1. Arama Akışı -->
         <section class="mb-10">
-            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">1. Arama Nasıl Çalışır</h2>
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section1_title">1. Arama Nasıl Çalışır</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div class="flex gap-4">
                     <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
                     <div>
-                        <p class="font-semibold text-sm">Konum</p>
-                        <p class="text-xs text-brandGray">Tarayıcı konumunuzu kullanabilir ya da bir il/ilçe/semt yazabilirsiniz.</p>
+                        <p class="font-semibold text-sm" data-i18n="how_step1_title">Konum</p>
+                        <p class="text-xs text-brandGray" data-i18n="how_step1_desc">Tarayıcı konumunuzu kullanabilir ya da bir il/ilçe/semt yazabilirsiniz.</p>
                     </div>
                 </div>
                 <div class="flex gap-4">
                     <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
                     <div>
-                        <p class="font-semibold text-sm">Ne arıyorsunuz?</p>
+                        <p class="font-semibold text-sm" data-i18n="how_step2_title">Ne arıyorsunuz?</p>
                         <p class="text-xs text-brandGray" data-i18n="how_search_segment">Okul öncesinden lise sona kadar 4 segmentte kapsamlı verimiz var; diğer segmentler (yetişkin eğitimi, kurslar, üniversite vb.) "🔜 Yakında" etiketiyle işaretli, veri toplama süreci devam ediyor.</p>
                     </div>
                 </div>
                 <div class="flex gap-4">
                     <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
                     <div>
-                        <p class="font-semibold text-sm">Sonuçlar</p>
-                        <p class="text-xs text-brandGray">Kriterlerinize uyan kurumlar, haritada ve liste halinde, kaynak bilgisiyle birlikte gösterilir.</p>
+                        <p class="font-semibold text-sm" data-i18n="how_step3_title">Sonuçlar</p>
+                        <p class="text-xs text-brandGray" data-i18n="how_step3_desc">Kriterlerinize uyan kurumlar, haritada ve liste halinde, kaynak bilgisiyle birlikte gösterilir.</p>
                     </div>
                 </div>
             </div>
@@ -180,42 +180,41 @@
         <!-- Güven Vaadi — bilinçli olarak sayfanın ORTASINDA, en görünür yerde -->
         <section class="mb-10">
             <div class="bg-brandDark text-white rounded-2xl p-8 text-center shadow-lg shadow-brandDark/20 border-2 border-brandRed/30">
-                <span class="text-3xl mb-3 inline-block">🛡️</span>
-                <p class="text-xl font-bold mb-2">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
-                <p class="text-xs text-white/70">Bu, değişmez bir platform ilkemizdir.</p>
+                <p class="text-xl font-bold mb-2" data-i18n="how_trust_quote">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
+                <p class="text-xs text-white/70" data-i18n="how_trust_subtitle">Bu, değişmez bir platform ilkemizdir.</p>
             </div>
         </section>
 
         <!-- 3. Veri Kaynakları -->
         <section class="mb-10">
-            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">3. Verilerimiz Nereden Geliyor</h2>
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section3_title">3. Verilerimiz Nereden Geliyor</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
                 <div class="p-5 flex gap-4">
                     <span class="text-2xl">🏛️</span>
                     <div>
-                        <p class="font-semibold text-sm">MEB (Milli Eğitim Bakanlığı)</p>
-                        <p class="text-xs text-brandGray">Kamu okullarının resmi listesi, adları, türleri — MEB'in kamuya açık sayfalarından.</p>
+                        <p class="font-semibold text-sm" data-i18n="how_source_meb_title">MEB (Milli Eğitim Bakanlığı)</p>
+                        <p class="text-xs text-brandGray" data-i18n="how_source_meb_desc">Kamu okullarının resmi listesi, adları, türleri — MEB'in kamuya açık sayfalarından.</p>
                     </div>
                 </div>
                 <div class="p-5 flex gap-4">
                     <span class="text-2xl">📊</span>
                     <div>
-                        <p class="font-semibold text-sm">MEB LGS Yerleştirme Kılavuzu</p>
-                        <p class="text-xs text-brandGray">Liselerin akademik başarı ve yabancı dil kriterleri, resmi MEB PDF kılavuzundan.</p>
+                        <p class="font-semibold text-sm" data-i18n="how_source_lgs_title">MEB LGS Yerleştirme Kılavuzu</p>
+                        <p class="text-xs text-brandGray" data-i18n="how_source_lgs_desc">Liselerin akademik başarı ve yabancı dil kriterleri, resmi MEB PDF kılavuzundan.</p>
                     </div>
                 </div>
                 <div class="p-5 flex gap-4">
                     <span class="text-2xl">🎓</span>
                     <div>
-                        <p class="font-semibold text-sm">ÖOKGM (Özel Öğretim Kurumları Genel Müdürlüğü)</p>
-                        <p class="text-xs text-brandGray">Özel okullar, kurslar ve merkezlerin resmi kayıt listesi.</p>
+                        <p class="font-semibold text-sm" data-i18n="how_source_ookgm_title">ÖOKGM (Özel Öğretim Kurumları Genel Müdürlüğü)</p>
+                        <p class="text-xs text-brandGray" data-i18n="how_source_ookgm_desc">Özel okullar, kurslar ve merkezlerin resmi kayıt listesi.</p>
                     </div>
                 </div>
                 <div class="p-5 flex gap-4">
                     <span class="text-2xl">🗺️</span>
                     <div>
-                        <p class="font-semibold text-sm">OpenStreetMap</p>
-                        <p class="text-xs text-brandGray">Açık kaynak harita verisi — konum/koordinat bilgisi için.</p>
+                        <p class="font-semibold text-sm" data-i18n="how_source_osm_title">OpenStreetMap</p>
+                        <p class="text-xs text-brandGray" data-i18n="how_source_osm_desc">Açık kaynak harita verisi — konum/koordinat bilgisi için.</p>
                     </div>
                 </div>
                 <div class="p-5 flex gap-4">
@@ -230,26 +229,26 @@
 
         <!-- 4. Şeffaflık Rozetleri -->
         <section class="mb-10">
-            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">4. Rozetlerimiz Ne Anlama Gelir</h2>
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section4_title">4. Rozetlerimiz Ne Anlama Gelir</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <table class="w-full text-xs">
                     <thead>
                         <tr class="bg-brandBg text-brandGray uppercase text-[10px]">
-                            <th class="text-left font-semibold px-4 py-3">Rozet</th>
-                            <th class="text-left font-semibold px-4 py-3">Nasıl elde edildi?</th>
-                            <th class="text-left font-semibold px-4 py-3">Güvenilirlik</th>
+                            <th class="text-left font-semibold px-4 py-3" data-i18n="how_badge_col1">Rozet</th>
+                            <th class="text-left font-semibold px-4 py-3" data-i18n="how_badge_col2">Nasıl elde edildi?</th>
+                            <th class="text-left font-semibold px-4 py-3" data-i18n="how_badge_col3">Güvenilirlik</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         <tr>
-                            <td class="px-4 py-4"><span class="bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded whitespace-nowrap">✓ Doğrulanmış</span></td>
-                            <td class="px-4 py-4 text-brandGray">Kurumun kendisi (yetkilisi) tarafından teyit edildi ya da birincil resmi bir kaynaktan doğrudan alındı.</td>
-                            <td class="px-4 py-4 font-semibold text-green-700">Yüksek</td>
+                            <td class="px-4 py-4"><span class="bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded whitespace-nowrap" data-i18n="how_badge_verified">✓ Doğrulanmış</span></td>
+                            <td class="px-4 py-4 text-brandGray" data-i18n="how_badge_verified_desc">Kurumun kendisi (yetkilisi) tarafından teyit edildi ya da birincil resmi bir kaynaktan doğrudan alındı.</td>
+                            <td class="px-4 py-4 font-semibold text-green-700" data-i18n="how_badge_verified_rel">Yüksek</td>
                         </tr>
                         <tr>
-                            <td class="px-4 py-4"><span class="bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded whitespace-nowrap">🔍 Taslak Veri</span></td>
-                            <td class="px-4 py-4 text-brandGray">Otomatik olarak resmi kaynaklardan (MEB, ÖOKGM vb.) derlendi, henüz kurum tarafından teyit edilmedi.</td>
-                            <td class="px-4 py-4 font-semibold text-amber-700">Orta — kaynağı resmi ama güncelliği teyitli değil</td>
+                            <td class="px-4 py-4"><span class="bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded whitespace-nowrap" data-i18n="how_badge_draft">🔍 Taslak Veri</span></td>
+                            <td class="px-4 py-4 text-brandGray" data-i18n="how_badge_draft_desc">Otomatik olarak resmi kaynaklardan (MEB, ÖOKGM vb.) derlendi, henüz kurum tarafından teyit edilmedi.</td>
+                            <td class="px-4 py-4 font-semibold text-amber-700" data-i18n="how_badge_draft_rel">Orta — kaynağı resmi ama güncelliği teyitli değil</td>
                         </tr>
                     </tbody>
                 </table>
@@ -257,7 +256,7 @@
         </section>
 
         <div class="text-center">
-            <a href="explorer.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white font-semibold px-6 py-3 rounded-full transition-all">
+            <a href="explorer.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white font-semibold px-6 py-3 rounded-full transition-all" data-i18n="how_cta">
                 Aramaya Başla →
             </a>
         </div>
