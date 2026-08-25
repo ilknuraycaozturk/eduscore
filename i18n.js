@@ -279,6 +279,8 @@ function applyI18n() {
 
     const toggleBtn = document.getElementById("langToggleBtn");
     if (toggleBtn) toggleBtn.textContent = t("lang_toggle_label");
+    const footerBtn = document.getElementById("footerLangBtn");
+    if (footerBtn) footerBtn.textContent = t("lang_toggle_label");
 }
 
 document.addEventListener("DOMContentLoaded", applyI18n);
