@@ -192,6 +192,45 @@ const I18N_DICT = {
         tr: '<b>Dürüstçe belirtelim:</b> Platform henüz erken aşamada olduğu için çoğu kurumun skoru şu an 9 kriterden sadece 1-3 tanesiyle hesaplanıyor — bu yüzden birçok kurum sayfasında "Düşük Güven" rozetini göreceksiniz. Bu, kurumun kalitesiz olduğu anlamına gelmez; sadece o kurum hakkında henüz yeterli doğrulanmış veri toplayamadığımız anlamına gelir. Veri kapsamımız sürekli genişliyor.',
         en: '<b>To be honest:</b> Since the platform is still in an early stage, most institutions\' scores are currently calculated from only 1-3 of the 9 criteria — which is why you\'ll see a "Low Confidence" badge on many institution pages. This does not mean the institution is low-quality; it simply means we haven\'t yet gathered enough verified data about it. Our data coverage is continuously expanding.',
     },
+
+    // --- nasil-calisir.html: Eksik çeviriler (section başlıkları, kartlar, tablo, CTA) ---
+    how_section1_title: { tr: "1. Arama Nasıl Çalışır", en: "1. How Search Works" },
+    how_section3_title: { tr: "3. Verilerimiz Nereden Geliyor", en: "3. Where Our Data Comes From" },
+    how_section4_title: { tr: "4. Rozetlerimiz Ne Anlama Gelir", en: "4. What Our Badges Mean" },
+
+    how_step1_title: { tr: "Konum", en: "Location" },
+    how_step1_desc: { tr: "Tarayıcı konumunuzu kullanabilir ya da bir il/ilçe/semt yazabilirsiniz.", en: "You can use your browser's location or type a province/district/neighborhood." },
+    how_step3_title: { tr: "Sonuçlar", en: "Results" },
+    how_step3_desc: { tr: "Kriterlerinize uyan kurumlar, haritada ve liste halinde, kaynak bilgisiyle birlikte gösterilir.", en: "Institutions matching your criteria are displayed on a map and as a list, together with source information." },
+
+    how_trust_quote: { tr: "\"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz.\"", en: "\"No school can purchase a higher EduScor score or a better recommendation.\"" },
+    how_trust_subtitle: { tr: "Bu, değişmez bir platform ilkemizdir.", en: "This is an immutable platform principle." },
+
+    how_source_meb_title: { tr: "MEB (Milli Eğitim Bakanlığı)", en: "MEB (Ministry of National Education)" },
+    how_source_meb_desc: { tr: "Kamu okullarının resmi listesi, adları, türleri — MEB'in kamuya açık sayfalarından.", en: "Official list, names, and types of public schools — from MEB's publicly accessible pages." },
+    how_source_lgs_title: { tr: "MEB LGS Yerleştirme Kılavuzu", en: "MEB LGS Placement Guide" },
+    how_source_lgs_desc: { tr: "Liselerin akademik başarı ve yabancı dil kriterleri, resmi MEB PDF kılavuzundan.", en: "Academic achievement and foreign language criteria for high schools, from the official MEB PDF guide." },
+    how_source_ookgm_title: { tr: "ÖOKGM (Özel Öğretim Kurumları Genel Müdürlüğü)", en: "OOKGM (Directorate General of Private Education Institutions)" },
+    how_source_ookgm_desc: { tr: "Özel okullar, kurslar ve merkezlerin resmi kayıt listesi.", en: "Official registration list of private schools, courses, and centers." },
+    how_source_osm_title: { tr: "OpenStreetMap", en: "OpenStreetMap" },
+    how_source_osm_desc: { tr: "Açık kaynak harita verisi — konum/koordinat bilgisi için.", en: "Open source map data — for location/coordinate information." },
+    how_source_kurum_title2: { tr: "Kurumların Kendi Beyanı", en: "Institutions' Own Declarations" },
+    how_source_kurum_desc2: {
+        tr: 'Onaylı kurum yöneticileri, kendi kurum panellerinden somut göstergeler girer (ör. "haftalık kaç saat yabancı dil dersi var?", "kamera sistemi var mı?") — biz bu göstergelerden skoru hesaplarız. Bu veri, bağımsız doğrulama tamamlanana kadar "Taslak" olarak işaretlenir.',
+        en: 'Approved institution admins enter concrete indicators through their own institution panel (e.g. "how many hours of foreign language instruction per week?", "is there a camera system?") — we compute the score from these indicators. This data is marked as "Draft" until independent verification is complete.',
+    },
+
+    how_badge_col1: { tr: "Rozet", en: "Badge" },
+    how_badge_col2: { tr: "Nasıl elde edildi?", en: "How was it obtained?" },
+    how_badge_col3: { tr: "Güvenilirlik", en: "Reliability" },
+    how_badge_verified: { tr: "✓ Doğrulanmış", en: "✓ Verified" },
+    how_badge_verified_desc: { tr: "Kurumun kendisi (yetkilisi) tarafından teyit edildi ya da birincil resmi bir kaynaktan doğrudan alındı.", en: "Confirmed by the institution itself (authorized representative) or obtained directly from a primary official source." },
+    how_badge_verified_rel: { tr: "Yüksek", en: "High" },
+    how_badge_draft: { tr: "🔍 Taslak Veri", en: "🔍 Draft Data" },
+    how_badge_draft_desc: { tr: "Otomatik olarak resmi kaynaklardan (MEB, ÖOKGM vb.) derlendi, henüz kurum tarafından teyit edilmedi.", en: "Automatically compiled from official sources (MEB, OOKGM, etc.), not yet confirmed by the institution." },
+    how_badge_draft_rel: { tr: "Orta — kaynağı resmi ama güncelliği teyitli değil", en: "Medium — source is official but currency is unverified" },
+
+    how_cta: { tr: "Aramaya Başla →", en: "Start Searching →" },
 };
 
 function getLang() {
