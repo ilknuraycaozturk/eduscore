@@ -200,6 +200,7 @@ const I18N_DICT = {
 
     how_step1_title: { tr: "Konum", en: "Location" },
     how_step1_desc: { tr: "Tarayıcı konumunuzu kullanabilir ya da bir il/ilçe/semt yazabilirsiniz.", en: "You can use your browser's location or type a province/district/neighborhood." },
+    how_step2_title: { tr: "Ne arıyorsunuz?", en: "What are you looking for?" },
     how_step3_title: { tr: "Sonuçlar", en: "Results" },
     how_step3_desc: { tr: "Kriterlerinize uyan kurumlar, haritada ve liste halinde, kaynak bilgisiyle birlikte gösterilir.", en: "Institutions matching your criteria are displayed on a map and as a list, together with source information." },
 
