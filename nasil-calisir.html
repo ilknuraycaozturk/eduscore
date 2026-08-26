@@ -1,4 +1,477 @@
 <!DOCTYPE html>
+
+<html lang="tr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduScor | Nasıl Çalışır?</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    colors: {
+
+                        brandRed: '#E8543A',
+
+                        brandRedDark: '#CC3F28',
+
+                        brandDark: '#241A16',
+
+                        brandGray: '#8A7A72',
+
+                        brandBg: '#FDF8F5'
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .tooltip-term::after {
+
+            content: attr(data-tooltip);
+
+            position: absolute;
+
+            bottom: 130%;
+
+            left: 50%;
+
+            transform: translateX(-50%) translateY(4px);
+
+            width: 220px;
+
+            background: #241A16;
+
+            color: #fff;
+
+            font-family: 'Plus Jakarta Sans', sans-serif;
+
+            font-weight: 400;
+
+            font-size: 11px;
+
+            line-height: 1.4;
+
+            padding: 8px 10px;
+
+            border-radius: 8px;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            transition: opacity 0.15s, transform 0.15s;
+
+            z-index: 20;
+
+        }
+
+        .tooltip-term:hover::after {
+
+            opacity: 1;
+
+            transform: translateX(-50%) translateY(0);
+
+        }
+
+    </style>
+
+        <style>
+
+        .eduscor-nav-container { max-width:1280px; margin:0 auto; padding:20px 40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+
+        .eduscor-logo { font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#3D2D27; text-decoration:none; display:inline-flex; align-items:center; }
+
+        .eduscor-logo span { color:#E8543A; }
+
+        .nav-link { text-decoration:none; color:#3D2D27; font-weight:500; font-size:15px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); position:relative; }
+
+        .nav-link:hover, .nav-link.active { color:#E8543A; }
+
+        .nav-link::after { content:''; position:absolute; bottom:-6px; left:0; width:0; height:2px; background-color:#E8543A; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); border-radius:2px; }
+
+        .nav-link:hover::after, .nav-link.active::after { width:100%; }
+
+        .eduscor-menu-toggle { display:none; flex-direction:column; gap:5px; cursor:pointer; border:none; background:none; padding:4px; }
+
+        .eduscor-menu-toggle span { display:block; width:22px; height:2px; background-color:#3D2D27; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+
+        .eduscor-menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+
+        .eduscor-menu-toggle.active span:nth-child(2) { opacity: 0; }
+
+        .eduscor-menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        @media (max-width: 640px) {
+
+            .eduscor-menu-toggle { display:flex; }
+
+            .eduscor-mobile-links {
+
+                display:none; position:fixed; top:64px; left:0; width:100%;
+
+                background:#fff; flex-direction:column !important; align-items:flex-start !important;
+
+                padding:20px 24px; gap:16px !important; box-shadow:0 4px 10px rgba(0,0,0,0.08);
+
+                border-bottom:1px solid #F3EFEA; overflow-y:auto;
+
+            }
+
+            .eduscor-mobile-links.active { display:flex; }
+
+        }
+
+
+
+    </style>
+
+    <script src="i18n.js?v=5"></script>
+
+</head>
+
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+
+
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 fixed top-0 left-0 z-50">
+
+<div class="eduscor-nav-container">
+
+
+
+        <a href="index.html" class="eduscor-logo">Edu<span>Scor</span></a>
+
+        <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold eduscor-mobile-links" id="mobileNavLinks">
+
+            <a href="index.html" class="nav-link" data-i18n="nav_home_emoji">Ana Sayfa</a>
+
+            <a href="explorer.html" class="nav-link" data-i18n="nav_explorer_emoji">Genel Arama</a>
+
+            <a href="lise-skoru.html" class="nav-link" data-i18n="nav_lise_skoru_emoji">Lise Skoru</a>
+
+        </div>
+
+    <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0">TR</button>
+
+    <button class="eduscor-menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
+
+        <span></span><span></span><span></span>
+
+    </button></div></header>
+
+
+
+    <main class="max-w-3xl mx-auto px-4 py-10" style="margin-top:88px;">
+
+
+
+        <div class="text-center mb-12">
+
+            <h1 class="text-3xl sm:text-4xl font-bold text-brandDark mb-3" data-i18n="h1_nasil_calisir">EduScor Nasıl Çalışır?</h1>
+
+            <p class="text-brandGray max-w-xl mx-auto" data-i18n="intro_nasil_calisir">
+
+                EduScor, eğitim kararlarını şansa bırakmamanız için kurulmuş bir platform. Nasıl arama yaptığımızı,
+
+                puanları nasıl hesapladığımızı ve verilerimizin nereden geldiğini burada tam şeffaflıkla açıklıyoruz.
+
+            </p>
+
+        </div>
+
+
+
+        <!-- 1. Arama Akışı -->
+
+        <section class="mb-10">
+
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section1_title">1. Arama Nasıl Çalışır</h2>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+
+                <div class="flex gap-4">
+
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_step1_title">Konum</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_step1_desc">Tarayıcı konumunuzu kullanabilir ya da bir il/ilçe/semt yazabilirsiniz.</p>
+
+                    </div>
+
+                </div>
+
+                <div class="flex gap-4">
+
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_step2_title">Ne arıyorsunuz?</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_search_segment">Okul öncesinden lise sona kadar 4 segmentte kapsamlı verimiz var; diğer segmentler (yetişkin eğitimi, kurslar vb.) henüz toplanıyor — 🔜 yakında geliyor.</p>
+
+                    </div>
+
+                </div>
+
+                <div class="flex gap-4">
+
+                    <div class="w-8 h-8 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_step3_title">Sonuçlar</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_step3_desc">Kriterlerinize uyan kurumlar, haritada ve liste halinde, kaynak bilgisiyle birlikte gösterilir.</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 2. Puanlama Sistemi -->
+
+        <section class="mb-10">
+
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="h2_kriterler">2. Kriterler Kararınızı Nasıl Destekler</h2>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+                <p class="text-sm text-brandGray mb-4" data-i18n-html="how_criteria_intro">
+
+                    Her kurum <b>9 somut kriterde</b> değerlendirilir: Akademik Başarı, Yabancı Dil Eğitimi, Üniversiteye
+
+                    Yerleştirme, Fiziksel Altyapı, Sosyal/Kültürel Etkinlikler, Öğretmen Kalitesi, Güvenlik/Disiplin,
+
+                    Konum/Ulaşım, Burs/Ücret. Kurumlardan öznel bir puan ("kendinizi 100 üzerinden değerlendirin")
+
+                    istemiyoruz — bunun yerine <b>somut, doğrulanabilir gerçekler</b> soruyoruz (ör. "haftalık kaç saat
+
+                    yabancı dil dersi var?", "kamera sistemi var mı?"). Skoru bu gerçeklerden, sabit ve şeffaf bir
+
+                    formülle biz hesaplıyoruz.
+
+                </p>
+
+                <div class="bg-brandBg rounded-xl p-5 mb-4 border border-brandRed/10">
+
+                    <p class="text-[10px] uppercase tracking-wide text-brandGray mb-2 font-bold" data-i18n="how_formula_label">Formül</p>
+
+                    <p class="text-sm sm:text-base font-mono text-brandDark leading-relaxed flex flex-wrap items-center gap-1">
+
+                        <span data-i18n="how_formula_text">Kurum Skoru = Σ(Kriter Puanı × Sabit Ağırlık) / Σ(Sabit Ağırlık)</span>
+
+                    </p>
+
+                    <p class="text-[11px] text-brandGray mt-3" data-i18n="how_formula_note">— sadece VERİSİ OLAN kriterler üzerinden hesaplanır.</p>
+
+                </div>
+
+                <p class="text-xs text-brandGray mb-4" data-i18n-html="how_missing_criteria">
+
+                    <b>Eksik kriterler asla "0 puan" sayılmaz</b> — hesaplamaya hiç dahil edilmez. Her kurum sayfasında,
+
+                    skorun kaç kriterden (9 üzerinden) hesaplandığını ve buna bağlı güven seviyesini
+
+                    (Düşük / Sınırlı / Orta) her zaman görürsünüz.
+
+                </p>
+
+                <p class="text-xs text-brandGray mb-4" data-i18n-html="how_current_coverage_note">
+
+                    <b>Dürüstçe belirtelim:</b> Platform henüz erken aşamada olduğu için çoğu kurumun skoru şu an
+
+                    9 kriterden sadece 1-3 tanesiyle hesaplanıyor — bu yüzden birçok kurum sayfasında "Düşük Güven"
+
+                    rozetini göreceksiniz. Bu, kurumun kalitesiz olduğu anlamına gelmez; sadece o kurum hakkında
+
+                    henüz yeterli doğrulanmış veri toplayamadığımız anlamına gelir. Veri kapsamımız sürekli genişliyor.
+
+                </p>
+
+                <p class="text-xs text-brandGray" data-i18n-html="how_personalization">
+
+                    <b>Kişiselleştirme:</b> Tercih Sihirbazı'nda, LGS yerleşim filtresinden sonra, kalan kriterleri
+
+                    KENDİ önceliklerinize göre (Önemsiz → Çok Önemli) ağırlıklandırabilirsiniz. Bu kişisel sıralama,
+
+                    kurumun resmi skorunu asla değiştirmez — ayrı ve size özel bir hesaplamadır.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 mt-4">
+
+                <p class="text-xs text-amber-900" data-i18n-html="how_oecd_note">
+
+                    <b>OECD referansı:</b> 9 kriterin boyut yapısı, OECD'nin <i>Education at a Glance</i> ve PISA
+
+                    çerçevelerindeki çok boyutlu gösterge mantığından esinlenilmiştir. OECD'nin okulları tek bir
+
+                    sayısal skorla sıralayan resmî, onaylı bir formülü <b>yoktur</b> — skorlama modelimiz kendi
+
+                    başına deneysel ve pilot doğrulaması süren bir sistemdir. Detaylar için
+
+                    <a href="metodoloji.html" class="underline font-semibold">Metodoloji</a> sayfasına bakabilirsiniz.
+
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- Güven Vaadi — bilinçli olarak sayfanın ORTASINDA, en görünür yerde -->
+
+        <section class="mb-10">
+
+            <div class="bg-brandDark text-white rounded-2xl p-8 text-center shadow-lg shadow-brandDark/20 border-2 border-brandRed/30">
+
+                <p class="text-xl font-bold mb-2" data-i18n="how_trust_quote">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
+
+                <p class="text-xs text-white/70" data-i18n="how_trust_subtitle">Bu, değişmez bir platform ilkemizdir.</p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 3. Veri Kaynakları -->
+
+        <section class="mb-10">
+
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section3_title">3. Verilerimiz Nereden Geliyor</h2>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+
+                <div class="p-5 flex gap-4">
+
+                    <span class="text-2xl">🏛️</span>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_source_meb_title">MEB (Milli Eğitim Bakanlığı)</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_source_meb_desc">Kamu okullarının resmi listesi, adları, türleri — MEB'in kamuya açık sayfalarından.</p>
+
+                    </div>
+
+                </div>
+
+                <div class="p-5 flex gap-4">
+
+                    <span class="text-2xl">📊</span>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_source_lgs_title">MEB LGS Yerleştirme Kılavuzu</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_source_lgs_desc">Liselerin akademik başarı ve yabancı dil kriterleri, resmi MEB PDF kılavuzundan.</p>
+
+                    </div>
+
+                </div>
+
+                <div class="p-5 flex gap-4">
+
+                    <span class="text-2xl">🎓</span>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_source_ookgm_title">ÖOKGM (Özel Öğretim Kurumları Genel Müdürlüğü)</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_source_ookgm_desc">Özel okullar, kurslar ve merkezlerin resmi kayıt listesi.</p>
+
+                    </div>
+
+                </div>
+
+                <div class="p-5 flex gap-4">
+
+                    <span class="text-2xl">🗺️</span>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="how_source_osm_title">OpenStreetMap</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="how_source_osm_desc">Açık kaynak harita verisi — konum/koordinat bilgisi için.</p>
+
+                    </div>
+
+                </div>
+
+                <div class="p-5 flex gap-4">
+
+                    <span class="text-2xl">🏫</span>
+
+                    <div>
+
+                        <p class="font-semibold text-sm" data-i18n="source_kurum_title">Kurumların Kendi Beyanı</p>
+
+                        <p class="text-xs text-brandGray" data-i18n="source_kurum_desc">Onaylı kurum yöneticileri, kendi kurum panellerinden somut göstergeler girer (ör. "haftalık kaç saat yabancı dil dersi", "kamera sistemi var mı?" vb.). Bu veriler doğrudan kurumdan geliyor.</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 4. Şeffaflık Rozetleri -->
+
+        <section class="mb-10">
+
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section4_title">4. Rozetlerimiz Ne Anlama Gelir</h2
+
+ 
+
+İlettiğiniz HTML kodunun kesilen kısmını tamamladım ve istediğiniz gibi footer alanında "Nasıl Çalışır?" linkine yer vermeden EduScor standartlarına uygun şık tasarımı ekledim.
+
+İşte güncellenmiş ve tamamlanmış tam kod:
+
+HTML
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
