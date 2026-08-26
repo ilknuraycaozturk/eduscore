@@ -48,8 +48,6 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-    </style>
-        <style>
         .eduscor-nav-container { max-width:1280px; margin:0 auto; padding:20px 40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .eduscor-logo { font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#3D2D27; text-decoration:none; display:inline-flex; align-items:center; }
         .eduscor-logo span { color:#E8543A; }
@@ -72,25 +70,25 @@
             }
             .eduscor-mobile-links.active { display:flex; }
         }
-
     </style>
     <script src="i18n.js?v=5"></script>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
 
     <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 fixed top-0 left-0 z-50">
-<div class="eduscor-nav-container">
-
-        <a href="index.html" class="eduscor-logo">Edu<span>Scor</span></a>
-        <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold eduscor-mobile-links" id="mobileNavLinks">
-            <a href="index.html" class="nav-link" data-i18n="nav_home_emoji">Ana Sayfa</a>
-            <a href="explorer.html" class="nav-link" data-i18n="nav_explorer_emoji">Genel Arama</a>
-            <a href="lise-skoru.html" class="nav-link" data-i18n="nav_lise_skoru_emoji">Lise Skoru</a>
+        <div class="eduscor-nav-container">
+            <a href="index.html" class="eduscor-logo">Edu<span>Scor</span></a>
+            <div class="flex flex-wrap items-center gap-3 gap-y-1 text-xs sm:text-sm font-semibold eduscor-mobile-links" id="mobileNavLinks">
+                <a href="index.html" class="nav-link" data-i18n="nav_home_emoji">Ana Sayfa</a>
+                <a href="explorer.html" class="nav-link" data-i18n="nav_explorer_emoji">Genel Arama</a>
+                <a href="lise-skoru.html" class="nav-link" data-i18n="nav_lise_skoru_emoji">Lise Skoru</a>
+            </div>
+            <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0">TR</button>
+            <button class="eduscor-menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
+                <span></span><span></span><span></span>
+            </button>
         </div>
-    <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0">TR</button>
-    <button class="eduscor-menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
-        <span></span><span></span><span></span>
-    </button></div></header>
+    </header>
 
     <main class="max-w-3xl mx-auto px-4 py-10" style="margin-top:88px;">
 
@@ -178,7 +176,7 @@
             </div>
         </section>
 
-        <!-- Güven Vaadi — bilinçli olarak sayfanın ORTASINDA, en görünür yerde -->
+        <!-- Güven Vaadi -->
         <section class="mb-10">
             <div class="bg-brandDark text-white rounded-2xl p-8 text-center shadow-lg shadow-brandDark/20 border-2 border-brandRed/30">
                 <p class="text-xl font-bold mb-2" data-i18n="how_trust_quote">"Hiçbir okul, daha yüksek bir EduScor puanı ya da daha iyi bir öneri satın alamaz."</p>
@@ -230,5 +228,80 @@
 
         <!-- 4. Şeffaflık Rozetleri -->
         <section class="mb-10">
-            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section4_title">4. Rozetlerimiz Ne Anlama Gelir</h2
-
+            <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4" data-i18n="how_section4_title">4. Rozetlerimiz Ne Anlama Gelir</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">🟢</span>
+                    <div>
+                        <p class="font-semibold text-sm" data-i18n="badge_verified_title">Doğrulanmış Veri</p>
+                        <p class="text-xs text-brandGray" data-i18n="badge_verified_desc">MEB ve resmi kılavuzlardan doğrudan alınan, hatasız ve güncel resmi veriler.</p>
+                    </div>
+                </div>
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">🔵</span>
+                    <div>
+                        <p class="font-semibold text-sm" data-i18n="badge_declared_title">Kurum Beyanı</p>
+                        <p class="text-xs text-brandGray" data-i18n="badge_declared_desc">Okul yönetiminin kendi panellerinden ilettiği, platform tarafından denetlenen beyanlar.</p>
+                    </div>
+                </div>
+                <div class="p-5 flex gap-4">
+                    <span class="text-2xl">🟡</span>
+                    <div>
+                        <p class="font-semibold text-sm" data-i18n="badge_limited_title">Düşük / Sınırlı Güven</p>
+                        <p class="text-xs text-brandGray" data-i18n="badge_limited_desc">Henüz yeterli kriter verisi tamamlanmamış kurumlar için geçici güven seviyesi rozeti.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer (Nasıl Çalışır linki çıkarıldı) -->
+    <footer style="background-color: var(--dark-brown, #241A16); color: #FFFFFF; padding: 60px 40px 30px; margin-top: 80px;">
+        <div style="max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 40px;">
+            <div>
+                <a href="index.html" class="eduscor-logo" style="color: #FFFFFF; margin-bottom: 16px; display: inline-block;">Edu<span>Scor</span></a>
+                <p style="color: #CFC7C4; font-size: 14px; line-height: 1.6;" data-i18n="footer_desc">Eğitim kurumlarını şeffaf verilerle değerlendiren bağımsız karar destek platformu.</p>
+            </div>
+            <div>
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #FFFFFF;" data-i18n="footer_col1_title">Platform</h5>
+                <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                    <li><a href="explorer.html" style="color: #CFC7C4; text-decoration: none; font-size: 14px;" data-i18n="nav_explorer">Platformu Keşfet</a></li>
+                    <li><a href="lise-skoru.html" style="color: #CFC7C4; text-decoration: none; font-size: 14px;" data-i18n="nav_lise_skoru">Lise Skoru</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #FFFFFF;" data-i18n="footer_col2_title">Kurumsal</h5>
+                <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                    <li><a href="kurumlar-icin.html" style="color: #CFC7C4; text-decoration: none; font-size: 14px;" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a></li>
+                    <li><a href="edunode.html" style="color: #CFC7C4; text-decoration: none; font-size: 14px;" data-i18n="nav_edunode">EduNode</a></li>
+                    <li><a href="giris.html" style="color: #CFC7C4; text-decoration: none; font-size: 14px;" data-i18n="nav_login">Giriş Yap</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #FFFFFF;" data-i18n="footer_col3_title">İletişim & Destek</h5>
+                <p style="color: #CFC7C4; font-size: 14px; margin-bottom: 8px;">Ankara, Türkiye</p>
+                <p style="color: #CFC7C4; font-size: 14px;">destek@eduscor.com</p>
+            </div>
+        </div>
+        <div style="max-width: 1280px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <p style="color: #8A7A72; font-size: 13px;" data-i18n="footer_copyright">&copy; 2026 EduScor. Tüm hakları saklıdır.</p>
+            <div style="display: flex; gap: 20px;">
+                <a href="#" style="color: #8A7A72; text-decoration: none; font-size: 13px;" data-i18n="footer_privacy">Gizlilik Politikası</a>
+                <a href="#" style="color: #8A7A72; text-decoration: none; font-size: 13px;" data-i18n="footer_terms">Kullanım Koşulları</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Kodları -->
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileNavLinks = document.getElementById('mobileNavLinks');
+
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            mobileNavLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
