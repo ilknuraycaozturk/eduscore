@@ -80,8 +80,8 @@
         <div class="text-center mb-6">
             <h1 class="text-2xl sm:text-3xl font-bold text-brandDark mb-2" data-i18n="h1_edunode">EduNode — Okulların Kariyer Ağı</h1>
             <p class="text-sm text-brandGray max-w-2xl mx-auto" data-i18n="intro_edunode">
-                Her okul, yetiştirdiği başarılı isimlerle kanıtlanmış bir düğüm (node). Bir okula tıklayın,
-                o okulun mezunlarını hangi kariyer başarılarına taşıdığını keşfedin.
+                Her okul, eğitim ve kariyer bağlantılarını gösteren bir düğüm (node). Bir okula tıklayın,
+                o okulun mezunlarının hangi kariyer yollarında yer aldığını keşfedin.
             </p>
         </div>
 
@@ -106,7 +106,7 @@
         <div id="personDetail" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 max-w-xl mx-auto"></div>
 
         <div class="text-center mt-10">
-            <p class="text-xs text-brandGray">Bu, EduScor'un uzun vadeli "Eğitim Bilgi Grafiği" vizyonunun ilk adımı — okuldan kariyere giden gerçek, doğrulanmış yolculukları biriktiriyoruz.</p>
+            <p class="text-xs text-brandGray">Bu, EduScor'un uzun vadeli "Eğitim Bilgi Grafiği" vizyonunun ilk adımı — okuldan kariyere giden paylaşılan, incelenmiş yolculukları biriktiriyoruz.</p>
         </div>
 
         <!-- Mezun Bilgisi Ekleme Modalı -->
@@ -476,7 +476,7 @@
             // ÖNEMLİ: Odak noktamız OKULLARIN kendisi ve oradan çıkan kariyer
             // yolları - bu yüzden bir kuruma (okul) bağlı düğümler, kişiye özel
             // (custom_label) düğümlerden görsel olarak daha belirgin/büyük
-            // çiziliyor. Kişi bilgisi, okulun başarısını KANITLAYAN destekleyici
+            // çiziliyor. Kişi bilgisi, okulun eğitim-kariyer bağlantısını gösteren destekleyici
             // bir detay - odak değil.
             nodeGroup.append('circle')
                 .attr('r', d => (d.institutionId ? 20 : 12) + Math.min(d.people.size, 4) * 3)
@@ -537,7 +537,7 @@
                     });
                     detailEl.innerHTML = `
                         <h3 class="font-bold text-lg text-brandDark mb-1">🏫 ${labelForHeader}</h3>
-                        <p class="text-xs text-brandGray mb-4">Bu okuldan ulaşılan, doğrulanmış ${personIdSet.size} kariyer yolu — detayı görmek için tıklayın:</p>
+                        <p class="text-xs text-brandGray mb-4">Bu okuldan ulaşılan, paylaşılan ${personIdSet.size} kariyer yolu — detayı görmek için tıklayın:</p>
                         <div class="space-y-2">
                             ${kariyerSatirlari.map(k => `
                                 <button data-goto-person="${k.id}" class="w-full text-left border-l-2 border-brandRed pl-3 py-1.5 hover:bg-brandBg rounded-r-lg transition-all">
