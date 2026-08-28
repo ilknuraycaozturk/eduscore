@@ -1202,6 +1202,17 @@
                     return badges;
                 }
 
+                // ÖNEMLİ: Bu, Metodoloji sayfasındaki "Kriter → Kaynak Eşleştirmesi"
+                // tablosuyla BİREBİR aynı, statik bir haritadır (eduscor-trust-uncertainty
+                // modülü, P1-4). Sayısal bir Trust Score DEĞİLDİR - sadece kaynağın ne
+                // olduğunu ve ne sıklıkla güncellendiğini şeffaf şekilde gösterir.
+                const KRITER_KAYNAK_METADATA = {
+                    akademik_basari: 'Kaynak: MEB LGS Yerleştirme Kılavuzu · Yıllık güncellenir',
+                    yabanci_dil: 'Kaynak: MEB LGS Kılavuzu · Yıllık güncellenir',
+                    universite_yerlestirme: 'Kaynak: Okul sitesi / sinavizcisi.com (YKS sonuçları) · Düzensiz güncellenir',
+                };
+                const KRITER_KAYNAK_VARSAYILAN = 'Kaynak: Henüz merkezi kaynak yok — okul yöneticileri "Profilini Sahiplen" ile girebilir';
+
                 criteriaEl.innerHTML = sorted.map(s => {
                     const name = s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter';
                     const weight = s.scoring_criteria ? s.scoring_criteria.default_weight : '';
@@ -1223,6 +1234,7 @@
                             </div>
                             ${badgesHtml}
                             ${s.source_note ? `<p class="text-[10px] text-brandGray mt-1">${s.source_note}</p>` : ''}
+                            <p class="text-[10px] text-slate-400 mt-0.5">${KRITER_KAYNAK_METADATA[key] || KRITER_KAYNAK_VARSAYILAN}</p>
                         </div>
                     `;
                 }).join('');
