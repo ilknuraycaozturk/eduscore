@@ -49,49 +49,58 @@ ilce_related = []
 
 
 def on_request(request):
-    all_requests.append(request.url)
-    lower = request.url.lower()
-    if "ilce" in lower or "ilçe" in lower:
-        ilce_related.append(f"{request.method} {request.url}")
-
-
-print(f"Sayfaya gidiliyor: {MEB_URL}?ILKODU=6")
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-    page.on("request", on_request)
     try:
-        page.goto(f"{MEB_URL}?ILKODU=6", wait_until="networkidle", timeout=20000)
-    except Exception as e:
-        print(f"goto hatası (yine de devam): {e}")
+        all_requests.append(request.url)
+        lower = request.url.lower()
+        if "ilce" in lower or "ilçe" in lower:
+            ilce_related.append(f"{request.method} {request.url}")
+    except Exception:
+        pass
 
-    # İl dropdown'u hâlâ var mı, ve varsa değiştirip yeni istekleri de yakala
-    try:
-        il_select = page.query_selector("select[name*='IL' i], select#ILKODU, select[id*='il' i]")
-        if il_select:
-            print("İl seçim kutusu (select) DOM'da BULUNDU.")
-            options = page.query_selector_all("select[name*='IL' i] option, select#ILKODU option")
-            print(f"İl dropdown'unda {len(options)} seçenek var (ilk 5): "
-                  f"{[o.inner_text().strip() for o in options[:5]]}")
-        else:
-            print("İl seçim kutusu da DOM'da bulunamadı.")
-    except Exception as e:
-        print(f"İl dropdown kontrolü hatası: {e}")
 
-    browser.close()
+try:
+    print(f"Sayfaya gidiliyor: {MEB_URL}?ILKODU=6")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.on("request", on_request)
+        try:
+            page.goto(f"{MEB_URL}?ILKODU=6", wait_until="networkidle", timeout=20000)
+        except Exception as e:
+            print(f"goto hatası (yine de devam): {e}")
 
-print(f"\nToplam yakalanan istek sayısı: {len(all_requests)}")
-print(f"'ilce' geçen istek sayısı: {len(ilce_related)}")
-for r in ilce_related:
-    print("  ", r)
+        il_dropdown_info = "kontrol edilemedi"
+        try:
+            il_select = page.query_selector("select#ILKODU") or page.query_selector("select[name='ILKODU']")
+            if il_select:
+                options = page.query_selector_all("select#ILKODU option, select[name='ILKODU'] option")
+                il_dropdown_info = f"BULUNDU, {len(options)} secenek"
+            else:
+                il_dropdown_info = "bulunamadi"
+        except Exception as e:
+            il_dropdown_info = f"hata: {e}"
+        print(f"Il dropdown durumu: {il_dropdown_info}")
 
-if ilce_related:
-    sonuc = f"BULUNDU: {len(ilce_related)} ilce-iliskili istek -> {ilce_related[:5]}"
-else:
-    sonuc = f"BULUNAMADI: Hicbir 'ilce' iceren network istegi yok. Toplam {len(all_requests)} istek yakalandi."
+        browser.close()
 
-log_to_supabase("meb_debug_network_ilce_api", sonuc)
+    print(f"\nToplam yakalanan istek sayisi: {len(all_requests)}")
+    print(f"'ilce' gecen istek sayisi: {len(ilce_related)}")
+    for r in ilce_related:
+        print("  ", r)
 
-# Ayrıca tüm benzersiz domain/path'leri de kısa bir özet olarak yaz (aşırı uzun olmasın diye ilk 30)
-unique_paths = list(dict.fromkeys(all_requests))[:30]
-log_to_supabase("meb_debug_all_requests_sample", " || ".join(unique_paths))
+    if ilce_related:
+        sonuc = f"BULUNDU: {len(ilce_related)} ilce-iliskili istek -> {ilce_related[:5]}"
+    else:
+        sonuc = f"BULUNAMADI: Hicbir 'ilce' iceren network istegi yok. Toplam {len(all_requests)} istek. Il dropdown: {il_dropdown_info}"
+
+    log_to_supabase("meb_debug_network_ilce_api", sonuc)
+
+    unique_paths = list(dict.fromkeys(all_requests))[:30]
+    log_to_supabase("meb_debug_all_requests_sample", " || ".join(unique_paths))
+
+except Exception as e:
+    import traceback
+    hata_detay = f"GENEL_HATA: {type(e).__name__}: {str(e)[:300]}\n{traceback.format_exc()[:1000]}"
+    print(hata_detay)
+    log_to_supabase("meb_debug_network_ilce_api", hata_detay)
+    sys.exit(0)  # workflow'u "failure" yapmadan bitir, hata zaten Supabase'e yazildi
