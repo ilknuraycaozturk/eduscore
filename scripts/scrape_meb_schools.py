@@ -125,7 +125,12 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
                         break
                     except Exception:
                         continue
-                print(f"TEŞHİS: Sayfa boyutu kutusunun son değeri: '{length_select.input_value()}'")
+                secili_deger = length_select.input_value()
+                print(f"TEŞHİS: Sayfa boyutu kutusunun son değeri: '{secili_deger}'")
+                _log_progress_to_supabase(
+                    f"il={il_kodu} ilce={ilce_kodu} | length_select_degeri='{secili_deger}'",
+                    key="meb_debug_length_select"
+                )
         except Exception as e:
             print(f"TEŞHİS: Sayfa boyutu kutusu ayarlanamadı: {e}")
 
@@ -138,9 +143,18 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
                        or page.query_selector(".dataTables_info")
                        or page.query_selector("[class*='dataTables_info' i]"))
             if info_el:
-                print(f"TEŞHİS: Toplam kayıt bilgi metni: '{info_el.inner_text().strip()}'")
+                info_metni = info_el.inner_text().strip()
+                print(f"TEŞHİS: Toplam kayıt bilgi metni: '{info_metni}'")
+                _log_progress_to_supabase(
+                    f"il={il_kodu} ilce={ilce_kodu} | dataTables_info='{info_metni}'",
+                    key="meb_debug_datatables_info"
+                )
             else:
                 print("TEŞHİS: Toplam kayıt bilgi metni bulunamadı.")
+                _log_progress_to_supabase(
+                    f"il={il_kodu} ilce={ilce_kodu} | dataTables_info=BULUNAMADI",
+                    key="meb_debug_datatables_info"
+                )
         except Exception as e:
             print(f"TEŞHİS: Toplam kayıt bilgisi okunamadı: {e}")
 
