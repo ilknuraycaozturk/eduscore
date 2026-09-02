@@ -228,7 +228,10 @@
                     <tbody id="criteriaTable"><tr><td colspan="3" class="text-brandGray italic">Yükleniyor...</td></tr></tbody>
                 </table>
                 <p class="text-[11px] text-brandGray mt-3">
-                    "Veri Durumu" sütunu, kaç kurumda bu kritere ait gerçek veri bulunduğunu gösterir.
+                    "Veri Durumu" sütunu, kaç kurumda bu kritere ait gerçek veri bulunduğunu ve bunun
+                    hangi paydaya göre yüzdesini gösterir. LGS Akademik Başarısı, Yabancı Dil ve
+                    Üniversite Yerleştirme kriterleri yalnızca lise türü kurumlara anlamlı olduğu için
+                    payda olarak toplam lise sayısı kullanılır; diğer kriterlerde payda tüm kurum sayısıdır.
                     Veri olmayan kriterler hesaplamaya dahil edilmez.
                 </p>
             </div>
@@ -305,6 +308,10 @@
             <h2 class="text-sm font-bold text-brandRed uppercase tracking-wider mb-4">Değişiklik Günlüğü (Changelog)</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
                 <div class="p-4">
+                    <p class="text-xs font-bold text-brandDark">v1.4 — Eylül 2026</p>
+                    <p class="text-xs text-brandGray">Veri Durumu hesaplaması düzeltildi: (1) Sorgu, PostgREST'in varsayılan satır limiti nedeniyle 11.000+ satırlık tabloda eksik sayım riski taşıyordu — artık limit'e tabi olmayan count sorguları kullanılıyor. (2) Lise-özel kriterler (Akademik Başarı, Yabancı Dil, Üniversite Yerleştirme) artık toplam kurum sayısına değil, doğru paydaya (lise türü kurum sayısı) göre yüzdeleniyor.</p>
+                </div>
+                <div class="p-4">
                     <p class="text-xs font-bold text-brandDark">v1.3 — Ağustos 2026</p>
                     <p class="text-xs text-brandGray">Kapsam Türkiye geneline genişletildi (81 il, 12.500+ kurum). Kriter → Kaynak Eşleştirmesi tablosuna eksik olan "Konum, Ulaşım ve Çevre" kriteri eklendi. Kurum verilerine kaynak ve güncelleme metadata'sı (Veri Güveni katmanının ilk kamuya dönük yüzü) eklendi.</p>
                 </div>
@@ -369,21 +376,47 @@
             if (!cat) return;
 
             const { data: criteria } = await sb.from('scoring_criteria')
-                .select('id, name_tr, default_weight, display_order')
+                .select('id, key, name_tr, default_weight, display_order')
                 .eq('category_id', cat.id)
                 .order('display_order');
 
             if (!criteria) return;
 
-            const { data: scores } = await sb.from('institution_criteria_scores').select('criteria_id');
-            const countByCriteria = {};
-            (scores || []).forEach(s => { countByCriteria[s.criteria_id] = (countByCriteria[s.criteria_id] || 0) + 1; });
+            // Toplam kurum sayısı (genel kriterler için payda)
+            const { count: totalInstitutions } = await sb.from('institutions')
+                .select('*', { count: 'exact', head: true });
 
-            document.getElementById('criteriaTable').innerHTML = criteria.map(c => {
-                const count = countByCriteria[c.id] || 0;
-                const statusBadge = count > 0
-                    ? `<span class="text-green-700">✓ ${count} kurumda veri var</span>`
-                    : `<span class="text-amber-700">Veri yok</span>`;
+            // ÖNEMLİ (AÇIK VARSAYIM): "Akademik Başarı", "Yabancı Dil" ve "Üniversite
+            // Yerleştirme" kriterleri (LGS taban puanı, hazırlık sınıfı, YKS yerleştirme)
+            // anlam olarak sadece LİSE türü kurumlara uygulanabilir - anaokulu/ilkokul/
+            // ortaokul için tanımsızdır. Bu eşleştirme veritabanında henüz resmi bir alan
+            // (örn. scoring_criteria.applicable_institution_types) olarak tutulmuyor, bu
+            // yüzden burada kurum türü ADINDA "lise" geçen kayıtları arayarak dinamik
+            // olarak hesaplanıyor. Gelecekte DB'ye taşınabilir.
+            const LISE_OZEL_KRITERLER = ['akademik_basari', 'yabanci_dil', 'universite_yerlestirme'];
+            const { data: liseTypes } = await sb.from('institution_types').select('id').ilike('name_tr', '%lise%');
+            const liseTypeIds = (liseTypes || []).map(t => t.id);
+            const { count: liseCount } = liseTypeIds.length
+                ? await sb.from('institutions').select('*', { count: 'exact', head: true }).in('institution_type_id', liseTypeIds)
+                : { count: 0 };
+
+            // ÖNEMLİ: Her kriter için satır ÇEKMEK yerine sadece SAYI (count) istiyoruz.
+            // institution_criteria_scores tablosunda 11.000+ satır var; satır çekilseydi
+            // PostgREST'in varsayılan sayfalama limiti (genelde 1000) nedeniyle sayılar
+            // yanlış/eksik çıkabilirdi. count sorguları bu limite tabi değildir.
+            const criteriaWithCounts = await Promise.all(criteria.map(async c => {
+                const { count } = await sb.from('institution_criteria_scores')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('criteria_id', c.id);
+                const payda = LISE_OZEL_KRITERLER.includes(c.key) ? (liseCount || 0) : (totalInstitutions || 0);
+                return { ...c, count: count || 0, payda };
+            }));
+
+            document.getElementById('criteriaTable').innerHTML = criteriaWithCounts.map(c => {
+                const yuzde = c.payda > 0 ? ((c.count / c.payda) * 100).toFixed(1) : '0.0';
+                const statusBadge = c.count > 0
+                    ? `<span class="text-green-700">✓ ${c.count} / ${c.payda} kurum (%${yuzde})</span>`
+                    : `<span class="text-amber-700">Veri yok (0 / ${c.payda})</span>`;
                 return `<tr><td>${c.name_tr}</td><td class="font-bold text-brandRed">%${c.default_weight}</td><td>${statusBadge}</td></tr>`;
             }).join('');
 
