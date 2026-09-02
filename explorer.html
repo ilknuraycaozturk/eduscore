@@ -16,18 +16,63 @@
 </head>
 <body class="bg-[#FDF8F5] text-[#241A16] min-h-screen flex flex-col">
 
+    <style>
+        /* ===== EduScor Standart Header (index.html ile birebir aynı, class isimleri) =====
+           ÖNEMLİ: Bu sayfa özel bir tam-ekran split-view layout kullanıyor
+           (md:h-[calc(100vh-73px)] header'ın NORMAL AKIŞTA kalmasına bağımlı).
+           Bu yüzden header burada position:static kalıyor (fixed YAPILMADI),
+           aksi halde harita/liste görünümünün yükseklik hesabı bozulurdu.
+           Hamburger menü de yok çünkü linkler zaten flex-wrap ile her zaman görünür. */
+        header {
+            background-color: rgba(255, 253, 251, 0.98);
+            border-bottom: 1px solid #F3EFEA;
+            position: static;
+            flex-shrink: 0;
+        }
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #3D2D27;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+        .logo span { color: #E8543A; }
+        .nav-menu { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; list-style: none; }
+        .nav-link {
+            text-decoration: none; color: #8A7A72; font-weight: 600; font-size: 13px;
+            transition: color 0.3s;
+        }
+        .nav-link:hover { color: #241A16; }
+        .cta-btn {
+            background-color: #241A16; color: #FFFFFF; padding: 8px 18px; border-radius: 999px;
+            text-decoration: none; font-weight: 600; font-size: 13px; transition: all 0.3s;
+        }
+        .cta-btn:hover { background-color: #E8543A; }
+    </style>
     <!-- Üst Menü -->
-    <header class="w-full bg-white border-b border-slate-200 px-4 sm:px-10 py-4 flex flex-wrap justify-between items-center gap-y-2 shrink-0 z-10">
-        <a href="index.html" class="text-xl font-bold text-[#E8543A] no-underline">EduScor</a>
-        <div class="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm font-semibold">
-            <a href="index.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors" data-i18n="nav_home_emoji">Ana Sayfa</a>
-            <a href="lise-skoru.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors" data-i18n="nav_lise_skoru_emoji">Lise Skoru</a>
-            <a href="tercih-sihirbazi.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors" data-i18n="nav_tercih_sihirbazi_emoji">Tercih Sihirbazı</a>
-            <a href="edunode.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors" data-i18n="nav_edunode_emoji">EduNode</a>
-            <a href="favorilerim.html" class="text-[#8A7A72] hover:text-[#241A16] transition-colors" data-i18n="nav_favorilerim_emoji">Favorilerim</a>
-            <a href="giris.html" class="px-4 py-1.5 bg-[#241A16] text-white hover:bg-[#E8543A] rounded-full transition-all text-xs whitespace-nowrap" data-i18n="nav_giris_yap">Giriş Yap</a>
+    <header>
+        <nav class="nav-container">
+            <a href="index.html" class="logo">Edu<span>Scor</span></a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link" data-i18n="nav_home_emoji">Ana Sayfa</a></li>
+                <li><a href="lise-skoru.html" class="nav-link" data-i18n="nav_lise_skoru_emoji">Lise Skoru</a></li>
+                <li><a href="tercih-sihirbazi.html" class="nav-link" data-i18n="nav_tercih_sihirbazi_emoji">Tercih Sihirbazı</a></li>
+                <li><a href="edunode.html" class="nav-link" data-i18n="nav_edunode_emoji">EduNode</a></li>
+                <li><a href="favorilerim.html" class="nav-link" data-i18n="nav_favorilerim_emoji">Favorilerim</a></li>
+                <li><a href="giris.html" class="cta-btn" data-i18n="nav_giris_yap">Giriş Yap</a></li>
+            </ul>
             <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;background:white;">EN</button>
-        </div>
+        </nav>
     </header>
 
     <!-- Ana İçerik Konteynırı: mobilde normal akış (kaydırılabilir), masaüstünde sabit yükseklikli 2 sütun -->
