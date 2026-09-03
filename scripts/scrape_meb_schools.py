@@ -341,120 +341,37 @@ def _extract_coords(text: str) -> tuple[float | None, float | None]:
 
 
 def discover_ilceler(il_kodu: str, timeout_ms: int = 20000) -> list[dict]:
-    """Verilen il için MEB sayfasındaki ilçe seçim kutusunu (select) bulup
-    tüm ilçe kodu/adı çiftlerini döndürür.
+    """Verilen il için ilçe kodu/adı listesini döndürür.
 
-    ÖNEMLİ TEKNİK DETAY: Sayfa sadece ?ILKODU=X ile açıldığında ilçe kutusu
-    DOM'da hiç oluşmuyor - MEB'in JS'i ilçe listesini yalnızca il seçim
-    kutusunun (name='ILADI') 'onChange' olayı GERÇEKTEN tetiklendiğinde AJAX
-    ile getiriyor. URL parametresiyle önceden seçili gelmesi bu olayı
-    tetiklemiyor. Bu yüzden Playwright ile il kutusunu bilerek tekrar
-    seçiyoruz (aynı değeri seçsek de onChange olayını tetikler) - bunu
-    canlı ortamda gözlemleyip düzelttik.
+    ÖNEMLİ (GÜNCELLEME): MEB sitesi ilçe seçim kutusunu (dropdown) HEM DOM'dan
+    HEM arka plan AJAX isteklerinden tamamen kaldırdı (canlı testlerle
+    doğrulandı - ne DOM'da <select> var, ne network trafiğinde ilçe içeren
+    bir istek var). Bu yüzden ilçe kodları artık MEB'ten DEĞİL, Supabase'deki
+    'meb_il_ilce_kodlari' referans tablosundan okunuyor. Bu tablo, üçüncü
+    taraf açık kaynaklı bir projeden (ensarkovankaya/meb-okullar, 2017,
+    dropdown hâlâ varken toplanmış) alındı ve canlı MEB testiyle doğrulandı
+    (Ankara=6, Etimesgut=27 - birebir eşleşiyor). İdari il/ilçe yapısı
+    nadiren değiştiği için bu veri hâlâ geçerli kabul ediliyor.
     """
-    url = f"{MEB_URL}?ILKODU={il_kodu}"
-    ilceler: list[dict] = []
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not key:
+        print("HATA: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY yok, ilçe referans tablosu okunamıyor.")
+        return []
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(url, wait_until="networkidle", timeout=timeout_ms)
-        page.wait_for_timeout(1000)
-
-        # İl seçim kutusunu bul ve değerini "tekrar seç" - bu onChange'i tetikler
-        il_select = page.query_selector("select[name='ILADI']") or page.query_selector("select#ILADI")
-        if not il_select:
-            print("HATA: İl seçim kutusu (ILADI) bulunamadı.")
-            browser.close()
-            return ilceler
-
-        before_count = len(page.query_selector_all("select"))
-        try:
-            il_select.select_option(value=str(il_kodu))
-        except Exception as e:
-            print(f"UYARI: İl kutusu seçilirken hata: {e} (value ile olmadıysa label ile deneniyor)")
-
-        # onChange sonrası AJAX'in ilçe kutusunu DOM'a eklemesini/doldurmasını bekle
-        try:
-            page.wait_for_function(
-                "(before) => document.querySelectorAll('select').length > before",
-                arg=before_count, timeout=timeout_ms,
-            )
-        except Exception:
-            print("UYARI: Yeni bir <select> DOM'a eklenmedi (belki zaten vardı, devam ediliyor).")
-        page.wait_for_timeout(1500)
-
-        all_selects = page.query_selector_all("select")
-        print(f"Sayfada {len(all_selects)} adet <select> bulundu (il kutusu tetiklendikten sonra)...")
-
-        il_select_name = (il_select.get_attribute("name") or "").upper()
-        il_select_id = (il_select.get_attribute("id") or "").upper()
-
-        ilce_select = None
-        for sel in all_selects:
-            name_attr = (sel.get_attribute("name") or "").upper()
-            id_attr = (sel.get_attribute("id") or "").upper()
-            print(f"  <select> name='{name_attr}' id='{id_attr}'")
-            # ÖNEMLİ: Playwright ElementHandle'ları Python '==' ile karşılaştırmak
-            # DOM eşitliğini DEĞİL nesne referans eşitliğini kontrol eder - bu da
-            # aynı elemana işaret etseler bile hep 'eşit değil' çıkmasına, ve il
-            # kutusunun (ILADI) kendisinin yanlışlıkla ilçe kutusu sanılmasına
-            # yol açıyordu. Bunun yerine name/id STRING'ini karşılaştırıyoruz.
-            if name_attr == il_select_name and id_attr == il_select_id:
-                continue
-            if "ILCE" in name_attr or "ILCE" in id_attr or "ILÇE" in name_attr:
-                ilce_select = sel
-                break
-
-        # Hiçbiri 'ILCE' içermiyorsa, il kutusu dışındaki İLK yeni/farklı select'i dene
-        if not ilce_select:
-            for sel in all_selects:
-                name_attr = (sel.get_attribute("name") or "").upper()
-                id_attr = (sel.get_attribute("id") or "").upper()
-                if name_attr == il_select_name and id_attr == il_select_id:
-                    continue
-                if "LENGTH" not in name_attr:  # sayfalama uzunluk kutusunu ele
-                    ilce_select = sel
-                    print(f"Not: 'ILCE' içeren isim bulunamadı, en olası aday deneniyor: name='{name_attr}'")
-                    break
-
-        if not ilce_select:
-            print("UYARI: İlçe seçim kutusu bulunamadı. Sayfa yapısı beklenenden farklı olabilir.")
-            browser.close()
-            return ilceler
-
-        # GÜVENLİK KONTROLÜ: Yanlışlıkla il kutusunu tekrar seçmediğimizden emin
-        # olalım - eğer bulunan kutunun name/id'si il kutusuyla AYNIYSA (yukarıdaki
-        # karşılaştırma bir şekilde atlanmışsa) ya da seçenek sayısı 70-85 arası
-        # gibi "81 il" sayısına çok yakınsa (gerçek bir ilin ilçe sayısı bu kadar
-        # olamaz), dur ve hata ver - garbage veri toplamayı önle.
-        ilce_name_check = (ilce_select.get_attribute("name") or "").upper()
-        ilce_id_check = (ilce_select.get_attribute("id") or "").upper()
-        if ilce_name_check == il_select_name and ilce_id_check == il_select_id:
-            print("HATA: Bulunan 'ilçe' kutusu il kutusuyla birebir aynı (name/id eşleşiyor). "
-                  "Sayfa yapısı beklenmedik - güvenlik için durduruluyor.")
-            browser.close()
-            return ilceler
-
-        options_preview = ilce_select.query_selector_all("option")
-        preview_count = len([o for o in options_preview if (o.get_attribute("value") or "").strip() not in ("", "0")])
-        if preview_count >= 70:
-            print(f"HATA: Bulunan kutuda {preview_count} seçenek var - bu bir İL listesi gibi görünüyor "
-                  f"(Türkiye'de 81 il var), gerçek bir ilin ilçe listesi olamaz. Güvenlik için durduruluyor.")
-            browser.close()
-            return ilceler
-
-        options = ilce_select.query_selector_all("option")
-        for opt in options:
-            value = (opt.get_attribute("value") or "").strip()
-            label = opt.inner_text().strip()
-            if value and value != "0":
-                ilceler.append({"kod": value, "ad": label})
-
-        browser.close()
-
-    print(f"{len(ilceler)} ilçe bulundu: {[i['ad'] for i in ilceler]}")
-    return ilceler
+    try:
+        req = urllib.request.Request(
+            f"{url}/rest/v1/meb_il_ilce_kodlari?il_kodu=eq.{il_kodu}&select=ilce_kodu,ilce_adi&order=ilce_kodu",
+            headers={"apikey": key, "Authorization": f"Bearer {key}"},
+        )
+        with urllib.request.urlopen(req, timeout=timeout_ms / 1000) as resp:
+            rows = json.loads(resp.read().decode("utf-8"))
+        ilceler = [{"kod": str(r["ilce_kodu"]), "ad": r["ilce_adi"]} for r in rows]
+        print(f"{len(ilceler)} ilçe bulundu (Supabase referans tablosundan): {[i['ad'] for i in ilceler]}")
+        return ilceler
+    except Exception as e:
+        print(f"HATA: İlçe referans tablosu okunamadı: {type(e).__name__}: {e}")
+        return []
 
 
 def main():
@@ -506,29 +423,39 @@ def main():
         return
 
     if args.all_ilceler:
-        # ÖNEMLİ (Ağustos 2026 güncellemesi): MEB sitesi yeniden tasarlandı ve
-        # ilçe seçim kutusunu KALDIRDI - artık bir il için TÜM kurumlar tek bir
-        # sayfalı tabloda listeleniyor (isim zaten "İL - İLÇE - Kurum Adı"
-        # formatında). Bu yüzden ilçe döngüsüne hiç gerek yok; tek bir çağrı
-        # tüm ili (sayfalayarak) çeker, ilçe adını da isimden çıkarıyoruz.
-        print(f"Tüm il modu (ilçe filtresi yok - MEB artık desteklemiyor): il={args.il_kodu}")
-        all_data = scrape_okullar(args.il_kodu, None)
+        # ÖNEMLİ (Eylül 2026 güncellemesi): MEB'in "tüm il, ilçesiz" sorgusu
+        # (?ILKODU=X) SUNUCU TARAFINDA kasıtlı/varsayılan olarak SINIRLI veri
+        # döndürüyor (Ankara'da gerçek 2533 kurum varken sadece 181 kayıt -
+        # DataTables'ın kendi "toplam kayıt" bilgisiyle doğrulandı, script
+        # hatası değil). İlçe seçim kutusu da MEB'den kaldırıldığı için
+        # ilçe kodları artık Supabase'deki 'meb_il_ilce_kodlari' referans
+        # tablosundan okunuyor (bkz. discover_ilceler docstring'i) ve HER
+        # İLÇE İÇİN AYRI sorgu yapılıyor - bu yöntem Etimesgut testinde
+        # 145/145 (%100) doğru sonuç vermişti, sunucu tarafında hâlâ çalışıyor.
+        ilceler = discover_ilceler(args.il_kodu)
+        if not ilceler:
+            print(f"HATA: İl {args.il_kodu} için ilçe listesi bulunamadı (referans tabloda kayıt yok olabilir).")
+            return
 
-        for row in all_data:
-            parts = [p.strip() for p in row["raw_name"].split(" - ", 2)]
-            if len(parts) >= 2:
-                row["il_ad"] = parts[0]
-                row["ilce_ad"] = parts[1]
-                row["raw_name"] = parts[2] if len(parts) > 2 else parts[1]
-            else:
-                row["il_ad"] = None
-                row["ilce_ad"] = None
+        print(f"İl {args.il_kodu} için {len(ilceler)} ilçe bulundu, sırayla çekiliyor...")
+        all_data = []
+        for idx, ilce in enumerate(ilceler, 1):
+            print(f"\n=== [{idx}/{len(ilceler)}] {ilce['ad']} (kod={ilce['kod']}) ===")
+            try:
+                ilce_data = scrape_okullar(args.il_kodu, ilce["kod"])
+                for row in ilce_data:
+                    row["ilce_ad"] = ilce["ad"]
+                all_data.extend(ilce_data)
+                print(f"  {ilce['ad']}: {len(ilce_data)} kayıt (toplam: {len(all_data)})")
+            except Exception as e:
+                print(f"  HATA: {ilce['ad']} çekilemedi -> {e}")
 
-        out_path = Path(args.output)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
+            # Her ilçe sonrası ara kayıt (iş yarıda kesilse bile veri kaybolmasın)
+            out_path = Path(args.output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        print(f"\nTOPLAM {len(all_data)} kayıt -> {out_path}")
+        print(f"\nTOPLAM {len(all_data)} kayıt ({len(ilceler)} ilçe) -> {args.output}")
         return
 
     print(f"MEB verisi çekiliyor: il={args.il_kodu} ilçe={args.ilce_kodu}")
