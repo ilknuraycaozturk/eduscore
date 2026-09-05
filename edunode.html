@@ -194,6 +194,10 @@
 
         <p class="text-center text-xs text-brandGray mb-4">👆 Bir okula (düğüme) tıklayarak oradan çıkan kariyer yollarını görün — bir kariyere tıklayarak da o kişinin tam hikayesine ulaşın</p>
 
+        <p class="text-center text-[11px] text-brandGray/80 mb-6 max-w-xl mx-auto">
+            🌱 EduNode, sınırlı sayıda gözlemlenen kayıtla çalışan, geliştirilmeye devam eden bir özelliktir. Kariyer kategorileri mevcut kayıtlardan çıkarılmıştır ve resmi bir başarı tanımı değildir.
+        </p>
+
         <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
             <button id="viewGraphBtn" class="text-xs font-bold px-4 py-1.5 rounded-full bg-brandDark text-white transition-all">🕸️ Grafik</button>
             <button id="viewListBtn" class="text-xs font-bold px-4 py-1.5 rounded-full bg-white border border-slate-200 text-brandDark hover:border-brandRed transition-all">📋 Liste</button>
@@ -206,7 +210,7 @@
 
         <!-- Mobil/alternatif liste görünümü - grafiği sürükleyip yakınlaştırmak
              istemeyen kullanıcılar için basit bir kart listesi. -->
-        <div id="listView" class="hidden space-y-3 mb-6"></div>
+
 
         <div id="legend" class="flex flex-wrap justify-center gap-4 text-[11px] text-brandGray mb-8"></div>
 
@@ -299,6 +303,7 @@
             universite: '#241A16', kariyer: '#CC3F28',
         };
         const PERSON_COLORS = ['#E8543A', '#241A16', '#8A7A72', '#C97B63', '#B0402C'];
+        let currentJourneys = [];
 
         async function load() {
             const { data: people, error: e1 } = await sb.from('notable_people').select('*').order('name');
@@ -314,19 +319,42 @@
 
             renderGraph(people, journeys, institutionParam);
             renderLegend();
+            renderCategoryFilters(people);
             renderListView(people, journeys);
             setupViewToggle();
             setupAlumniModal();
+        }
+
+        let activeCategory = null; // null = tümü
+
+        function renderCategoryFilters(people) {
+            const categories = [...new Set(people.map(p => p.career_category).filter(Boolean))].sort();
+            if (categories.length === 0) return;
+            const el = document.getElementById('categoryFilters');
+            el.classList.remove('hidden');
+            el.innerHTML = [
+                `<button data-cat="" class="cat-filter-btn text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${!activeCategory ? 'bg-brandRed text-white' : 'bg-slate-100 text-brandGray hover:bg-slate-200'}">Tümü</button>`,
+                ...categories.map(c => `<button data-cat="${c}" class="cat-filter-btn text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${activeCategory === c ? 'bg-brandRed text-white' : 'bg-slate-100 text-brandGray hover:bg-slate-200'}">${c}</button>`),
+            ].join('');
+            el.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeCategory = btn.dataset.cat || null;
+                    renderCategoryFilters(people);
+                    renderListView(people, currentJourneys);
+                });
+            });
         }
 
         // ÖNEMLİ: Grafiği sürükleyip yakınlaştırmak istemeyen ya da küçük
         // ekranlarda zorlanan kullanıcılar için basit bir liste/kart
         // görünümü - her kişi için okul->kariyer özetini kart olarak gösterir.
         function renderListView(people, journeys) {
+            currentJourneys = journeys;
+            const filtered = activeCategory ? people.filter(p => p.career_category === activeCategory) : people;
             const journeysByPerson = {};
             journeys.forEach(j => { (journeysByPerson[j.person_id] = journeysByPerson[j.person_id] || []).push(j); });
 
-            document.getElementById('listView').innerHTML = people.map(p => {
+            document.getElementById('listView').innerHTML = filtered.map(p => {
                 const steps = (journeysByPerson[p.id] || []).sort((a, b) => a.order_index - b.order_index);
                 const okul = steps.find(s => s.stage === 'lise' || s.stage === 'ortaokul');
                 const okulAdi = okul ? (okul.institutions ? okul.institutions.name.replace(/^[A-ZÇĞİÖŞÜ]+ - [A-ZÇĞİÖŞÜ ]+ - /, '') : okul.custom_label) : '—';
