@@ -35,7 +35,24 @@
 
         const { data: profile } = await sbGuardClient
             .from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-        if (!profile || profile.role !== 'school_admin') return; // sadece B2B (kurum yöneticisi)
+
+        if (!profile) {
+            // ÖNEMLİ: Profil hiç yoksa (özellikle Google OAuth ile ilk kez giriş
+            // yapan kullanıcılarda oluşan boşluk - giris.html'deki email/password
+            // akışı kendi profilini oluşturuyordu, ama OAuth akışı doğrudan
+            // index.html'e yönlendirdiği için o kontrol hiç çalışmıyordu) burada
+            // oluşturuyoruz. user_metadata alan adları provider'a göre değişebildiği
+            // için (full_name/name, avatar_url/picture) ikisi de deneniyor.
+            const meta = session.user.user_metadata || {};
+            await sbGuardClient.from('profiles').insert({
+                id: session.user.id,
+                full_name: meta.full_name || meta.name || null,
+                avatar_url: meta.avatar_url || meta.picture || null,
+            });
+            return; // yeni kullanıcı varsayılan rolde (parent_student) - B2B takibi gerekmiyor
+        }
+
+        if (profile.role !== 'school_admin') return; // sadece B2B (kurum yöneticisi)
 
         ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
             document.addEventListener(evt, resetTimer, { passive: true });
