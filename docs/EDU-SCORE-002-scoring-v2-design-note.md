@@ -131,14 +131,18 @@ v1 (`v1_partial_3of9`, `1aef7c78-...`) **değiştirilmeyecek/silinmeyecek.** v2,
 
 ---
 
-## Açık Karar Listesi (Sizin onayınızı bekliyor)
+## Karar Listesi (07.09.2026 tarihinde netleştirildi)
 
-1. Öneri 2 (evidence_coverage alanı) kabul ediliyor mu?
-2. Öneri 3'teki `criteria_available` için "hangi kriter hangi kurum türüne uygulanır" kural seti ayrı bir alt-görev olarak ele alınsın mı?
-3. Öneri 4 (minimum eşik) şimdilik tamamen ertelensin mi, yoksa Simulation/Evaluation'a bir sonraki deney olarak mı alınsın?
-4. Öneri 6'daki yeniden hesaplama ne zaman yapılsın — bu tasarım onaylandıktan hemen sonra mı, yoksa MEB scraper'ın otomatik/aylık turu tüm 81 ili bir kez daha tamamladıktan sonra mı (veri daha da güncel olur)?
+1. **Evidence Coverage alanı (Öneri 2):** ✅ **Kabul edildi.** Düşük risk, yüksek değer — mevcut hiçbir hesaplamayı bozmuyor.
+2. **`criteria_available` kural seti (Öneri 3):** ✅ **Ayrı bir alt-görev olarak ele alınacak.** Şimdilik `evidence_coverage`, kurum türüne göre payda inceliği olmadan, basitçe toplam 100 ağırlık üzerinden hesaplanacak. "Hangi kriter hangi kurum türüne uygulanır" sorusu (Trust v0.1'deki lise-özel kriter ayrımına benzer) ayrıca ele alınacak.
+3. **Minimum kanıt eşiği (Öneri 4):** ⏸️ **Ertelendi.** Simulation/Evaluation'ın bekleyen deneyler listesine eklendi — önce `evidence_coverage`'ın gerçek dağılımı (kaç kurum hangi aralıkta) gözlemlenecek, eşik tartışması o zaman somutlaşacak.
+4. **Yeniden hesaplama zamanlaması (Öneri 6):** 🔓 **Hâlâ açık.** İki seçenek makul kabul edildi (tasarım onayından hemen sonra / MEB otomatik turunun 81 ili tamamlamasından sonra) — kesin zamanlama kararı henüz verilmedi.
 
-## Açık Sorular
+## Açık Sorulara Cevaplar (07.09.2026)
 
-1. `evidence_coverage` kullanıcı arayüzüne hiç yansıtılacak mı, yoksa Trust Score gibi şimdilik sadece backend'de mi kalacak?
-2. Öneri 4'teki eşik konsepti kabul edilirse, eşiğin altındaki kurumlar için `success_score` hâlâ hesaplanıp saklanmalı mı (sadece etiketlenerek), yoksa hiç hesaplanmamalı mı?
+1. **`evidence_coverage` UI'a yansısın mı?** ➡️ **Hayır, şimdilik.** Trust Score ile aynı mantık: önce backend'de var olsun, Simulation/Evaluation ile faydası test edilsin, sonra UI kararı ayrıca verilsin.
+2. **Eşik altı kurumlar için score hesaplansın mı?** ➡️ **Evet, hesaplansın ama etiketlensin.** "Veri olmayan kriter asla 0 sayılmaz" ilkesiyle tutarlı — az kanıt, "veri yok" demek değildir.
+
+---
+
+*Bu bölüm, tasarım aşamasının onaylandığını gösterir. Kod henüz yazılmamıştır — uygulama, Karar 4'teki zamanlama netleştiğinde ayrı bir onayla başlayacaktır.*
