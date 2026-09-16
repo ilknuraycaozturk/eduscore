@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduScor | İletişim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#E8543A',
+                        brandRedDark: '#CC3F28',
+                        brandDark: '#241A16',
+                        brandGray: '#8A7A72',
+                        brandBg: '#FDF8F5'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+    <style>
+        /* ===== EduScor Standart Header (index.html ile birebir aynı) ===== */
+        header {
+            background-color: rgba(255, 253, 251, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid #F3EFEA;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: #3D2D27;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0px;
+            letter-spacing: -0.5px;
+        }
+        .logo span { color: #E8543A; }
+        .nav-menu { display: flex; align-items: center; gap: 32px; list-style: none; }
+        .nav-link {
+            text-decoration: none; color: #3D2D27; font-weight: 500; font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+        }
+        .nav-link:hover, .nav-link.active { color: #E8543A; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -6px; left: 0; width: 0; height: 2px;
+            background-color: #E8543A; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 2px;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        .cta-btn {
+            background-color: #241A16; color: #FFFFFF; padding: 12px 24px; border-radius: 12px;
+            text-decoration: none; font-weight: 600; font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #241A16;
+        }
+        .cta-btn:hover { background-color: transparent; color: #241A16; transform: translateY(-2px); }
+        .cta-btn-outline {
+            background-color: transparent; color: #241A16; padding: 11px 20px; border-radius: 12px;
+            text-decoration: none; font-weight: 600; font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1.5px solid #241A16;
+        }
+        .cta-btn-outline:hover { background-color: #241A16; color: #FFFFFF; }
+        .menu-toggle { display: none; flex-direction: column; gap: 6px; cursor: pointer; border: none; background: none; padding: 4px; }
+        .menu-toggle span { display: block; width: 24px; height: 2px; background-color: #241A16; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        @media (max-width: 1100px) {
+            .nav-container { padding: 16px 24px; }
+            .menu-toggle { display: flex; }
+            .nav-menu {
+                position: fixed; top: 75px; right: -100%; width: 100%; height: calc(100vh - 75px);
+                background-color: #FFFFFF; flex-direction: column; padding: 40px; gap: 24px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 12px 40px rgba(36, 26, 22, 0.08);
+                align-items: flex-start;
+            }
+            .nav-menu.active { right: 0; }
+            .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+            .menu-toggle.active span:nth-child(2) { opacity: 0; }
+            .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+            .nav-menu .cta-btn, .nav-menu .cta-btn-outline { width: 100%; text-align: center; box-sizing: border-box; }
+        }
+    </style>
+    <script src="i18n.js?v=5"></script>
+    <script src="session-guard.js?v=2"></script>
+</head>
+<body class="bg-brandBg text-brandDark min-h-screen">
+
+    <header>
+        <nav class="nav-container">
+            <a href="index.html" class="logo">Edu<span>Scor</span></a>
+            <div style="display:flex; align-items:center; gap:16px;">
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link" data-i18n="nav_home">Ana Sayfa</a></li>
+                    <li><a href="nasil-calisir.html" class="nav-link" data-i18n="nav_how">Nasıl Çalışır?</a></li>
+                    <li><a href="metodoloji.html" class="nav-link" data-i18n="nav_methodology">Metodoloji</a></li>
+                    <li><a href="edunode.html" class="nav-link" data-i18n="nav_edunode">EduNode</a></li>
+                    <li><a href="giris.html" class="nav-link" data-i18n="nav_login">Giriş Yap</a></li>
+                    <li><a href="kurumlar-icin.html" class="cta-btn-outline" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a></li>
+                    <li><a href="explorer.html" class="cta-btn" data-i18n="nav_explorer">Platformu Keşfet</a></li>
+                </ul>
+                <button id="langToggleBtn" onclick="toggleLang()" style="border:1px solid #ddd;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:white;flex-shrink:0;">EN</button>
+                <button class="menu-toggle" id="menuToggle" aria-label="Menüyü Aç">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-10" style="margin-top:88px;">
+        <h1 class="text-3xl font-extrabold mb-2">İletişim</h1>
+        <p class="text-sm text-brandGray mb-10">Sorularınız, geri bildirimleriniz veya kurum başvurularınız için bize ulaşabilirsiniz.</p>
+
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
+            <h2 class="text-lg font-bold text-brandRed mb-3">📧 Genel İletişim</h2>
+            <p class="text-sm text-brandGray leading-relaxed mb-2">
+                Her türlü soru, öneri ve geri bildirim için:
+            </p>
+            <a href="mailto:destek@eduscor.com" class="text-brandRed font-semibold underline text-base">destek@eduscor.com</a>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
+            <h2 class="text-lg font-bold text-brandRed mb-3">🏫 Kurumunuzu mu Yönetiyorsunuz?</h2>
+            <p class="text-sm text-brandGray leading-relaxed">
+                Kurumunuzun profilini sahiplenmek, bilgilerini güncellemek veya EduScor hakkında kurumsal
+                sorularınız için <a href="kurumlar-icin.html" class="text-brandRed underline">Kurumlar İçin sayfamızı</a>
+                inceleyebilir ya da doğrudan yukarıdaki adrese e-posta gönderebilirsiniz.
+            </p>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-brandRed mb-3">🔒 Gizlilik ve Veri Talepleri</h2>
+            <p class="text-sm text-brandGray leading-relaxed">
+                Verilerinizin nasıl kullanıldığı, silme talepleri ve KVKK ile ilgili sorularınız için
+                <a href="gizlilik-politikasi.html" class="text-brandRed underline">Gizlilik Politikamızı</a>
+                inceleyebilir veya aynı adresten bize yazabilirsiniz.
+            </p>
+        </section>
+    </main>
+
+    <footer style="width:100%; border-top:1px solid #F3EFEA; padding:24px 16px; margin-top:8px; text-align:center;">
+        <nav style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 20px; margin-bottom:12px;">
+            <a href="index.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_home">Ana Sayfa</a>
+            <a href="metodoloji.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_methodology">Metodoloji</a>
+            <a href="edunode.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_edunode">EduNode</a>
+            <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">Hakkımızda</a>
+            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">İletişim</a>
+        </nav>
+        <p style="font-size:11px; color:#8A7A72; margin:0; text-align:center;">
+            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;">Gizlilik Politikası</a>
+        </p>
+    </footer>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+        if (menuToggle && navMenu) {
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuToggle.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    menuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                });
+            });
+            document.addEventListener('click', (e) => {
+                if (!navMenu.contains(e.target) && !menuToggle.contains(e.target) && navMenu.classList.contains('active')) {
+                    menuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
