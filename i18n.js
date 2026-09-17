@@ -296,6 +296,9 @@ const I18N_DICT = {
     ticker_title_23: { tr: "Sporcu, Beşiktaş Onursal Başkanı", en: "Athlete, Honorary President of Beşiktaş" },
     ticker_title_24: { tr: "İş İnsanı, Turkcell Eski CEO'su", en: "Businessman, Former CEO of Turkcell" },
     ticker_title_25: { tr: "İş İnsanı, Koç Holding Kurucusu", en: "Businessman, Founder of Koç Holding" },
+
+    // --- Sayfa Başlığı (tarayıcı sekmesi) ---
+    page_title_home: { tr: "EduScor | Eğitim Kararı Şansa Bırakılmaz", en: "EduScor | Education Decisions Shouldn't Be Left to Chance" },
 };
 
 function getLang() {
