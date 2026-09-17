@@ -324,6 +324,7 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const institutionParam = urlParams.get('institution');
+            const personParam = urlParams.get('person');
 
             renderGraph(people, journeys, institutionParam);
             renderLegend();
@@ -331,6 +332,17 @@
             renderListView(people, journeys);
             setupViewToggle();
             setupAlumniModal();
+
+            // ÖNEMLİ: Ana sayfadaki Başarı Hikayeleri şeridinden gelen kişiye
+            // özel linkler (?person=ID) için - sayfa açılır açılmaz o kişinin
+            // detayını otomatik göster.
+            if (personParam) {
+                const person = people.find(p => p.id === personParam);
+                if (person) {
+                    const personJourney = journeys.filter(j => j.person_id === personParam);
+                    showPersonDetail(person, personJourney);
+                }
+            }
         }
 
         let activeCategory = null; // null = tümü
