@@ -579,6 +579,35 @@
             .manifesto-box { padding: 32px; }
             .manifesto-box h3 { font-size: 24px; }
         }
+
+        /* ===== Başarı Hikayeleri Şeridi (Marquee) ===== */
+        .success-ticker {
+            width: 100%;
+            background-color: #241A16;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px 0;
+            position: relative;
+        }
+        .success-ticker-track {
+            display: inline-block;
+            animation: tickerScroll 60s linear infinite;
+        }
+        .success-ticker-track:hover { animation-play-state: paused; }
+        .success-ticker-item {
+            display: inline-flex;
+            align-items: center;
+            color: #F3EFEA;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 0 28px;
+        }
+        .success-ticker-item strong { color: #E8543A; font-weight: 700; margin-right: 6px; }
+        .success-ticker-sep { color: #6b5951; margin: 0 4px; }
+        @keyframes tickerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
     </style>
     <script src="i18n.js?v=5"></script>
     <script src="session-guard.js?v=2"></script>
@@ -608,6 +637,13 @@
             </div>
         </nav>
     </header>
+
+    <!-- ===== Başarı Hikayeleri Şeridi (EduNode'daki gerçek 25 kayıttan) ===== -->
+    <div class="success-ticker">
+        <div class="success-ticker-track">
+            <span class="success-ticker-item"><strong>Abdullah Atalar</strong>Bilim İnsanı, Bilkent Üniversitesi Eski Rektörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Ahmet Akgiray</strong>Mühendis, NASA Mars Projesi</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Akın Akınözü</strong>Oyuncu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Alperen Şengün</strong>NBA Basketbolcusu (Houston Rockets)</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Aziz Sancar</strong>Nobel Ödüllü Bilim İnsanı (Kimya, 2015)</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Barış Manço</strong>Sanatçı, Türkiye Cumhuriyeti Devlet Sanatçısı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Cahit Arf</strong>Matematikçi, "Arf Değişmezi" Teorisinin Bulucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Cahit Berkay</strong>Müzisyen, Besteci, Moğollar Grubu Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Can Yaman</strong>Oyuncu, Uluslararası Yıldız</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Canan Dağdeviren</strong>Fizik Mühendisi, MIT Profesörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Feryal Özel</strong>Astrofizikçi, İlk Kara Delik Fotoğrafı Ekibi Üyesi</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Gazi Yaşargil</strong>Beyin Cerrahı, "Yüzyılın Beyin Cerrahı"</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Haldun Dormen</strong>Tiyatro Yönetmeni ve Oyuncusu, Devlet Sanatçısı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Hamdi Ulukaya</strong>Girişimci, Chobani Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Hüsnü Özyeğin</strong>İş İnsanı, Finansbank Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>İlber Ortaylı</strong>Tarihçi, Akademisyen, Yazar</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Melih Kibar</strong>Besteci ve Piyanist</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Murat Ülker</strong>İş İnsanı, Yıldız Holding Yönetim Kurulu Başkanı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Mustafa Önder Kıyıklık</strong>1994 ÖYS Fen-Matematik Türkiye Birincisi</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Nevzat Tarhan</strong>Psikiyatrist, Üsküdar Üniversitesi Kurucu Rektörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Oya Ünlü Kızıl</strong>Ekonomist, Dünya Bankası Direktörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Sertab Erener</strong>Sanatçı, 2003 Eurovision Şampiyonu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Süleyman Seba</strong>Sporcu, Beşiktaş Onursal Başkanı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Süreyya Ciliv</strong>İş İnsanı, Turkcell Eski CEO'su</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Vehbi Koç</strong>İş İnsanı, Koç Holding Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Abdullah Atalar</strong>Bilim İnsanı, Bilkent Üniversitesi Eski Rektörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Ahmet Akgiray</strong>Mühendis, NASA Mars Projesi</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Akın Akınözü</strong>Oyuncu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Alperen Şengün</strong>NBA Basketbolcusu (Houston Rockets)</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Aziz Sancar</strong>Nobel Ödüllü Bilim İnsanı (Kimya, 2015)</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Barış Manço</strong>Sanatçı, Türkiye Cumhuriyeti Devlet Sanatçısı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Cahit Arf</strong>Matematikçi, "Arf Değişmezi" Teorisinin Bulucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Cahit Berkay</strong>Müzisyen, Besteci, Moğollar Grubu Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Can Yaman</strong>Oyuncu, Uluslararası Yıldız</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Canan Dağdeviren</strong>Fizik Mühendisi, MIT Profesörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Feryal Özel</strong>Astrofizikçi, İlk Kara Delik Fotoğrafı Ekibi Üyesi</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Gazi Yaşargil</strong>Beyin Cerrahı, "Yüzyılın Beyin Cerrahı"</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Haldun Dormen</strong>Tiyatro Yönetmeni ve Oyuncusu, Devlet Sanatçısı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Hamdi Ulukaya</strong>Girişimci, Chobani Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Hüsnü Özyeğin</strong>İş İnsanı, Finansbank Kurucusu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>İlber Ortaylı</strong>Tarihçi, Akademisyen, Yazar</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Melih Kibar</strong>Besteci ve Piyanist</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Murat Ülker</strong>İş İnsanı, Yıldız Holding Yönetim Kurulu Başkanı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Mustafa Önder Kıyıklık</strong>1994 ÖYS Fen-Matematik Türkiye Birincisi</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Nevzat Tarhan</strong>Psikiyatrist, Üsküdar Üniversitesi Kurucu Rektörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Oya Ünlü Kızıl</strong>Ekonomist, Dünya Bankası Direktörü</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Sertab Erener</strong>Sanatçı, 2003 Eurovision Şampiyonu</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Süleyman Seba</strong>Sporcu, Beşiktaş Onursal Başkanı</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Süreyya Ciliv</strong>İş İnsanı, Turkcell Eski CEO'su</span><span class="success-ticker-sep">●</span><span class="success-ticker-item"><strong>Vehbi Koç</strong>İş İnsanı, Koç Holding Kurucusu</span><span class="success-ticker-sep">●</span>
+        </div>
+    </div>
 
     <!-- Hero Bölümü -->
     <section class="hero-section">
