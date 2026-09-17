@@ -341,6 +341,11 @@ function applyI18n() {
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
         el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
     });
+    // data-i18n-label: <optgroup label="..."> gibi textContent/innerHTML
+    // kullanamayan elemanların label attribute'unu çevirir.
+    document.querySelectorAll("[data-i18n-label]").forEach((el) => {
+        el.setAttribute("label", t(el.getAttribute("data-i18n-label")));
+    });
 
     const toggleBtn = document.getElementById("langToggleBtn");
     if (toggleBtn) toggleBtn.textContent = t("lang_toggle_label");
