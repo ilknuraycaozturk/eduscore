@@ -232,6 +232,70 @@ const I18N_DICT = {
     how_badge_draft_rel: { tr: "Orta — kaynağı resmi ama güncelliği teyitli değil", en: "Medium — source is official but currency is unverified" },
 
     how_cta: { tr: "Aramaya Başla →", en: "Start Searching →" },
+
+    // --- Ana Sayfa: Manifesto ödeme notu ---
+    manifesto_payment_note: { tr: "🔒 Ödeme, hiçbir kurumun EduScor puanını iyileştirmez.", en: "🔒 Payment never improves any institution's EduScor score." },
+
+    // --- Ana Sayfa: Lise Öncelikleri kartı ---
+    lise_priority_title: { tr: "Öncelikleriniz", en: "Your Priorities" },
+    lise_priority_subtitle: { tr: "(isteğe bağlı — sonraki sayfada da değiştirebilirsiniz)", en: "(optional — you can also change this on the next page)" },
+
+    // --- Ana Sayfa: Segment Dropdown (yakında gelecek kategoriler) ---
+    seg_group_higher: { tr: "Yükseköğretim & Dijital", en: "Higher Education & Digital" },
+    seg_university: { tr: "05. Üniversiteler / Yükseköğretim Kurumları 🔜", en: "05. Universities / Higher Education Institutions 🔜" },
+    seg_distance: { tr: "06. Açık ve Uzaktan Eğitim Kurumları 🔜", en: "06. Open and Distance Education Institutions 🔜" },
+    seg_edtech: { tr: "07. EdTech Platformları & Dijital İçerik Sağlayıcılar 🔜", en: "07. EdTech Platforms & Digital Content Providers 🔜" },
+    seg_group_courses: { tr: "Özel Kurslar & Gelişim", en: "Private Courses & Development" },
+    seg_courses: { tr: "08. Kurslar & Özel Ders Merkezleri 🔜", en: "08. Courses & Private Tutoring Centers 🔜" },
+    seg_language: { tr: "09. Dil Okulları & Yurtdışı Eğitim 🔜", en: "09. Language Schools & Study Abroad 🔜" },
+    seg_driving: { tr: "10. Sürücü, Ulaştırma & Havacılık Akademileri 🔜", en: "10. Driving, Transportation & Aviation Academies 🔜" },
+    seg_sports_arts: { tr: "11. Spor, Sanat & Beceri Akademileri 🔜", en: "11. Sports, Arts & Skills Academies 🔜" },
+    seg_group_special: { tr: "Özel Alanlar & Kamplar", en: "Special Areas & Camps" },
+    seg_special: { tr: "12. Özel Gereksinim Eğitim Kurumları 🔜", en: "12. Special Needs Education Institutions 🔜" },
+    seg_camps: { tr: "13. Eğitim, Bilim & Gelişim Kampları 🔜", en: "13. Education, Science & Development Camps 🔜" },
+    seg_summer: { tr: "14. Yaz / Kış Okulları 🔜", en: "14. Summer / Winter Schools 🔜" },
+    seg_group_corporate: { tr: "Kurumsal, Profesyonel & Toplumsal", en: "Corporate, Professional & Community" },
+    seg_corporate: { tr: "15. Kurumsal Akademiler & Profesyonel Gelişim 🔜", en: "15. Corporate Academies & Professional Development 🔜" },
+    seg_lifelong: { tr: "16. Sürekli Eğitim & Yaşam Boyu Öğrenme 🔜", en: "16. Continuing Education & Lifelong Learning 🔜" },
+    seg_vocational: { tr: "17. Mesleki & Teknik Eğitim Merkezleri 🔜", en: "17. Vocational & Technical Education Centers 🔜" },
+    seg_stk: { tr: "18. STK, Vakıf & Topluluk Eğitimleri 🔜", en: "18. NGO, Foundation & Community Education 🔜" },
+    seg_defense: { tr: "19. Savunma, Güvenlik & Askeri Akademiler 🔜", en: "19. Defense, Security & Military Academies 🔜" },
+    seg_religious: { tr: "20. Dini & İlahiyat Eğitim Kurumları 🔜", en: "20. Religious & Theological Education Institutions 🔜" },
+
+    // --- Ana Sayfa: Konum izni mesajı ---
+    location_denied_msg: { tr: 'Konum izni verilmedi. Sorun yok — aşağıya <b>il veya ilçenizi</b> yazarak da arayabilirsiniz.', en: 'Location permission denied. No problem — you can also search by typing your <b>city or district</b> below.' },
+
+    // --- Site Geneli: Footer ---
+    footer_about: { tr: "Hakkımızda", en: "About Us" },
+    footer_contact: { tr: "İletişim", en: "Contact" },
+    footer_privacy: { tr: "Gizlilik Politikası", en: "Privacy Policy" },
+
+    // --- Ana Sayfa: Başarı Hikayeleri Şeridi (unvanlar) ---
+    ticker_title_1: { tr: "Bilim İnsanı, Bilkent Üniversitesi Eski Rektörü", en: "Scientist, Former Rector of Bilkent University" },
+    ticker_title_2: { tr: "Mühendis, NASA Mars Projesi", en: "Engineer, NASA Mars Project" },
+    ticker_title_3: { tr: "Oyuncu", en: "Actor" },
+    ticker_title_4: { tr: "NBA Basketbolcusu (Houston Rockets)", en: "NBA Basketball Player (Houston Rockets)" },
+    ticker_title_5: { tr: "Nobel Ödüllü Bilim İnsanı (Kimya, 2015)", en: "Nobel Laureate Scientist (Chemistry, 2015)" },
+    ticker_title_6: { tr: "Sanatçı, Türkiye Cumhuriyeti Devlet Sanatçısı", en: "Artist, State Artist of the Republic of Türkiye" },
+    ticker_title_7: { tr: "Matematikçi, \"Arf Değişmezi\" Teorisinin Bulucusu", en: "Mathematician, Discoverer of the \"Arf Invariant\" Theory" },
+    ticker_title_8: { tr: "Müzisyen, Besteci, Moğollar Grubu Kurucusu", en: "Musician, Composer, Founder of Moğollar Band" },
+    ticker_title_9: { tr: "Oyuncu, Uluslararası Yıldız", en: "Actor, International Star" },
+    ticker_title_10: { tr: "Fizik Mühendisi, MIT Profesörü", en: "Physics Engineer, MIT Professor" },
+    ticker_title_11: { tr: "Astrofizikçi, İlk Kara Delik Fotoğrafı Ekibi Üyesi", en: "Astrophysicist, Member of the First Black Hole Image Team" },
+    ticker_title_12: { tr: "Beyin Cerrahı, \"Yüzyılın Beyin Cerrahı\"", en: "Neurosurgeon, \"Neurosurgeon of the Century\"" },
+    ticker_title_13: { tr: "Tiyatro Yönetmeni ve Oyuncusu, Devlet Sanatçısı", en: "Theatre Director and Actor, State Artist" },
+    ticker_title_14: { tr: "Girişimci, Chobani Kurucusu", en: "Entrepreneur, Founder of Chobani" },
+    ticker_title_15: { tr: "İş İnsanı, Finansbank Kurucusu", en: "Businessman, Founder of Finansbank" },
+    ticker_title_16: { tr: "Tarihçi, Akademisyen, Yazar", en: "Historian, Academic, Author" },
+    ticker_title_17: { tr: "Besteci ve Piyanist", en: "Composer and Pianist" },
+    ticker_title_18: { tr: "İş İnsanı, Yıldız Holding Yönetim Kurulu Başkanı", en: "Businessman, Chairman of Yıldız Holding" },
+    ticker_title_19: { tr: "1994 ÖYS Fen-Matematik Türkiye Birincisi", en: "1994 ÖYS Science-Mathematics National First Place" },
+    ticker_title_20: { tr: "Psikiyatrist, Üsküdar Üniversitesi Kurucu Rektörü", en: "Psychiatrist, Founding Rector of Üsküdar University" },
+    ticker_title_21: { tr: "Ekonomist, Dünya Bankası Direktörü", en: "Economist, World Bank Director" },
+    ticker_title_22: { tr: "Sanatçı, 2003 Eurovision Şampiyonu", en: "Artist, 2003 Eurovision Champion" },
+    ticker_title_23: { tr: "Sporcu, Beşiktaş Onursal Başkanı", en: "Athlete, Honorary President of Beşiktaş" },
+    ticker_title_24: { tr: "İş İnsanı, Turkcell Eski CEO'su", en: "Businessman, Former CEO of Turkcell" },
+    ticker_title_25: { tr: "İş İnsanı, Koç Holding Kurucusu", en: "Businessman, Founder of Koç Holding" },
 };
 
 function getLang() {
