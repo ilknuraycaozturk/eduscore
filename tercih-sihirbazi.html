@@ -334,6 +334,7 @@
                 // İl filtresi varsa uygun konum id'lerini bul (Türkçe büyük/küçük
                 // harf sorununu önlemek için normalize edilmiş sütun kullanılıyor)
                 let allowedLocationIds = null;
+                let ilSuggestion = null;
                 if (ilFilter) {
                     function trNormalize(s) {
                         if (!s) return '';
@@ -347,6 +348,38 @@
                         ? await sb.from('locations').select('id').in('parent_id', provinceIds)
                         : { data: [] };
                     allowedLocationIds = new Set([...provinceIds, ...(matchingDistricts || []).map(d => d.id)]);
+
+                    // ÖNEMLİ: İl adı hiç eşleşmediyse (muhtemelen yazım hatası - Claude
+                    // Code ile yapılan tarayıcı testinde "ankra" örneğinde tespit edildi),
+                    // en yakın GERÇEK il ismini bulup "X mi demek istediniz?" öneriyoruz -
+                    // kullanıcının "bu ilde hiç okul yok" sanıp filtreyi tamamen kaldırmasını
+                    // önlemek için. Sadece küçük bir yazım hatası mesafesindeyse (≤2)
+                    // öneriyoruz; çok farklıysa yanıltıcı olur, sessiz kalıyoruz.
+                    if (provinceIds.length === 0) {
+                        const { data: allProvinces } = await sb.from('locations').select('name, name_normalized').is('parent_id', null);
+                        if (allProvinces && allProvinces.length > 0) {
+                            function levenshtein(a, b) {
+                                const m = a.length, n = b.length;
+                                const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+                                for (let i = 0; i <= m; i++) dp[i][0] = i;
+                                for (let j = 0; j <= n; j++) dp[0][j] = j;
+                                for (let i = 1; i <= m; i++) {
+                                    for (let j = 1; j <= n; j++) {
+                                        dp[i][j] = a[i - 1] === b[j - 1]
+                                            ? dp[i - 1][j - 1]
+                                            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                                    }
+                                }
+                                return dp[m][n];
+                            }
+                            let bestMatch = null, bestDist = Infinity;
+                            allProvinces.forEach(p => {
+                                const dist = levenshtein(ilNorm, p.name_normalized || '');
+                                if (dist < bestDist) { bestDist = dist; bestMatch = p.name; }
+                            });
+                            if (bestMatch && bestDist <= 2) ilSuggestion = bestMatch;
+                        }
+                    }
                 }
 
                 const filteredInst = allowedLocationIds
@@ -382,7 +415,7 @@
                 lastMatches = top;
                 lastHardConstraints = { min_yuzdelik_dilim: yuzdelik, program_slug: programSlug || null, kurum_turu: typeFilter || null, il: ilFilter || null };
 
-                renderResults(top, matches.length, yuzdelik);
+                renderResults(top, matches.length, yuzdelik, ilSuggestion);
                 setupPersonalizeSliders();
             } catch (err) {
                 showDebugError('search() hatası: ' + err.message + '\n' + (err.stack || ''));
@@ -575,7 +608,7 @@
             }).join('');
         }
 
-        function renderResults(top, totalCount, yuzdelik) {
+        function renderResults(top, totalCount, yuzdelik, ilSuggestion) {
             const section = document.getElementById('resultsSection');
             section.classList.remove('hidden');
 
@@ -586,8 +619,16 @@
 
             const list = document.getElementById('resultsList');
             if (top.length === 0) {
+                const suggestionHtml = ilSuggestion
+                    ? `<div class="mt-3 text-sm">
+                        <b class="text-brandDark">${ilSuggestion}</b> mi demek istediniz?
+                        <button onclick="document.getElementById('ilInput').value='${ilSuggestion}'; search();"
+                                class="ml-1 text-brandRed underline font-semibold">Bunu dene</button>
+                       </div>`
+                    : '';
                 list.innerHTML = `<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-brandGray">
                     Bu kriterlere uygun, verisi olan bir lise bulunamadı. Filtreleri gevşetmeyi deneyin (örn. il seçimini kaldırın).
+                    ${suggestionHtml}
                 </div>`;
                 return;
             }
