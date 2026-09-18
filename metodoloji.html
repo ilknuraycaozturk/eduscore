@@ -401,12 +401,24 @@
             // (örn. scoring_criteria.applicable_institution_types) olarak tutulmuyor, bu
             // yüzden burada kurum türü ADINDA "lise" geçen kayıtları arayarak dinamik
             // olarak hesaplanıyor. Gelecekte DB'ye taşınabilir.
+            //
+            // DÜZELTME (18.09.2026): SADECE institution_type bazlı arama yeterli değil -
+            // "Milletlerarası (Uluslararası) Okul" gibi bazı TÜR kategorileri, İlkokul/
+            // Ortaokul/Lise varyantlarını TEK bir türde topluyor. Bu yüzden kurumun KENDİ
+            // ismi (institutions.name) içinde "lise" geçip geçmediği de AYRICA kontrol
+            // edilir. Ayrıca Türkçe büyük "İ" karakteri (LİSESİ) ile ASCII "i" (lise)
+            // PostgreSQL ILIKE'de farklı eşleşebildiği için her iki varyant da aranır.
             const LISE_OZEL_KRITERLER = ['akademik_basari', 'yabanci_dil', 'universite_yerlestirme'];
-            const { data: liseTypes } = await sb.from('institution_types').select('id').ilike('name_tr', '%lise%');
+            const { data: liseTypes } = await sb.from('institution_types').select('id').or('name_tr.ilike.%lise%,name_tr.ilike.%LİSE%');
             const liseTypeIds = (liseTypes || []).map(t => t.id);
-            const { count: liseCount } = liseTypeIds.length
-                ? await sb.from('institutions').select('*', { count: 'exact', head: true }).in('institution_type_id', liseTypeIds)
-                : { count: 0 };
+            const liseOrConditions = [
+                ...(liseTypeIds.length ? [`institution_type_id.in.(${liseTypeIds.join(',')})`] : []),
+                'name.ilike.%lise%',
+                'name.ilike.%LİSE%',
+            ].join(',');
+            const { count: liseCount } = await sb.from('institutions')
+                .select('*', { count: 'exact', head: true })
+                .or(liseOrConditions);
 
             // ÖNEMLİ: Her kriter için satır ÇEKMEK yerine sadece SAYI (count) istiyoruz.
             // institution_criteria_scores tablosunda 11.000+ satır var; satır çekilseydi
