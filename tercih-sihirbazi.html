@@ -25,6 +25,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
@@ -247,8 +248,8 @@
             <div id="personalizeCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4 hidden">
                 <p class="text-xs font-bold text-brandRed uppercase tracking-wide mb-1">2. Adım</p>
                 <p class="font-bold text-brandDark text-sm mb-1">Sizin İçin Neler Önemli?</p>
-                <p class="text-xs text-brandGray mb-4">Aşağıdaki listeyi girebileceğiniz okullardan oluşturduk. Şimdi kendi önceliklerinize göre yeniden sıralayalım — okulun genel puanı değişmez, sadece SİZE göre sıralama değişir.</p>
-                <div id="weightSliders" class="space-y-3"></div>
+                <p class="text-xs text-brandGray mb-4">Aşağıdaki kriterleri sizin için <strong>en önemliden en az önemliye</strong> doğru sürükleyerek sıralayın. İlginizi çekmeyenleri kapatabilirsiniz. Okulun genel puanı değişmez, sadece SİZE göre sıralama değişir.</p>
+                <ul id="weightSliders" class="space-y-2"></ul>
                 <button onclick="personalizeResults()" class="mt-4 w-full bg-brandDark hover:bg-black text-white font-semibold text-sm py-2.5 rounded-full transition-all">✨ Bana Göre Sırala</button>
                 <p id="personalizeMsg" class="hidden text-xs mt-3 rounded-lg p-2"></p>
             </div>
@@ -391,10 +392,29 @@
             }
         }
 
+        let sortableInstance = null;
+
+        function updateRankNumbers() {
+            // Sadece işaretli (dahil edilen) kriterlere sıra numarası ver -
+            // işareti kaldırılanlar numarasız/soluk görünür ve hesaplamaya girmez.
+            let rank = 1;
+            document.querySelectorAll('#weightSliders li').forEach(li => {
+                const checkbox = li.querySelector('.criteria-checkbox');
+                const numEl = li.querySelector('.rank-num');
+                if (checkbox.checked) {
+                    numEl.textContent = rank++;
+                    li.classList.remove('opacity-40');
+                } else {
+                    numEl.textContent = '–';
+                    li.classList.add('opacity-40');
+                }
+            });
+        }
+
         function setupPersonalizeSliders() {
             // Sadece mevcut sonuç kümesinde en az bir kurumda verisi olan
-            // kriterler için slider gösteriyoruz - hiç verisi olmayan bir
-            // kritere ağırlık verdirmek kullanıcıyı yanıltır.
+            // kriterler için gösteriyoruz - hiç verisi olmayan bir kritere
+            // öncelik verdirmek kullanıcıyı yanıltır.
             const availableKeys = new Set();
             lastMatches.forEach(m => Object.keys(m.allScores).forEach(k => availableKeys.add(k)));
 
@@ -406,17 +426,27 @@
             }
             card.classList.remove('hidden');
 
-            document.getElementById('weightSliders').innerHTML = usable.map(c => `
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <label class="font-semibold text-brandDark">${c.label}</label>
-                        <span class="text-brandGray weight-val" data-for="${c.key}">Orta</span>
-                    </div>
-                    <input type="range" min="0" max="4" value="2" step="1" data-weight-key="${c.key}"
-                           class="weight-slider w-full accent-brandRed"
-                           oninput="document.querySelector('.weight-val[data-for=&quot;${c.key}&quot;]').textContent = ['Önemsiz','Az Önemli','Orta','Önemli','Çok Önemli'][this.value]">
-                </div>
+            const list = document.getElementById('weightSliders');
+            list.innerHTML = usable.map((c, i) => `
+                <li data-key="${c.key}" class="flex items-center gap-3 bg-slate-50 rounded-xl px-3 py-2.5 cursor-grab active:cursor-grabbing">
+                    <span class="rank-num font-bold text-brandRed text-sm w-5 text-center">${i + 1}</span>
+                    <span class="flex-1 text-sm font-medium text-brandDark">${c.label}</span>
+                    <input type="checkbox" checked class="criteria-checkbox w-4 h-4 accent-brandRed"
+                           onchange="updateRankNumbers()" title="Bu kriteri dikkate al">
+                    <span class="text-brandGray text-lg select-none" aria-hidden="true">☰</span>
+                </li>
             `).join('');
+
+            if (sortableInstance) sortableInstance.destroy();
+            sortableInstance = Sortable.create(list, {
+                animation: 150,
+                handle: 'li', // tüm satır sürüklenebilir (checkbox ayrı tıklanabilir kalır)
+                filter: '.criteria-checkbox',
+                preventOnFilter: false,
+                onEnd: updateRankNumbers,
+            });
+
+            updateRankNumbers();
         }
 
         async function personalizeResults() {
@@ -424,17 +454,33 @@
             btn.disabled = true;
             btn.textContent = '⏳ Hesaplanıyor...';
 
-            // Slider değerleri (0-4) -> ağırlık (0,1,2,3,4). "Önemsiz" seçilen
-            // kriter tamamen dışlanır (ağırlık 0 = hesaplamaya katkısı olmaz).
-            const weights = {};
-            document.querySelectorAll('.weight-slider').forEach(s => {
-                weights[s.dataset.weightKey] = Number(s.value);
+            // DOM sırasına göre, sadece işaretli (checkbox açık) kriterleri al.
+            // Rank Order Centroid (ROC) formülü: n kriter sıralanmışsa, i.
+            // sıradaki kriterin ağırlığı w_i = (1/n) * Σ(j=i..n) (1/j).
+            // Bkz. EDU-MATCH-001 - literatürde bilinen bir MCDM ağırlıklandırma
+            // yöntemi (SMART/SWING ailesinden), tutarsızlık matematiksel olarak
+            // imkansız çünkü tek bir sıralamadan türetiliyor.
+            const orderedKeys = [];
+            document.querySelectorAll('#weightSliders li').forEach(li => {
+                if (li.querySelector('.criteria-checkbox').checked) {
+                    orderedKeys.push(li.dataset.key);
+                }
             });
+
+            const n = orderedKeys.length;
+            const rocWeights = {};
+            if (n > 0) {
+                for (let i = 1; i <= n; i++) {
+                    let sum = 0;
+                    for (let j = i; j <= n; j++) sum += 1 / j;
+                    rocWeights[orderedKeys[i - 1]] = sum / n;
+                }
+            }
 
             const ranked = lastMatches.map(m => {
                 let weightedSum = 0, weightTotal = 0, criteriaUsed = 0;
-                Object.entries(weights).forEach(([key, w]) => {
-                    if (w === 0) return;
+                orderedKeys.forEach(key => {
+                    const w = rocWeights[key];
                     const entry = m.allScores[key];
                     if (!entry) return; // bu kurumda bu kriter yok, atla
                     weightedSum += entry.score * w;
