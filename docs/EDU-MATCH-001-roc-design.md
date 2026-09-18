@@ -63,13 +63,22 @@ Toplam = 1.0 (matematiksel olarak garanti).
 
 ---
 
-## Açık Kararlar (Onayınızı Bekliyor)
+## Karar Listesi (18.09.2026 tarihinde netleştirildi)
 
-1. **UI değişikliği:** Mevcut 0-4 slider'lar, sürükle-bırak bir sıralama listesine mi dönüştürülsün? (Bu, en büyük görsel değişiklik)
-2. **Geçiş stratejisi:** v1 (slider) tamamen kaldırılsın mı, yoksa kullanıcıya iki seçenek mi sunulsun (basit slider / sıralama modu)?
-3. **`match_runs` tablosu:** Yeni ağırlıklandırma yöntemi kaydedilirken, hangi yöntemin kullanıldığı (v1 slider mı, v2 ROC mu) ayrıca işaretlensin mi? (EDU-SCORE-002'deki `model_version` mantığına benzer bir iz kaydı)
+1. **UI:** ✅ Tam sıralama moduna geçilecek, 0-4 slider'lar **tamamen kaldırılacak** — akademik kanıt (slider'ların "anchoring bias" ve "hepsine yüksek puan verme" sorunu) ve endüstri standardı (SurveyMonkey/Qualtrics'in ranking soru tipi) bu yönde.
+2. **Katılım:** ✅ Kullanıcı sadece önemsediği kriterleri sıraya sokar — bu, 9 kriteri doğal olarak "3-8 öğe" UX sınırına indirir (sıralamaya hiç girmeyenler otomatik dışlanır, mevcut "ağırlık=0" davranışıyla eşdeğer).
+3. **Geçiş:** ✅ v1 (slider) tamamen kaldırılıyor, iki sistem bir arada tutulmayacak.
 
-## Açık Sorular
+### Kullanıcı Dostu Olma Şartı (Kullanıcı tarafından vurgulandı)
 
-1. Sıralamaya kaç kriter dahil edilebilir — sınır olmalı mı (örn. en fazla 5), yoksa kullanılabilir tüm kriterler sıralanabilir mi?
-2. Bu, önce Simulation/Evaluation ile mi (örn. birkaç örnek kullanıcı profiliyle v1 vs v2 karşılaştırması) test edilsin, yoksa doğrudan mı uygulansın?
+Bu, tasarımın merkezi ilkesi. Somut karşılıkları:
+
+- **Sürükle-bırak, dokunmatik uyumlu** — masaüstünde mouse, mobilde parmakla sürükleme aynı derecede rahat çalışmalı
+- **Az adım:** Kullanıcı sadece önemsediği kriterleri, tek bir listede yukarı/aşağı taşır — ayrı ayrı ikili karşılaştırma ekranları YOK (bu, tam AHP'nin reddedilme sebebiydi)
+- **Görsel geri bildirim:** Her kriterin yanında sıra numarası (1, 2, 3...) net görünür; en üstteki "en önemli" olarak vurgulanır
+- **Ağırlıkların kendisi gösterilmez** — kullanıcı "%52.1 ağırlık" gibi bir sayı görmez, sadece sıralamasını görür (ROC hesaplaması arka planda kalır — Trust Score'daki "sayısal skor kullanıcıya gösterilmesin" ilkesiyle tutarlı bir sadelik)
+- **Geri dönülebilir:** Kullanıcı istediği an sırayı değiştirebilir, sonuçlar anlık güncellenir
+
+---
+
+*Bu bölüm, tasarım aşamasının onaylandığını gösterir. Sıradaki adım: kod uygulaması.*
