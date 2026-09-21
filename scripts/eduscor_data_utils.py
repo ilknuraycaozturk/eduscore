@@ -50,8 +50,45 @@ def normalize_turkish(text: str) -> str:
     return text.translate(_TR_MAP).lower()
 
 
+def normalize_name(name: str) -> str:
+    """MEB isimlerindeki 'İL - İLÇE - ' önekini ve 'Özel' gibi kelimeleri
+    temizleyerek karşılaştırılabilir bir isim üretir.
+    Örn: 'ANKARA - ETİMESGUT - Bağlıca İlkokulu' -> 'bağlıca ilkokulu'
+
+    NOT: Sadece "İL - İLÇE - İsim" (3-parçalı) formatındaki öneki temizler.
+    "İL - İsim" (2-parçalı) formatlarda regex eşleşmez, il öneki kalır -
+    find_existing_match() bunu substring karşılaştırmasıyla (in operatörü)
+    telafi eder, tam string eşitliği ARAMAZ."""
+    import re
+    n = normalize_turkish(name.strip())
+    n = re.sub(r"^[^-]+-\s*[^-]+-\s*", "", n)
+    n = n.replace("özel", "").strip()
+    n = re.sub(r"\s+", " ", n)
+    return n
+
+
+def find_existing_match(new_name: str, existing: list) -> dict | None:
+    """BELLEK-İÇİ eşleştirme - once TUM mevcut kurumlari (bir kerede)
+    cekip 'existing' listesi olarak gecirin, HER yeni kayit icin ayri
+    bir network sorgusu ATMAYIN (performans nedeniyle - bkz. EDU-DATA-001).
+    'existing' formati: [{"id":..., "name":...}, ...]"""
+    target = normalize_name(new_name)
+    for row in existing:
+        existing_norm = normalize_name(row["name"])
+        if target == existing_norm or target in existing_norm or existing_norm in target:
+            return row
+    return None
+
+
 def find_existing_institution(name: str, il_adi: str, supabase_url: str, service_key: str, timeout: int = 15):
-    """Yeni bir kurum eklemeden ONCE cagirilmali - normalize edilmis isim
+    """NETWORK SORGULU eşleştirme - sadece TEKİL/az sayıda kayıt kontrol
+    edilecekse (örn. derive_*.py script'lerinde tek bir kurumu zenginleştirirken)
+    kullanın. TOPLU yükleme (yüzlerce/binlerce kayıt) yapan load_*.py
+    script'lerinde bunun yerine find_existing_match() + önceden çekilmiş
+    'existing' listesi kullanın - aksi halde her kayıt için ayrı bir HTTP
+    isteği atılır, bu da büyük ölçekte çok yavaş olur.
+
+    Yeni bir kurum eklemeden ONCE cagirilmali - normalize edilmis isim
     ve il'e gore, veritabaninda ZATEN var olan bir kayit olup olmadigini
     kontrol eder.
 
