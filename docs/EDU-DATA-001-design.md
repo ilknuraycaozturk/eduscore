@@ -2,8 +2,8 @@
 
 **Document Code:** EDU-DATA-001
 **Document Title:** Mevcut Data Pipeline Dokümantasyonu ve Entity Resolution Katmanı Önerisi
-**Version:** 1.0 (Tasarım aşaması — kod yazılmadı)
-**Status:** Draft — onay bekliyor
+**Version:** 2.0 (Uygulandı — 19.09.2026)
+**Status:** ✅ Tamamlandı — hem Karar 1 (modül oluşturma) hem Karar 2 (4 script refactor) çözüldü
 **Related Skill:** eduscor-data-engine
 **Related Document:** EDU-GOV-001 (Evidence Ownership & Boundary Principle)
 
@@ -62,7 +62,22 @@ Her `load_*.py` script'indeki kendi `normalize_name()` / `find_existing_match()`
 ## Karar Durumu
 
 1. ✅ **Karar 1 (çözüldü, 18.09.2026):** `eduscor_data_utils.py` oluşturuldu.
-2. 🔓 **Karar 2 (açık, bugün ele alınıyor):** 4 mevcut `load_*.py` script'inin bu modülü kullanacak şekilde refactor edilmesi.
+2. ✅ **Karar 2 (çözüldü, 19.09.2026):** 4 `load_*.py` script'inin tamamı refactor edildi.
+
+## PART 4 — Refactor Sonuçları (19.09.2026)
+
+Her script farklı bir özel durum içeriyordu, hiçbiri "kopyala-yapıştır" ile değil, tek tek incelenip dikkatle güncellendi:
+
+| Script | Özel durum | Ne yapıldı |
+|---|---|---|
+| `load_to_supabase.py` | `turkish_title`/`turkish_capitalize_words` başka yerlerde (konum işleme) kullanılıyor | Sadece `normalize_name`/`find_existing_match` merkezi hale getirildi, diğerleri korundu |
+| `load_lgs_scores_to_supabase.py` | En basit yapı, `turkish_lower` başka yerde kullanılmıyor | Tüm 3 fonksiyon (`turkish_lower` dahil) merkezi hale getirildi |
+| `load_ookgm_to_supabase.py` | `turkish_lower` `map_tur()` içinde de kullanılıyor | Sadece `normalize_name`/`find_existing_match` merkezi hale getirildi |
+| `load_tabanpuan_to_supabase.py` | Kendi özgü `normalize_name_lenient` (İ/I ayrımını yok sayan) eşleştirme mantığı var — tabanpuanlari.net kaynağının kendine özgü büyük/küçük harf sorunu için | `normalize_name_lenient`/`find_existing_match`'e **dokunulmadı** (regresyon riski). Sadece kullanılmayan eski `normalize_name` (ölü kod) temizlendi |
+
+Her adımda hem `py_compile` (sözdizimi) hem gerçek `import` + fonksiyon çağrısı testi (bugünkü Bala/Çamlıdere gerçek örnekleriyle) yapıldı — varsayımla değil, doğrulanarak ilerlendi.
+
+**Sonuç:** Entity resolution mantığı artık `eduscor_data_utils.py`'de merkezi — gelecekte bir düzeltme (örn. yeni bir Türkçe karakter sorunu bulunursa) tek yerde yapılıp tüm script'lere otomatik yayılacak. Script'lere özgü davranışlar (lenient eşleştirme gibi) bilinçli olarak korundu, tek tip bir yaklaşıma zorlanmadı.
 
 ## Açık Soru
 
