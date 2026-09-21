@@ -26,6 +26,13 @@ from pathlib import Path
 
 import requests
 
+# EDU-DATA-001: normalize_name ve find_existing_match artik merkezi bir
+# modulden geliyor - kod tekrarini onlemek icin. Ayni klasordeki
+# eduscor_data_utils.py'yi bulabilmesi icin scripts/ klasorunun PATH'te
+# olmasi gerekir (GitHub Actions workflow'larinda calisma dizini zaten
+# bu klasor oldugu icin ek bir islem gerekmez).
+from eduscor_data_utils import normalize_name as _shared_normalize_name, find_existing_match as _shared_find_existing_match
+
 TYPE_KEYWORDS = [
     # ÖNEMLİ: Sıralama önemli - daha spesifik olanlar (fen lisesi, imam hatip vb.)
     # genel "lise" kontrolünden ÖNCE gelmeli, yoksa hepsi genel 'lise'ye düşer.
@@ -139,26 +146,17 @@ def turkish_capitalize_words(s: str) -> str:
 
 
 def normalize_name(name: str) -> str:
-    """MEB isimlerindeki 'İL - İLÇE - ' önekini ve 'Özel' gibi kelimeleri
-    temizleyerek karşılaştırılabilir bir isim üretir.
-    Örn: 'ANKARA - ETİMESGUT - Bağlıca İlkokulu' -> 'bağlıca ilkokulu'
-    """
-    n = turkish_lower(name.strip())
-    # "X - Y - Gerçek İsim" kalıbındaki il/ilçe önekini at
-    n = re.sub(r"^[^-]+-\s*[^-]+-\s*", "", n)
-    n = n.replace("özel", "").strip()
-    n = re.sub(r"\s+", " ", n)
-    return n
+    """DEĞİŞTİ (19.09.2026): Bu, artık eduscor_data_utils.normalize_name'in
+    bir alias'ı - kod tekrarını önlemek için. Davranış: eskiden sadece
+    turkish_lower() (İ/I) kullanıyordu, şimdi normalize_turkish() (TÜM
+    Türkçe karakterler: Ç/Ğ/Ö/Ş/Ü de dahil) kullanıyor. Bu, KARŞILAŞTIRMA
+    tutarlılığını korur (yeni ve eski kayıtlar aynı fonksiyonla normalize
+    edildiği sürece güvenlidir) ve DAHA GENİŞ bir yazım varyasyonu yakalar.
+    Bkz. EDU-DATA-001."""
+    return _shared_normalize_name(name)
 
 
-def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
-    """Aynı okulun veritabanında zaten (farklı yazımla) var olup olmadığını kontrol eder."""
-    target = normalize_name(new_name)
-    for row in existing:
-        existing_norm = normalize_name(row["name"])
-        if target == existing_norm or target in existing_norm or existing_norm in target:
-            return row
-    return None
+find_existing_match = _shared_find_existing_match
 
 
 def guess_type(name: str) -> str | None:
