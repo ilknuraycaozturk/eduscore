@@ -54,10 +54,7 @@ def turkish_lower(s: str) -> str:
     return s.replace("İ", "i").replace("I", "ı").lower()
 
 
-def normalize_name(name: str) -> str:
-    n = turkish_lower(name.strip())
-    n = n.replace("özel", "").strip()
-    return " ".join(n.split())
+from eduscor_data_utils import normalize_name  # EDU-DATA-001 - bu script içinde çağrılmıyor (ölü kod temizlendi), sadece tutarlılık için import edildi
 
 
 def normalize_name_lenient(name: str) -> str:
