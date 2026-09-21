@@ -32,38 +32,37 @@ Bugün üç ayrı veri kalitesi sorunu bulduk ve düzelttik:
 |---|---|---|
 | Yanlış konum (location_id) | 303 kurum | İsim ↔ konum eşleştirmesi, Türkçe İ/I/ı normalizasyonu tutarsız |
 | Yanlış web sitesi eşleşmesi | 48 kurum | Benzer isimli kurumlar arasında otomatik/manuel eşleştirme hatası |
-| Mükerrer kurum kaydı | 18 kurum | Aynı okulun farklı kaynaklardan (MEB pilot turu vs. genişleme turu) iki kez yüklenmesi, format farkı (2 parçalı/3 parçalı isim) nedeniyle eşleşme kontrolü başarısız |
+| Mükerrer kurum kaydı | 18 kurum | Aynı okulun farklı kaynaklardan (MEB pilot turu vs. genişleme turu) iki kez yüklenmesi |
 
-**Ortak payda:** `eduscor-data-engine` skill'inin *"execute entity resolution"* görevi, pratikte **hiçbir yükleme script'inde uygulanmıyor**. Her script kendi normalizasyon mantığını (varsa) ayrı ayrı yazıyor — biri Türkçe büyük İ'yi doğru işliyor, diğeri işlemiyor; biri yeni kayıt eklemeden önce mevcutlarla karşılaştırıyor, diğeri doğrudan ekliyor.
+**DÜZELTME (19.09.2026):** Bu belgenin ilk taslağı, "hiçbir yükleme script'i entity resolution yapmıyor" varsayımıyla yazılmıştı — bu **yanlış** çıktı. Gerçek kod incelemesi gösterdi ki **4 `load_*.py` script'inin de kendi** `normalize_name()` / `find_existing_match()` / `turkish_lower()` fonksiyonu var, ve `load_to_supabase.py`'de "location_id ile sınırlamıyoruz, global dedup yapıyoruz" şeklinde daha önce yaşanmış bir bug'ın düzeltmesi bile mevcut.
 
-Bu, **tek seferlik bir temizlik sorunu değil** — pipeline bu haliyle çalışmaya devam ettikçe, yeni veri yüklendikçe **aynı hatalar tekrar oluşacak.**
+**Gerçek kök neden:** Entity resolution mantığı **yok değil, 4 kez bağımsız olarak kopyalanmış.** `load_to_supabase.py`'de yapılan bir düzeltme (global dedup), diğer 3 script'e (`load_lgs_scores_to_supabase.py`, `load_ookgm_to_supabase.py`, `load_tabanpuan_to_supabase.py`) hiç yayılmamış — her biri kendi (muhtemelen farklı olgunlukta) kopyasını taşıyor. Bu, klasik bir DRY (Don't Repeat Yourself) ihlali: bir yerde bulunan bug, merkezi olmadığı için diğer 3 yerde tekrar tekrar bulunmayı bekliyor.
+
+`eduscor-data-engine` skill'inin *"execute entity resolution"* görevi bu yüzden hâlâ geçerli bir eksiklik — ama "hiç yok" değil, "merkezi değil, tutarsız" olarak yeniden tanımlanmalı.
 
 ---
 
-## PART 3 — Önerilen Çözüm: Ortak Bir Normalizasyon + Eşleştirme Katmanı
+## PART 3 — Uygulanan Çözüm: Merkezi Bir Modül (19.09.2026'da tamamlandı)
 
-### 3.1 Ortak Bir Yardımcı Modül
+### 3.1 eduscor_data_utils.py Oluşturuldu
 
-`scripts/eduscor_data_utils.py` (yeni, paylaşılan bir dosya) içinde:
+`scripts/eduscor_data_utils.py` — `normalize_turkish()` ve `find_existing_institution()` fonksiyonlarını içeren, tüm script'lerin ortak olarak kullanacağı tek modül. 4 script'teki dağınık kopyaların **en olgun versiyonu** (load_to_supabase.py'deki "global dedup" düzeltmesi dahil) temel alınarak yazıldı.
 
-- **`normalize_turkish(text)`**: Tüm script'lerin kullanacağı **tek, doğru** Türkçe normalizasyon fonksiyonu (İ→i, I→ı, Ç→c, vb. — bugün SQL'de kullandığımız `translate()` mantığının Python karşılığı)
-- **`find_existing_institution(name, location)`**: Yeni bir kayıt eklemeden önce, mevcut veritabanında (normalize edilmiş isim + konum ile) zaten var olup olmadığını kontrol eden fonksiyon — **entity resolution**'ın kendisi
+### 3.2 Sıradaki Adım: 4 Script'i Refactor Etmek
 
-### 3.2 Kural: Her Load Script'i Bu Katmanı Kullanmalı
-
-Yeni bir `load_*.py` script'i yazılırken (ya da mevcutlar güncellenirken), doğrudan `INSERT` yapmadan önce `find_existing_institution()` çağrılmalı. Eşleşme varsa güncelle, yoksa ekle — "önce ara, sonra ekle" prensibi.
+Her `load_*.py` script'indeki kendi `normalize_name()` / `find_existing_match()` / `turkish_lower()` tanımları silinip, yerine `from eduscor_data_utils import normalize_turkish, find_existing_institution` import'u konulacak. Bu, kod tekrarını ortadan kaldırır — bir düzeltme artık **tek yerde** yapılır, 4 script'e otomatik yayılır.
 
 ### 3.3 Neyin Değişmeyeceği
 
-- Mevcut 23 script'in **hiçbiri** bugün yeniden yazılmıyor — bu, kademeli bir iyileştirme, büyük patlama (big-bang) değişikliği değil
-- Diagnose script'leri (geliştirme aracı) bu kapsamın dışında — onlar zaten veri yazmıyor
+- Her script'in **kendi iş mantığı** (hangi kaynaktan veri çektiği, hangi alanları doldurduğu) aynı kalıyor — sadece normalizasyon/eşleştirme kısmı merkezi hale geliyor
+- Diagnose script'leri bu kapsamın dışında
 
 ---
 
-## Açık Kararlar
+## Karar Durumu
 
-1. `eduscor_data_utils.py` şimdi mi yazılsın (küçük, tek dosyalık bir modül), yoksa bir sonraki veri yükleme ihtiyacı çıktığında mı (örn. dbtakip scraper'ı geliştirirken) yazılsın?
-2. Mevcut 4 `load_*.py` script'i geriye dönük olarak bu modülü kullanacak şekilde güncellensin mi (küçük bir refactor), yoksa sadece **yeni** script'ler için mi zorunlu tutulsun?
+1. ✅ **Karar 1 (çözüldü, 18.09.2026):** `eduscor_data_utils.py` oluşturuldu.
+2. 🔓 **Karar 2 (açık, bugün ele alınıyor):** 4 mevcut `load_*.py` script'inin bu modülü kullanacak şekilde refactor edilmesi.
 
 ## Açık Soru
 
