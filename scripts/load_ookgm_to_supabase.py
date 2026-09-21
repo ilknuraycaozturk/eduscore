@@ -114,19 +114,7 @@ def map_tur(ham_tur: str) -> str | None:
     return None
 
 
-def normalize_name(name: str) -> str:
-    n = turkish_lower(name.strip())
-    n = n.replace("özel", "").strip()
-    return " ".join(n.split())
-
-
-def find_existing_match(new_name: str, existing: list[dict]) -> dict | None:
-    target = normalize_name(new_name)
-    for row in existing:
-        existing_norm = normalize_name(row["name"])
-        if target == existing_norm or target in existing_norm or existing_norm in target:
-            return row
-    return None
+from eduscor_data_utils import normalize_name, find_existing_match  # EDU-DATA-001
 
 
 def get_lookup(base_url: str, headers: dict, table: str) -> dict[str, str]:
