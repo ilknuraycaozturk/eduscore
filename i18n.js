@@ -22,6 +22,7 @@ const I18N_DICT = {
     nav_for_institutions: { tr: "Okulunuzu Sahiplenin", en: "Claim Your School" },
     nav_favorites: { tr: "Favorilerim", en: "My Favorites" },
     nav_login: { tr: "Giriş Yap", en: "Log In" },
+    nav_logout: { tr: "Çıkış Yap", en: "Log Out" },
     nav_stats: { tr: "İstatistikler", en: "Statistics" },
 
     // --- Ana Sayfa Hero ---
