@@ -55,8 +55,23 @@
         });
     }
 
+    // Bazi statik sayfalar (nasil-calisir, gizlilik-politikasi) supabase-js'i
+    // yuklemiyor. O durumda init() sessizce cikiyor ve "Cikis Yap" hic
+    // gorunmuyordu. Kutuphane yoksa burada kendimiz yukluyoruz - boylece
+    // session-guard.js'i yukleyen HER sayfa, ek bir script gerektirmeden calisir.
+    function ensureSupabase() {
+        return new Promise((resolve) => {
+            if (typeof supabase !== 'undefined') return resolve(true);
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+            s.onload = () => resolve(typeof supabase !== 'undefined');
+            s.onerror = () => resolve(false);
+            document.head.appendChild(s);
+        });
+    }
+
     async function init() {
-        if (typeof supabase === 'undefined') return;
+        if (!(await ensureSupabase())) return;
         // ÖNEMLİ: Her sayfa kendi Supabase client'ını ayrı bir değişkende
         // oluşturuyor (genelde 'sb'), bu script ise BAĞIMSIZ, salt-okunur
         // bir client kullanır - sayfa scriptleriyle çakışmaz.
