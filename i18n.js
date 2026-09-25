@@ -300,6 +300,24 @@ const I18N_DICT = {
 
     // --- Sayfa Başlığı (tarayıcı sekmesi) ---
     page_title_home: { tr: "EduScor | Eğitim Kararı Şansa Bırakılmaz", en: "EduScor | Education Decisions Shouldn't Be Left to Chance" },
+
+    // --- Okul Detay: Genel Başarı Skoru bloğu (EDU-SCORE-002) ---
+    // {degisken} yer tutucuları tf() ile doldurulur. HTML içerir, innerHTML ile kullanılır.
+    score_general_title: { tr: "Genel Başarı Skoru", en: "Overall Success Score" },
+    score_current_measure: { tr: "Mevcut Ölçüm", en: "Current Measurement" },
+    score_evidence_badge: { tr: "Kanıt kapsamı %{kapsam} · {etiket}", en: "Evidence coverage {kapsam}% · {etiket}" },
+    score_evidence_broad: { tr: "Geniş Kanıt", en: "Broad Evidence" },
+    score_evidence_medium: { tr: "Orta Kanıt", en: "Moderate Evidence" },
+    score_evidence_limited: { tr: "Sınırlı Kanıt", en: "Limited Evidence" },
+    score_insufficient_badge: { tr: "Genel skor için veri yetersiz", en: "Insufficient data for an overall score" },
+    score_explain: {
+        tr: "Bu skor, bu kurum türü için uygulanabilir {toplam} kriterden <b>{n} tanesine</b> dayanan ağırlıklı bir ortalamadır. Kriterlerin önem ağırlıkları dikkate alındığında <b>kanıt kapsamı: %{kapsam}</b>. Eksik kriterler için henüz güvenilir bir veri kaynağı bulunamadığından dahil edilmemiş, sıfır da sayılmamıştır. Bu skoru <b>kesin bir sonuç değil, elimizdeki kısmi veriye dayalı bir gösterge</b> olarak değerlendirin.",
+        en: "This score is a weighted average based on <b>{n}</b> of the {toplam} criteria applicable to this type of institution. Taking the criteria weights into account, <b>evidence coverage: {kapsam}%</b>. Missing criteria are neither included nor counted as zero, because no reliable data source has been found for them yet. Treat this score <b>as an indicator based on partial data, not a definitive result</b>."
+    },
+    score_insufficient_explain: {
+        tr: "Bu kurum için şu an uygulanabilir {toplam} kriterden yalnızca {n} kritere ait veri var. Tek bir ölçüm okulun genel durumunu yansıtmadığı için <b>Genel Başarı Skoru hesaplanmamıştır</b>; genel skor için kanıt kapsamının en az %{esik} olması gerekir. Yukarıdaki değer yalnızca kendi kriterini ifade eder. Yeni veriler eklendikçe genel skor otomatik olarak hesaplanacaktır.",
+        en: "Data is currently available for only {n} of the {toplam} criteria applicable to this institution. Since a single measurement does not reflect the school's overall picture, <b>no Overall Success Score has been calculated</b>; an overall score requires evidence coverage of at least {esik}%. The value above refers only to its own criterion. The overall score will be calculated automatically as new data is added."
+    },
 };
 
 function getLang() {
@@ -310,6 +328,17 @@ function setLang(lang) {
     localStorage.setItem("eduscor_lang", lang);
     applyI18n();
     document.documentElement.setAttribute("lang", lang);
+    // applyI18n() yalnızca data-i18n etiketli öğeleri günceller. JavaScript ile
+    // üretilen içerik (örn. okul-detay skor bloğu) bu olayı dinleyip kendini
+    // yeni dilde yeniden çizebilir.
+    document.dispatchEvent(new CustomEvent("eduscor:langchange", { detail: { lang } }));
+}
+
+// Değişken içeren çeviriler: tf("anahtar", { n: 4 }) -> metindeki {n} yerine 4
+function tf(key, vars) {
+    let s = t(key);
+    Object.keys(vars || {}).forEach((k) => { s = s.split("{" + k + "}").join(vars[k]); });
+    return s;
 }
 
 function toggleLang() {
