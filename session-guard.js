@@ -26,7 +26,14 @@
     // data-i18n etiketi de değiştiriliyor ki i18n.js dil değişiminde metni
     // tekrar "Giriş Yap"a çevirmesin.
     function showLogoutLink() {
-        const links = document.querySelectorAll('a[data-i18n="nav_login"]');
+        // nav_login: 12 sayfanin header'i. nav_giris_yap: footer'lar ve
+        // explorer.html header'i. nav_giris_yap SADECE header/nav/footer
+        // icindeyse degistirilir - okul-detay ve kurum-paneli'ndeki sayfa-ici
+        // "giris yapin" uyarilari da ayni etiketi kullaniyor, onlara dokunulmaz.
+        const links = document.querySelectorAll(
+            'a[data-i18n="nav_login"], header a[data-i18n="nav_giris_yap"], ' +
+            'nav a[data-i18n="nav_giris_yap"], footer a[data-i18n="nav_giris_yap"]'
+        );
         if (!links.length) return;
         let label = 'Çıkış Yap';
         if (typeof t === 'function') {
