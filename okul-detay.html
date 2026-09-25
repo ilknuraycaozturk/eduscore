@@ -719,6 +719,7 @@
                     id, name, address, website, google_maps_url, lat, lng, phone, email,
                     is_public, is_verified, description, category_id, location_id, institution_type_id,
                     age_min, age_max, class_size_avg, student_count, campus_info, success_score, success_score_note, success_score_criteria_count,
+                    success_score_v2, evidence_coverage_v2, success_score_v2_criteria_count, criteria_available_v2,
                     fee_info, transport_note, instagram_url, facebook_url,
                     ucret_egitim, ucret_yemek, ucret_servis, ucret_kitap, ucret_kiyafet, ucret_etut_kurs, ucret_diger, ucret_yili,
                     servis_bilgisi, guvenlik_bilgisi, sosyal_sportif_bilgisi, kontenjan_bilgisi, ogretmen_deneyimi_notu,
@@ -1179,33 +1180,64 @@
                 `).join('');
             }
 
-            // Genel Başarı Skoru - eduscor-ai-governance-explainability: skor kaç
-            // kriterden hesaplandığı HER ZAMAN görünür olmalı (9 üzerinden). Tek
-            // kriterden hesaplanmış bir skoru "tam güvenilir" gibi göstermek
-            // yanıltıcıdır (bkz. R1 - veri hacmi yanlılığı riski).
-            if (inst.success_score != null) {
-                const n = inst.success_score_criteria_count || 1;
-                let confidenceLabel, confidenceColor;
-                if (n <= 1) { confidenceLabel = 'Düşük Güven'; confidenceColor = 'bg-red-50 text-red-700'; }
-                else if (n === 2) { confidenceLabel = 'Sınırlı Güven'; confidenceColor = 'bg-amber-50 text-amber-700'; }
-                else { confidenceLabel = 'Orta Güven'; confidenceColor = 'bg-amber-50 text-amber-700'; }
-
+            // Genel Başarı Skoru (v2) - EDU-SCORE-002 + eduscor-ai-governance-explainability.
+            // Skorun YANINDA ne kadar kanıta dayandığı (ağırlıklı kanıt kapsamı) her zaman
+            // gösterilir. Kapsam %20'nin altındaysa (pratikte: tek kriter) "genel" skor
+            // gösterilmez - tek kriterin ağırlıklı ortalaması o kriterin kendisidir, onu
+            // "genel başarı" diye sunmak yanıltıcıdır. Bunun yerine o ölçüm kendi adıyla
+            // gösterilir. %20 eşiği DENEYSELDİR: 25.09.2026 dağılımındaki doğal kırılmaya
+            // dayanır (tek kriterli kurumların tamamı <%20, 2+ kriterlilerin neredeyse
+            // tamamı ≥%40). v1 success_score (23.08.2026, tek seferlik) artık kullanılmıyor.
+            const KANIT_ESIGI = 20;
+            if (inst.success_score_v2 != null) {
+                const kapsam = Number(inst.evidence_coverage_v2) || 0;
+                const n = inst.success_score_v2_criteria_count || 1;
+                // criteria_available_v2: 100 = lise (9 kriter), 43 = lise-dışı (6 kriter)
+                const uygulanabilir = Number(inst.criteria_available_v2) >= 100 ? 9 : 6;
+                const fmt = (x) => (Math.round(Number(x) * 10) / 10).toLocaleString('tr-TR');
+                const olculenler = scores.filter(s => s.score != null && s.scoring_criteria);
                 document.getElementById('infoCard').classList.remove('hidden');
-                document.getElementById('infoGrid').innerHTML += `
+
+                if (kapsam >= KANIT_ESIGI) {
+                    let etiket, renk;
+                    if (kapsam >= 60) { etiket = 'Geniş Kanıt'; renk = 'bg-emerald-50 text-emerald-700'; }
+                    else if (kapsam >= 40) { etiket = 'Orta Kanıt'; renk = 'bg-amber-50 text-amber-700'; }
+                    else { etiket = 'Sınırlı Kanıt'; renk = 'bg-orange-50 text-orange-700'; }
+                    document.getElementById('infoGrid').innerHTML += `
                     <div class="col-span-1 sm:col-span-2 lg:col-span-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
                         <div class="flex items-center justify-between flex-wrap gap-2">
                             <div>
                                 <p class="text-[10px] text-brandGray uppercase tracking-wide">Genel Başarı Skoru</p>
-                                <p class="font-bold text-brandDark text-lg">${inst.success_score}<span class="text-xs font-normal text-brandGray">/100</span></p>
+                                <p class="font-bold text-brandDark text-lg">${fmt(inst.success_score_v2)}<span class="text-xs font-normal text-brandGray">/100</span></p>
                             </div>
-                            <span class="${confidenceColor} text-[10px] font-bold px-2 py-1 rounded-full">
-                                ${n}/9 kriterden hesaplandı · ${confidenceLabel}
+                            <span class="${renk} text-[10px] font-bold px-2 py-1 rounded-full">
+                                Kanıt kapsamı %${fmt(kapsam)} · ${etiket}
                             </span>
                         </div>
                         <p class="text-[11px] text-brandGray mt-2">
-                            Bu skor, mevcut ${n} kriterin ağırlıklı ortalamasıdır (9 kriterden — akademik başarı, yabancı dil, üniversite yerleştirme, fiziksel altyapı, sosyal/kültürel etkinlikler, öğretmen kalitesi, güvenlik/disiplin, konum/ulaşım, burs/ücret). Eksik kriterler henüz veri kaynağı bulunamadığı için dahil edilmemiştir — bu skoru <b>kesin bir sonuç değil, elimizdeki kısmi veriye dayalı bir gösterge</b> olarak değerlendirin.
+                            Bu skor, bu kurum türü için uygulanabilir ${uygulanabilir} kriterden <b>${n} tanesine</b> dayanan ağırlıklı bir ortalamadır. Kriterlerin önem ağırlıkları dikkate alındığında <b>kanıt kapsamı: %${fmt(kapsam)}</b>. Eksik kriterler için henüz güvenilir bir veri kaynağı bulunamadığından dahil edilmemiş, sıfır da sayılmamıştır. Bu skoru <b>kesin bir sonuç değil, elimizdeki kısmi veriye dayalı bir gösterge</b> olarak değerlendirin.
                         </p>
                     </div>`;
+                } else {
+                    const olcumListesi = olculenler.map(s =>
+                        `<p class="font-bold text-brandDark text-lg">${s.scoring_criteria.name_tr}: ${fmt(s.score)}<span class="text-xs font-normal text-brandGray">/100</span></p>`
+                    ).join('');
+                    document.getElementById('infoGrid').innerHTML += `
+                    <div class="col-span-1 sm:col-span-2 lg:col-span-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                                <p class="text-[10px] text-brandGray uppercase tracking-wide">Mevcut Ölçüm</p>
+                                ${olcumListesi}
+                            </div>
+                            <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-full">
+                                Genel skor için veri yetersiz
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-brandGray mt-2">
+                            Bu kurum için şu an uygulanabilir ${uygulanabilir} kriterden yalnızca ${n === 1 ? 'birine' : n + ' tanesine'} ait veri var. Tek bir ölçüm, okulun genel durumunu yansıtmadığı için <b>Genel Başarı Skoru hesaplanmamıştır</b>; genel skor, olası kanıtın en az %${KANIT_ESIGI}'sini gerektirir. Yukarıdaki değer yalnızca kendi kriterini ifade eder. Yeni veriler eklendikçe genel skor otomatik olarak hesaplanacaktır.
+                        </p>
+                    </div>`;
+                }
             }
 
             if (inst.success_score_note) {
