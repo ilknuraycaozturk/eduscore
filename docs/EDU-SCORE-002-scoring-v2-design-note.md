@@ -146,3 +146,30 @@ v1 (`v1_partial_3of9`, `1aef7c78-...`) **değiştirilmeyecek/silinmeyecek.** v2,
 ---
 
 *Bu bölüm, tasarım aşamasının onaylandığını gösterir. Kod henüz yazılmamıştır — uygulama, Karar 4'teki zamanlama netleştiğinde ayrı bir onayla başlayacaktır.*
+
+---
+
+## Güncelleme (25.09.2026): UI Kararı ve Eşik
+
+Daha önce ertelenen iki karar, gerçek dağılım gözlemlendikten sonra verildi.
+
+### Gözlenen dağılım (8.123 skorlu kurum)
+
+| Kanıt kapsamı | Kurum | Kriter sayısı |
+|---|---|---|
+| %0-19 | 5.375 (%66) | yalnızca 1 (5.134'ü yabancı dil, 241'i üniversite yerleştirme) |
+| %20-39 | 25 | 2-4 |
+| %40-59 | 2.723 (%34) | 2-3 |
+| %60+ | 0 | — |
+
+### Karar A — evidence_coverage arayüze yansısın mı? ✅ Evet
+`okul-detay.html`'de Genel Başarı Skoru artık **v2**'den okunuyor ve yanında ağırlıklı kanıt kapsamı gösteriliyor (Sınırlı <%40, Orta %40-59, Geniş ≥%60). "X/9 kriter" ifadesi, kurum türüne göre uygulanabilir kriter sayısıyla (lise 9, lise-dışı 6) değiştirildi. v1 `success_score` arayüzde artık kullanılmıyor.
+
+### Karar B — Minimum kanıt eşiği (Öneri 4): ✅ %20, DENEYSEL
+Kapsam %20'nin altındaysa **Genel Başarı Skoru gösterilmez**; tek ölçüm kendi adıyla ("Yabancı Dil Eğitimi: 40/100") ve "Genel skor için veri yetersiz" notuyla gösterilir.
+
+**Gerekçe:** Tek kriterin ağırlıklı ortalaması matematiksel olarak o kriterin kendisidir; onu "genel başarı" diye sunmak yanıltıcıdır. Bu, bilgi saklamaz, sadece doğru adlandırır.
+
+**Eşiğin dayanağı:** %20 keyfi seçilmedi; dağılımdaki doğal kırılmaya denk geliyor (tek kriterlilerin tamamı <%20, iki ve daha fazla kriterlilerin 2.723/2.748'i ≥%40). Yine de deneyseldir: yeni kriter verileri eklendikçe dağılım değişir ve eşik yeniden değerlendirilmelidir.
+
+**Kapsam dışı:** Skor şu an yalnızca okul detay sayfasında gösteriliyor; arama, sıralama ve eşleştirme (Match Engine) bu değişiklikten etkilenmez. Bu blok henüz i18n'e bağlı değil (yalnızca Türkçe), önceki gösterimle aynı durumda.
