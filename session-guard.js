@@ -20,6 +20,34 @@
         window.location.href = 'giris.html';
     }
 
+    // Giriş yapmış kullanıcı için header'daki "Giriş Yap" bağlantısını
+    // "Çıkış Yap"a çevirir. Header'lar statik HTML olduğu için (12 sayfada
+    // data-i18n="nav_login"), tek merkezi yerde burada yapılıyor.
+    // data-i18n etiketi de değiştiriliyor ki i18n.js dil değişiminde metni
+    // tekrar "Giriş Yap"a çevirmesin.
+    function showLogoutLink() {
+        const links = document.querySelectorAll('a[data-i18n="nav_login"]');
+        if (!links.length) return;
+        let label = 'Çıkış Yap';
+        if (typeof t === 'function') {
+            const translated = t('nav_logout');
+            // Önbellekteki eski i18n.js anahtarı bilmiyorsa anahtarın kendisini döndürür
+            if (translated && translated !== 'nav_logout') label = translated;
+        }
+        links.forEach((a) => {
+            a.setAttribute('data-i18n', 'nav_logout');
+            a.textContent = label;
+            a.setAttribute('href', '#');
+            a.addEventListener('click', async (e) => {
+                e.preventDefault();
+                // Aynı proje için tüm client'lar aynı oturum kaydını paylaşır,
+                // bu yüzden buradaki signOut sayfanın kendi client'ını da kapatır.
+                await sbGuardClient.auth.signOut();
+                window.location.href = 'index.html';
+            });
+        });
+    }
+
     async function init() {
         if (typeof supabase === 'undefined') return;
         // ÖNEMLİ: Her sayfa kendi Supabase client'ını ayrı bir değişkende
@@ -32,6 +60,8 @@
 
         const { data: { session } } = await sbGuardClient.auth.getSession();
         if (!session) return; // giriş yapmamış ziyaretçi - mekanizma gerekmiyor
+
+        showLogoutLink(); // her rol için (profil/rol kontrolünden ÖNCE)
 
         const { data: profile } = await sbGuardClient
             .from('profiles').select('role').eq('id', session.user.id).maybeSingle();
