@@ -1069,6 +1069,38 @@
         // %20 eşiği DENEYSELDİR (25.09.2026 dağılımındaki doğal kırılma).
         // Ayrı fonksiyon olmasının sebebi: i18n.js'teki setLang() sayfayı yeniden
         // yüklemiyor; 'eduscor:langchange' olayında bu blok yeni dilde yeniden çizilir.
+        // ===== Kaynak notlarının İngilizce gösterimi =====
+        // source_note alanları veri yükleme betiklerinin SABİT şablonlarıyla üretiliyor
+        // (05.10.2026: ~12.000 notun 11.987'si aşağıdaki 7 kalıptan). EN modunda bu
+        // kalıplar sayıları korunarak İngilizceye çevrilir. Kalıba UYMAYAN notlar (prestijli
+        // okullar için elle yazılmış ~18 açıklama) UYDURMA çeviri yapılmadan, "Orijinal not
+        // (Türkçe)" etiketiyle olduğu gibi gösterilir. Veritabanındaki not DEĞİŞTİRİLMEZ.
+        // Yeni bir yükleme şablonu eklenirse buraya da kalıbı eklenmeli.
+        const SOURCE_NOTE_EN = [
+            [/^Kaynak: tabanpuanlari\.net\. Programın süresi (\d+) yıl \(hazırlık sınıfı yok, standart müfredat yabancı dil dersi\)\.$/,
+             m => `Source: tabanpuanlari.net. Program duration: ${m[1]} years (no preparatory year; standard-curriculum foreign language lessons).`],
+            [/^Kaynak: tabanpuanlari\.net\. Programın süresi (\d+) yıl \(hazırlık sınıfı dahil, yoğunlaştırılmış yabancı dil eğitimi\)\.$/,
+             m => `Source: tabanpuanlari.net. Program duration: ${m[1]} years (including a preparatory year with intensive foreign language education).`],
+            [/^Kaynak: tabanpuanlari\.net \(MEB resmi LGS yerleştirme verilerinden derlenmiştir, (\d{4}) verisi\)\. (\d+) programın Ortalama taban puanı \(([\d.,]+)\) ve ortalama yüzdelik dilimi \(([\d.,]+)\) üzerinden hesaplanmıştır \(skor = 100 - yüzdelik dilim\)\.$/,
+             m => `Source: tabanpuanlari.net (compiled from MEB's official LGS placement data, ${m[1]} data). Calculated from the average minimum score (${m[3]}) and average percentile (${m[4]}) of ${m[2]} program(s) (score = 100 − percentile).`],
+            [/^Kaynak: MEB resmi LGS yerleştirme kılavuzu PDF'i \((\S+)\)\. (\d+) programın ortalama taban yüzdelik dilimi \(([\d.,]+)\) üzerinden hesaplanmıştır \(skor = 100 - yüzdelik dilim\)\.$/,
+             m => `Source: MEB's official LGS placement guide PDF (${m[1]}). Calculated from the average minimum percentile (${m[3]}) of ${m[2]} program(s) (score = 100 − percentile).`],
+            [/^Kaynak: MEB resmi LGS yerleştirme kılavuzu PDF'i \((\S+)\)\. Okulda Hazırlık Sınıfı (bulunmuyor, standart müfredat yabancı dil dersi var|bulunuyor \(yoğunlaştırılmış yabancı dil eğitimi\))\. NOT: Bu skor sadece 'hazırlık sınıfı var mı' bilgisine dayanır; IB, ikinci yabancı dil gibi zenginleştirilmiş programlar hakkında bilgi içermez \(ayrı kaynak gerekir\)\.$/,
+             m => `Source: MEB's official LGS placement guide PDF (${m[1]}). ${m[2].startsWith('bulunmuyor') ? 'The school has no preparatory year; foreign language is taught in the standard curriculum.' : 'The school has a preparatory year (intensive foreign language education).'} NOTE: This score is based only on whether a preparatory year exists; it contains no information on enriched programs such as IB or a second foreign language (a separate source is needed).`],
+            [/^Kaynak: sinavizcisi\.com \((\S+)\) - ÖSYM'nin resmi YKS yerleştirme sonuçlarından derlenmiştir\. (\d{4})-(\d{4}) \((\d+) yıllık\) toplam (\d+) mezun yerleşmiş, bunların %([\d.,]+) ilk senesinde yerleşmiştir \((\d+) farklı üniversite\)\. NOT: Bu, tek bir yıla değil son (\d+) yılın toplamına\/ortalamasına dayanır\.$/,
+             m => `Source: sinavizcisi.com (${m[1]}) - compiled from ÖSYM's official YKS placement results. In ${m[2]}-${m[3]} (${m[4]} years), a total of ${m[5]} graduates were placed, ${m[6]}% of them in their first year (${m[7]} different universities). NOTE: This is based on the total/average of the last ${m[8]} years, not a single year.`],
+        ];
+        // Not, HTML olarak eklendiği için önce kaçışlanır (veritabanından gelen metin).
+        function escHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
+        function sourceNoteHtml(note) {
+            if (typeof getLang !== 'function' || getLang() !== 'en') return escHtml(note);
+            for (const [re, fn] of SOURCE_NOTE_EN) {
+                const m = note.match(re);
+                if (m) return escHtml(fn(m));
+            }
+            return `<span class="italic">${escHtml(t('od_note_original'))}</span> ${escHtml(note)}`;
+        }
+
         // Yüzde gösterimi dile göre: TR "%2.5", EN "2.5%"
         function fmtPct(x) { return (typeof getLang === 'function' && getLang() === 'en') ? `${x}%` : `%${x}`; }
 
@@ -1384,7 +1416,7 @@
                                 <div class="h-full bg-brandRed rounded-full" style="width:${pct}%"></div>
                             </div>
                             ${badgesHtml}
-                            ${s.source_note ? `<p class="text-[10px] text-brandGray mt-1">${s.source_note}</p>` : ''}
+                            ${s.source_note ? `<p class="text-[10px] text-brandGray mt-1">${sourceNoteHtml(s.source_note)}</p>` : ''}
                             <p class="text-[10px] text-slate-400 mt-0.5">${KRITER_KAYNAK_METADATA[key] || KRITER_KAYNAK_VARSAYILAN}</p>
                         </div>
                     `;

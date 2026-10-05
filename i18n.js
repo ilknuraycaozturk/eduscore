@@ -467,6 +467,7 @@ const I18N_DICT = {
     od_e_description: { tr: "Açıklama", en: "Description" },
     od_save: { tr: "Bilgileri Kaydet", en: "Save Details" },
     od_err_prefix: { tr: "Bir hata oluştu:", en: "An error occurred:" },
+    od_note_original: { tr: "Orijinal not (Türkçe):", en: "Original note (Turkish):" },
     od_no_data: { tr: "Veri yok", en: "No data" },
     od_saved_reload: { tr: "Bilgiler kaydedildi! Sayfa yenileniyor...", en: "Details saved! Reloading the page..." },
 };
