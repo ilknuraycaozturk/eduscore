@@ -61,7 +61,7 @@ def diagnose(output_path: str):
         possible_cards = page.query_selector_all("[class*='school'], [class*='lise'], [class*='card'], [class*='row']")
         result["possible_card_count"] = len(possible_cards)
         if possible_cards:
-            result["possible_card_sample_html"] = possible_cards[0].outer_html[:1500]
+            result["possible_card_sample_html"] = possible_cards[0].evaluate("e => e.outerHTML")[:1500]
             result["possible_card_sample_class"] = possible_cards[0].get_attribute("class")
 
         # 5) Pagination / "sonraki sayfa" linkleri
