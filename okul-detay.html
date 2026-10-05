@@ -130,7 +130,7 @@
             .nav-menu .cta-btn, .nav-menu .cta-btn-outline { width: 100%; text-align: center; box-sizing: border-box; }
         }
     </style>
-    <script src="i18n.js?v=7"></script>
+    <script src="i18n.js?v=8"></script>
     <script src="session-guard.js?v=2"></script>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
@@ -199,22 +199,22 @@
         <div id="matchBanner" class="hidden bg-brandRed text-white rounded-2xl p-4 mb-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] uppercase tracking-wider opacity-80">Sizin Kriterlerinize Göre</p>
+                    <p class="text-[11px] uppercase tracking-wider opacity-80" data-i18n="od_match_title">Sizin Kriterlerinize Göre</p>
                     <p class="text-2xl font-bold flex items-center gap-2">
                         <span id="matchScoreText">—</span>
-                        <button id="matchInfoBtn" class="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 text-xs flex items-center justify-center transition-all" title="Skor nasıl hesaplandı?">ⓘ</button>
+                        <button id="matchInfoBtn" class="w-5 h-5 rounded-full bg-white/20 hover:bg-white/30 text-xs flex items-center justify-center transition-all" title="Skor nasıl hesaplandı?" data-i18n-title="od_match_info_title">ⓘ</button>
                     </p>
-                    <p class="text-[10px] opacity-70 mt-1">EduScor, kurumun genel değerlendirmesini gösterir — sizin için en uygun seçim, kendi önceliklerinize göre değişebilir.</p>
+                    <p class="text-[10px] opacity-70 mt-1" data-i18n="od_match_note">EduScor, kurumun genel değerlendirmesini gösterir — sizin için en uygun seçim, kendi önceliklerinize göre değişebilir.</p>
                 </div>
                 <span class="text-3xl">🎯</span>
             </div>
             <div id="matchBreakdownPanel" class="hidden mt-3 pt-3 border-t border-white/20 space-y-1.5"></div>
         </div>
 
-        <div id="loadingState" class="text-center py-20 text-brandGray text-sm">Kurum bilgileri yükleniyor...</div>
+        <div id="loadingState" class="text-center py-20 text-brandGray text-sm" data-i18n="od_loading">Kurum bilgileri yükleniyor...</div>
         <div id="notFoundState" class="hidden text-center py-20">
-            <p class="text-brandDark font-semibold mb-1">Kurum bulunamadı</p>
-            <p class="text-xs text-brandGray">Bağlantı geçersiz olabilir. <a href="explorer.html" class="text-brandRed underline" data-i18n="nav_genel_aramaya">Genel aramaya</a> dönebilirsiniz.</p>
+            <p class="text-brandDark font-semibold mb-1" data-i18n="od_not_found">Kurum bulunamadı</p>
+            <p class="text-xs text-brandGray" data-i18n-html="od_not_found_hint">Bağlantı geçersiz olabilir. <a href="explorer.html" class="text-brandRed underline">Genel aramaya</a> dönebilirsiniz.</p>
         </div>
 
         <div id="content" class="hidden">
@@ -229,7 +229,7 @@
                         <span id="ratingBadgeTop" class="hidden bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded"></span>
                     </div>
                     <button id="favBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all">
-                        <span id="favIcon">☆</span> <span id="favText">Listeme Ekle</span>
+                        <span id="favIcon">☆</span> <span id="favText" data-i18n="od_fav_add">Listeme Ekle</span>
                     </button>
                 </div>
                 <h1 id="instName" class="text-xl sm:text-2xl font-bold text-brandDark mb-2"></h1>
@@ -237,9 +237,9 @@
                 <p id="instAddress" class="text-xs text-brandGray"></p>
 
                 <div class="flex flex-wrap gap-3 mt-4 items-center">
-                    <a id="mapsLink" href="#" target="_blank" rel="noopener" class="text-xs font-semibold text-brandGray hover:text-brandRed hover:underline">Google'da görüntüle →</a>
-                    <a id="websiteLink" href="#" target="_blank" rel="noopener" class="hidden text-xs font-semibold text-brandRed hover:underline">Web sitesi →</a>
-                    <button id="distanceBtn" onclick="hesaplaMesafe()" class="hidden text-xs font-semibold text-brandGray hover:text-brandRed border border-slate-200 hover:border-brandRed rounded-full px-3 py-1 transition-all">
+                    <a id="mapsLink" href="#" target="_blank" rel="noopener" class="text-xs font-semibold text-brandGray hover:text-brandRed hover:underline" data-i18n="od_view_google">Google'da görüntüle →</a>
+                    <a id="websiteLink" href="#" target="_blank" rel="noopener" class="hidden text-xs font-semibold text-brandRed hover:underline" data-i18n="od_website">Web sitesi →</a>
+                    <button id="distanceBtn" onclick="hesaplaMesafe()" class="hidden text-xs font-semibold text-brandGray hover:text-brandRed border border-slate-200 hover:border-brandRed rounded-full px-3 py-1 transition-all" data-i18n="od_distance_btn">
                         📍 Buradan Ne Kadar Uzak?
                     </button>
                     <span id="distanceResult" class="hidden text-xs font-bold text-brandRed"></span>
@@ -249,8 +249,8 @@
             <!-- Kurum Bilgileri -->
             <div id="infoCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
                 <div class="flex gap-1 mb-4 bg-brandBg rounded-full p-1 w-full sm:w-fit overflow-hidden">
-                    <button id="tabGenelBilgi" class="flex-1 sm:flex-none text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full bg-white text-brandDark shadow-sm transition-all whitespace-nowrap">📋 Genel Bilgi</button>
-                    <button id="tabGaleri" class="flex-1 sm:flex-none text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full text-brandGray transition-all whitespace-nowrap">🖼️ Galeri</button>
+                    <button id="tabGenelBilgi" class="flex-1 sm:flex-none text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full bg-white text-brandDark shadow-sm transition-all whitespace-nowrap" data-i18n="od_tab_general">📋 Genel Bilgi</button>
+                    <button id="tabGaleri" class="flex-1 sm:flex-none text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full text-brandGray transition-all whitespace-nowrap" data-i18n="od_tab_gallery">🖼️ Galeri</button>
                 </div>
                 <div id="panelGenelBilgi">
                     <div id="infoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm"></div>
@@ -258,41 +258,41 @@
                 </div>
                 <div id="panelGaleri" class="hidden">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">⚽</span><span class="text-[10px] text-brandGray font-semibold">Spor Kulübü</span></div>
-                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🎭</span><span class="text-[10px] text-brandGray font-semibold">Tiyatro</span></div>
-                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🤖</span><span class="text-[10px] text-brandGray font-semibold">Robotik</span></div>
-                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🎵</span><span class="text-[10px] text-brandGray font-semibold">Müzik</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">⚽</span><span class="text-[10px] text-brandGray font-semibold" data-i18n="od_gal_sports">Spor Kulübü</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🎭</span><span class="text-[10px] text-brandGray font-semibold" data-i18n="od_gal_theatre">Tiyatro</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🤖</span><span class="text-[10px] text-brandGray font-semibold" data-i18n="od_gal_robotics">Robotik</span></div>
+                        <div class="aspect-square bg-brandBg rounded-xl flex flex-col items-center justify-center gap-1"><span class="text-2xl">🎵</span><span class="text-[10px] text-brandGray font-semibold" data-i18n="od_gal_music">Müzik</span></div>
                     </div>
-                    <p class="text-[11px] text-brandGray text-center mt-4 italic">Gerçek fotoğraflar, kurum "Profilini Sahiplen"dikçe burada görünecek.</p>
+                    <p class="text-[11px] text-brandGray text-center mt-4 italic" data-i18n="od_gal_note">Gerçek fotoğraflar, kurum "Profilini Sahiplen"dikçe burada görünecek.</p>
                 </div>
             </div>
 
             <!-- Bilgi / Randevu Talep Et -->
-            <button id="openContactModalBtn" class="w-full mb-6 bg-brandDark hover:bg-black text-white font-semibold text-sm py-3 rounded-2xl transition-all flex items-center justify-center gap-2">
+            <button id="openContactModalBtn" class="w-full mb-6 bg-brandDark hover:bg-black text-white font-semibold text-sm py-3 rounded-2xl transition-all flex items-center justify-center gap-2" data-i18n="od_contact_btn">
                 📞 Okuldan Bilgi / Randevu Talep Et
             </button>
 
             <div id="contactModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                 <div class="bg-white rounded-2xl max-w-sm w-full p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-brandDark">Bilgi / Randevu Talep Et</h3>
+                        <h3 class="font-bold text-brandDark" data-i18n="od_contact_title">Bilgi / Randevu Talep Et</h3>
                         <button id="closeContactModal" class="text-brandGray hover:text-brandDark text-xl leading-none">×</button>
                     </div>
-                    <p class="text-xs text-brandGray mb-4">Talebiniz, kurumun EduScor profilindeki iletişim bilgilerine iletilir.</p>
+                    <p class="text-xs text-brandGray mb-4" data-i18n="od_contact_note">Talebiniz, kurumun EduScor profilindeki iletişim bilgilerine iletilir.</p>
                     <form id="contactForm" class="space-y-3">
                         <div>
-                            <label class="text-xs font-semibold text-brandDark">Ad Soyad</label>
+                            <label class="text-xs font-semibold text-brandDark" data-i18n="od_f_name">Ad Soyad</label>
                             <input required name="ad_soyad" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-brandDark">Telefon ya da E-posta</label>
+                            <label class="text-xs font-semibold text-brandDark" data-i18n="od_f_contact">Telefon ya da E-posta</label>
                             <input required name="iletisim" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed">
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-brandDark">Mesajınız</label>
-                            <textarea name="mesaj" rows="3" placeholder="örn. Kayıt koşulları hakkında bilgi almak istiyorum." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed"></textarea>
+                            <label class="text-xs font-semibold text-brandDark" data-i18n="od_f_message">Mesajınız</label>
+                            <textarea name="mesaj" rows="3" placeholder="örn. Kayıt koşulları hakkında bilgi almak istiyorum." data-i18n-placeholder="od_ph_message" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:border-brandRed"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm py-2.5 rounded-lg transition-all">Gönder</button>
+                        <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-semibold text-sm py-2.5 rounded-lg transition-all" data-i18n="od_send">Gönder</button>
                         <p id="contactFormMsg" class="text-xs text-center hidden"></p>
                     </form>
                 </div>
@@ -301,37 +301,37 @@
             <!-- Yıllık Toplam Maliyet -->
             <div id="maliyetCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
                 <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider">Yıllık Toplam Maliyet (Tahmini)</h2>
+                    <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider" data-i18n="od_cost_title">Yıllık Toplam Maliyet (Tahmini)</h2>
                     <span id="maliyetDonemBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-brandBg text-brandRed whitespace-nowrap"></span>
                 </div>
                 <div id="maliyetGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3"></div>
                 <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
-                    <span class="text-sm font-bold text-brandDark">Toplam</span>
+                    <span class="text-sm font-bold text-brandDark" data-i18n="od_total">Toplam</span>
                     <span id="maliyetToplam" class="text-xl font-bold text-brandRed"></span>
                 </div>
-                <p class="text-[10px] text-brandGray mt-2">Bu rakamlar kurum tarafından "Profilini Sahiplen" üzerinden bildirilmiştir, yıldan yıla değişebilir.</p>
+                <p class="text-[10px] text-brandGray mt-2" data-i18n="od_cost_note">Bu rakamlar kurum tarafından "Profilini Sahiplen" üzerinden bildirilmiştir, yıldan yıla değişebilir.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <!-- Kriter Puanları -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                    <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Kriter Puanları</h2>
+                    <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4" data-i18n="od_criteria_title">Kriter Puanları</h2>
                     <div id="radarChartContainer" class="hidden flex justify-center mb-5"></div>
                     <div id="criteriaScores" class="space-y-3"></div>
-                    <p id="noCriteriaMsg" class="hidden text-xs text-brandGray italic">Bu kurum için henüz kriter bazlı puan verisi yok.</p>
+                    <p id="noCriteriaMsg" class="hidden text-xs text-brandGray italic" data-i18n="od_no_criteria">Bu kurum için henüz kriter bazlı puan verisi yok.</p>
                 </div>
 
                 <!-- Harita + Yorumlar -->
                 <div class="space-y-6">
                     <div id="mapCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4">Konum</h2>
+                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-4" data-i18n="od_location">Konum</h2>
                         <div id="miniMap"></div>
                     </div>
 
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                         <div class="flex items-center justify-between mb-3">
-                            <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider">Kullanıcı Değerlendirmeleri</h2>
+                            <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider" data-i18n="od_reviews_title">Kullanıcı Değerlendirmeleri</h2>
                             <div id="avgRatingBox" class="hidden text-right">
                                 <span id="avgRatingValue" class="text-lg font-bold text-brandRed"></span>
                                 <span id="avgRatingCount" class="text-[11px] text-brandGray block"></span>
@@ -342,24 +342,24 @@
                         <div id="detayliOzetGrid" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 bg-brandBg rounded-xl p-3"></div>
 
                         <div id="reviewsList" class="space-y-3 mb-4"></div>
-                        <p id="noReviewsMsg" class="hidden text-xs text-brandGray italic mb-4">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
+                        <p id="noReviewsMsg" class="hidden text-xs text-brandGray italic mb-4" data-i18n="od_no_reviews">Henüz kullanıcı değerlendirmesi yok — ilk yorumu siz yapın.</p>
 
                         <div id="reviewLoggedOut" class="hidden border-t border-slate-100 pt-4">
-                            <p class="text-xs text-brandGray mb-2">Yorum yapmak için giriş yapın.</p>
+                            <p class="text-xs text-brandGray mb-2" data-i18n="od_login_to_review">Yorum yapmak için giriş yapın.</p>
                             <a href="giris.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold px-4 py-2 rounded-full transition-all" data-i18n="nav_giris_yap">Giriş Yap</a>
                         </div>
 
                         <form id="reviewForm" class="hidden border-t border-slate-100 pt-4 space-y-3">
-                            <p class="text-xs font-semibold text-brandGray">Genel Puanınız</p>
+                            <p class="text-xs font-semibold text-brandGray" data-i18n="od_your_rating">Genel Puanınız</p>
                             <div id="starPicker" class="flex gap-1 text-2xl"></div>
 
                             <div class="border-t border-slate-100 pt-3">
-                                <p class="text-[11px] font-semibold text-brandGray mb-2">Detaylı Değerlendirme <span class="font-normal">(isteğe bağlı - doldurdukça değerlendirmemiz daha güvenilir olur)</span></p>
+                                <p class="text-[11px] font-semibold text-brandGray mb-2" data-i18n-html="od_detailed">Detaylı Değerlendirme <span class="font-normal">(isteğe bağlı - doldurdukça değerlendirmemiz daha güvenilir olur)</span></p>
                                 <div id="detayliDegerlendirmeGrid" class="grid grid-cols-2 gap-x-4 gap-y-2"></div>
                             </div>
 
-                            <textarea id="reviewComment" rows="3" placeholder="Deneyiminizi paylaşın (opsiyonel)..." class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2"></textarea>
-                            <button type="submit" class="bg-brandDark hover:bg-brandRed text-white text-xs font-semibold px-4 py-2 rounded-full transition-all">
+                            <textarea id="reviewComment" rows="3" placeholder="Deneyiminizi paylaşın (opsiyonel)..." data-i18n-placeholder="od_ph_review" class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2"></textarea>
+                            <button type="submit" class="bg-brandDark hover:bg-brandRed text-white text-xs font-semibold px-4 py-2 rounded-full transition-all" data-i18n="od_submit_review">
                                 Yorumu Gönder
                             </button>
                             <p id="reviewMsg" class="hidden text-[11px] rounded-lg px-2 py-1"></p>
@@ -368,88 +368,88 @@
 
                     <!-- Profilini Sahiplen -->
                     <div id="claimCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Bu Sizin Kurumunuz mu?</h2>
+                        <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3" data-i18n="od_claim_title">Bu Sizin Kurumunuz mu?</h2>
                         <div id="claimLoggedOut" class="hidden">
-                            <p class="text-xs text-brandGray mb-3">Kurum bilgilerini güncellemek için önce giriş yapmanız gerekiyor.</p>
+                            <p class="text-xs text-brandGray mb-3" data-i18n="od_claim_login">Kurum bilgilerini güncellemek için önce giriş yapmanız gerekiyor.</p>
                             <a href="giris.html" class="inline-block bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold px-4 py-2 rounded-full transition-all" data-i18n="nav_giris_yap">Giriş Yap</a>
                         </div>
                         <div id="claimNotRequested" class="hidden">
-                            <p class="text-xs text-brandGray mb-3">Bu kurumun yöneticisi/öğretmeniyseniz profili sahiplenip bilgileri güncelleyebilirsiniz.</p>
+                            <p class="text-xs text-brandGray mb-3" data-i18n="od_claim_intro">Bu kurumun yöneticisi/öğretmeniyseniz profili sahiplenip bilgileri güncelleyebilirsiniz.</p>
                             <form id="claimForm" class="space-y-2">
                                 <select id="claimRole" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
-                                    <option value="yonetici">Okul Yöneticisiyim</option>
-                                    <option value="ogretmen">Öğretmenim</option>
+                                    <option value="yonetici" data-i18n="od_role_admin">Okul Yöneticisiyim</option>
+                                    <option value="ogretmen" data-i18n="od_role_teacher">Öğretmenim</option>
                                 </select>
-                                <textarea id="claimNote" rows="2" placeholder="Kendinizi nasıl doğrularsınız? (örn. resmi okul e-postanız, göreviniz)" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5"></textarea>
-                                <button type="submit" class="w-full bg-brandDark hover:bg-brandRed text-white text-xs font-semibold py-2 rounded-full transition-all">Sahiplenme Talebi Gönder</button>
+                                <textarea id="claimNote" rows="2" placeholder="Kendinizi nasıl doğrularsınız? (örn. resmi okul e-postanız, göreviniz)" data-i18n-placeholder="od_ph_verify" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5"></textarea>
+                                <button type="submit" class="w-full bg-brandDark hover:bg-brandRed text-white text-xs font-semibold py-2 rounded-full transition-all" data-i18n="od_claim_submit">Sahiplenme Talebi Gönder</button>
                             </form>
                         </div>
                         <div id="claimPending" class="hidden">
-                            <p class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">⏳ Sahiplenme talebiniz inceleniyor.</p>
+                            <p class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2" data-i18n="od_claim_pending">⏳ Sahiplenme talebiniz inceleniyor.</p>
                         </div>
                         <div id="claimApproved" class="hidden">
-                            <p class="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2 mb-3">✓ Bu kurumu sahiplendiniz. Bilgileri aşağıdan güncelleyebilirsiniz.</p>
+                            <p class="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2 mb-3" data-i18n="od_claim_ok">✓ Bu kurumu sahiplendiniz. Bilgileri aşağıdan güncelleyebilirsiniz.</p>
 
                             <form id="editForm" class="space-y-3">
                                 <div>
-                                    <label class="text-[11px] font-semibold text-brandGray">Adres</label>
+                                    <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_address">Adres</label>
                                     <input type="text" id="editAddress" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Telefon</label>
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_i_phone">Telefon</label>
                                         <input type="text" id="editPhone" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
                                     </div>
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">E-posta</label>
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_i_email">E-posta</label>
                                         <input type="email" id="editEmail" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="okul@ornek.k12.tr">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Web Sitesi</label>
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_website">Web Sitesi</label>
                                         <input type="text" id="editWebsite" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="https://...">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Yaş Aralığı (Min-Max)</label>
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_age">Yaş Aralığı (Min-Max)</label>
                                         <div class="flex gap-1">
                                             <input type="number" id="editAgeMin" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="Min">
                                             <input type="number" id="editAgeMax" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="Max">
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Ort. Sınıf Mevcudu</label>
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_i_class">Ort. Sınıf Mevcudu</label>
                                         <input type="number" id="editClassSize" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5">
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="text-[11px] font-semibold text-brandGray">Yerleşke Özellikleri</label>
+                                    <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_campus">Yerleşke Özellikleri</label>
                                     <div class="grid grid-cols-2 gap-1 mt-1">
-                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editLab"> 🔬 Laboratuvar</label>
-                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editSpor"> 🏀 Kapalı Spor Salonu</label>
-                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editKutuphane"> 📚 Kütüphane</label>
-                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editYemekhane"> 🍽️ Yemekhane</label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editLab"> <span data-i18n="od_fact_lab">🔬 Laboratuvar</span></label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editSpor"> <span data-i18n="od_fact_gym">🏀 Kapalı Spor Salonu</span></label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editKutuphane"> <span data-i18n="od_fact_library">📚 Kütüphane</span></label>
+                                        <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" id="editYemekhane"> <span data-i18n="od_fact_cafeteria">🍽️ Yemekhane</span></label>
                                     </div>
-                                    <input type="number" id="editMetrekare" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 mt-1" placeholder="Yerleşke alanı (m²)">
+                                    <input type="number" id="editMetrekare" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 mt-1" placeholder="Yerleşke alanı (m²)" data-i18n-placeholder="od_ph_area">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Ücret Bilgisi (genel not)</label>
-                                        <input type="text" id="editFee" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 15.000-25.000 TL/yıl">
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_fee">Ücret Bilgisi (genel not)</label>
+                                        <input type="text" id="editFee" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 15.000-25.000 TL/yıl" data-i18n-placeholder="od_ph_fee">
                                     </div>
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Ulaşım Notu</label>
-                                        <input type="text" id="editTransport" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Metro 400m">
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_transport">Ulaşım Notu</label>
+                                        <input type="text" id="editTransport" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Metro 400m" data-i18n-placeholder="od_ph_transport">
                                     </div>
                                 </div>
 
                                 <div class="border-t border-slate-100 pt-3 mt-1">
                                     <div class="flex items-center justify-between mb-2">
-                                        <p class="text-[11px] font-bold text-brandDark">Yıllık Maliyet Kalemleri (TL) — opsiyonel, doldurursanız toplam otomatik hesaplanır</p>
+                                        <p class="text-[11px] font-bold text-brandDark" data-i18n="od_e_cost_items">Yıllık Maliyet Kalemleri (TL) — opsiyonel, doldurursanız toplam otomatik hesaplanır</p>
                                         <select id="editUcretYili" class="text-[10px] border border-slate-200 rounded-lg px-1.5 py-1">
                                             <option value="2026" selected>2026</option>
                                             <option value="2025">2025</option>
@@ -458,31 +458,31 @@
                                     </div>
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Eğitim</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_tuition">Eğitim</label>
                                             <input type="number" id="editUcretEgitim" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Yemek</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_meals">Yemek</label>
                                             <input type="number" id="editUcretYemek" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Servis</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_bus">Servis</label>
                                             <input type="number" id="editUcretServis" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Kitap</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_books">Kitap</label>
                                             <input type="number" id="editUcretKitap" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Kıyafet</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_uniform">Kıyafet</label>
                                             <input type="number" id="editUcretKiyafet" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Etüt/Kurs</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_tutoring">Etüt/Kurs</label>
                                             <input type="number" id="editUcretEtutKurs" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-brandGray">Diğer</label>
+                                            <label class="text-[10px] text-brandGray" data-i18n="od_c_other">Diğer</label>
                                             <input type="number" id="editUcretDiger" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0">
                                         </div>
                                     </div>
@@ -490,28 +490,28 @@
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Servis Bilgisi</label>
-                                        <input type="text" id="editServis" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Ücretli servis, 5 hat">
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_bus">Servis Bilgisi</label>
+                                        <input type="text" id="editServis" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Ücretli servis, 5 hat" data-i18n-placeholder="od_ph_bus">
                                     </div>
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Güvenlik Bilgisi</label>
-                                        <input type="text" id="editGuvenlik" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Turnike, 7/24 güvenlik">
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_security">Güvenlik Bilgisi</label>
+                                        <input type="text" id="editGuvenlik" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Turnike, 7/24 güvenlik" data-i18n-placeholder="od_ph_security">
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="text-[11px] font-semibold text-brandGray">Sosyal & Sportif Olanaklar</label>
-                                    <input type="text" id="editSosyal" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 12 aktif kulüp, kapalı yüzme havuzu">
+                                    <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_social">Sosyal & Sportif Olanaklar</label>
+                                    <input type="text" id="editSosyal" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 12 aktif kulüp, kapalı yüzme havuzu" data-i18n-placeholder="od_ph_social">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Kontenjan Bilgisi</label>
-                                        <input type="text" id="editKontenjan" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 160 kontenjan, 145 dolu">
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_capacity">Kontenjan Bilgisi</label>
+                                        <input type="text" id="editKontenjan" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. 160 kontenjan, 145 dolu" data-i18n-placeholder="od_ph_capacity">
                                     </div>
                                     <div>
-                                        <label class="text-[11px] font-semibold text-brandGray">Öğretmen Deneyimi</label>
-                                        <input type="text" id="editOgretmen" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Ortalama 8 yıl kıdem">
+                                        <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_teacher_exp">Öğretmen Deneyimi</label>
+                                        <input type="text" id="editOgretmen" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5" placeholder="örn. Ortalama 8 yıl kıdem" data-i18n-placeholder="od_ph_teacher_exp">
                                     </div>
                                 </div>
 
@@ -527,11 +527,11 @@
                                 </div>
 
                                 <div>
-                                    <label class="text-[11px] font-semibold text-brandGray">Açıklama</label>
+                                    <label class="text-[11px] font-semibold text-brandGray" data-i18n="od_e_description">Açıklama</label>
                                     <textarea id="editDescription" rows="3" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5"></textarea>
                                 </div>
 
-                                <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold py-2.5 rounded-full transition-all">
+                                <button type="submit" class="w-full bg-brandRed hover:bg-brandRedDark text-white text-xs font-semibold py-2.5 rounded-full transition-all" data-i18n="od_save">
                                     Bilgileri Kaydet
                                 </button>
                                 <p id="editMsg" class="hidden text-[11px] text-center rounded-lg px-2 py-1"></p>
@@ -547,13 +547,13 @@
             </div>
 
             <div id="programsCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-6">
-                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Programlar</h2>
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3" data-i18n="od_programs">Programlar</h2>
                 <div id="programsList" class="flex flex-wrap gap-2"></div>
             </div>
 
             <!-- Benzer Kurumlar -->
             <div id="similarCard" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-6">
-                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3">Benzer Kurumlar</h2>
+                <h2 class="text-sm font-bold text-brandGray uppercase tracking-wider mb-3" data-i18n="od_similar">Benzer Kurumlar</h2>
                 <div id="similarList" class="space-y-2"></div>
             </div>
 
@@ -596,11 +596,11 @@
             msgEl.classList.remove('hidden');
             if (error) {
                 msgEl.className = 'text-xs text-center text-red-600';
-                msgEl.textContent = 'Bir hata oluştu, lütfen tekrar deneyin.';
+                msgEl.textContent = t('od_err_retry');
                 btn.disabled = false;
             } else {
                 msgEl.className = 'text-xs text-center text-green-700 font-semibold';
-                msgEl.textContent = '✓ Talebiniz iletildi!';
+                msgEl.textContent = t('od_request_sent');
                 e.target.reset();
                 setTimeout(() => document.getElementById('contactModal').classList.add('hidden'), 1800);
             }
@@ -626,7 +626,7 @@
             const resultEl = document.getElementById('distanceResult');
             if (schoolLat == null || schoolLng == null) return;
 
-            btn.textContent = '⏳ Konumunuz alınıyor...';
+            btn.textContent = t('od_getting_location');
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const R = 6371;
@@ -636,13 +636,13 @@
                         Math.cos(pos.coords.latitude * Math.PI / 180) * Math.cos(schoolLat * Math.PI / 180) *
                         Math.sin(dLng / 2) ** 2;
                     const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                    resultEl.textContent = `📏 Kuş uçuşu ~${km.toFixed(1)} km uzakta`;
+                    resultEl.textContent = tf('od_distance_result', { km: km.toFixed(1) });
                     resultEl.classList.remove('hidden');
                     btn.classList.add('hidden');
                 },
                 () => {
-                    btn.textContent = '📍 Buradan Ne Kadar Uzak?';
-                    alert('Konumunuza erişilemedi. Tarayıcı ayarlarından konum iznini kontrol edin.');
+                    btn.textContent = t('od_distance_btn');
+                    alert(t('od_location_denied'));
                 },
             );
         }
@@ -665,7 +665,7 @@
         function updateFavButton(id) {
             const fav = isFavorite(id);
             document.getElementById('favIcon').textContent = fav ? '★' : '☆';
-            document.getElementById('favText').textContent = fav ? 'Listemde' : 'Listeme Ekle';
+            document.getElementById('favText').textContent = fav ? t('od_fav_added') : t('od_fav_add');
             document.getElementById('favBtn').className = fav
                 ? 'flex items-center gap-1.5 px-3 py-1.5 bg-brandRed text-white border border-brandRed rounded-full text-xs font-semibold transition-all'
                 : 'flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-brandRed hover:text-brandRed rounded-full text-xs font-semibold transition-all';
@@ -771,8 +771,8 @@
                 <div class="flex items-center gap-3">
                     <span class="text-2xl">🕸️</span>
                     <div>
-                        <p class="text-sm font-bold text-brandDark">Bu okuldan çıkan başarı hikayeleri</p>
-                        <p class="text-xs text-brandGray">${isimler.join(', ')} — EduNode'da yolculuklarını keşfedin →</p>
+                        <p class="text-sm font-bold text-brandDark">${t('od_success_stories')}</p>
+                        <p class="text-xs text-brandGray">${isimler.join(', ')} — ${t('od_edunode_cta')}</p>
                     </div>
                 </div>
             `;
@@ -833,17 +833,17 @@
                 <table class="w-full text-xs">
                     <thead>
                         <tr class="text-brandGray uppercase tracking-wide text-[10px]">
-                            <th class="text-left font-semibold px-2 py-2">Okul</th>
-                            <th class="text-left font-semibold px-2 py-2">Yüzdelik Dilim</th>
-                            <th class="text-left font-semibold px-2 py-2">Tür</th>
+                            <th class="text-left font-semibold px-2 py-2">${t('od_th_school')}</th>
+                            <th class="text-left font-semibold px-2 py-2">${t('od_th_percentile')}</th>
+                            <th class="text-left font-semibold px-2 py-2">${t('od_th_type')}</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${withScores.map(s => `
                             <tr onclick="window.location.href='okul-detay.html?id=${s.id}'" class="border-t border-slate-100 hover:bg-brandBg active:bg-brandBg transition-colors cursor-pointer">
                                 <td class="px-2 py-2.5 font-semibold text-brandDark">${s.name}<br><span class="text-[10px] text-brandGray font-normal">${s.locations ? s.locations.name : ''}</span></td>
-                                <td class="px-2 py-2.5 font-bold text-brandRed whitespace-nowrap">${s.akademikSkor != null ? `%${(100 - s.akademikSkor).toFixed(2)}` : '<span class="text-slate-300 font-normal">Veri yok</span>'}</td>
-                                <td class="px-2 py-2.5 text-brandGray whitespace-nowrap">${s.is_public ? 'Devlet' : 'Özel'}</td>
+                                <td class="px-2 py-2.5 font-bold text-brandRed whitespace-nowrap">${s.akademikSkor != null ? fmtPct((100 - s.akademikSkor).toFixed(2)) : '<span class="text-slate-300 font-normal">' + t('od_no_data') + '</span>'}</td>
+                                <td class="px-2 py-2.5 text-brandGray whitespace-nowrap">${s.is_public ? t('od_public') : t('od_private')}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -853,21 +853,21 @@
         }
 
         const DEGERLENDIRME_BOYUTLARI = [
-            { key: 'rating_ogretmen', label: 'Öğretmen Kalitesi' },
-            { key: 'rating_rehberlik', label: 'Rehberlik' },
-            { key: 'rating_yonetim', label: 'Yönetim' },
-            { key: 'rating_sosyal', label: 'Sosyal Yaşam' },
-            { key: 'rating_akademik_baski', label: 'Akademik Baskı' },
-            { key: 'rating_guvenlik', label: 'Güvenlik' },
-            { key: 'rating_yemek', label: 'Yemek' },
-            { key: 'rating_ulasim', label: 'Ulaşım' },
-            { key: 'rating_universite_hazirlik', label: 'Üniversite Hazırlığı' },
+            { key: 'rating_ogretmen', label: t('od_r_teacher') },
+            { key: 'rating_rehberlik', label: t('od_r_guidance') },
+            { key: 'rating_yonetim', label: t('od_r_management') },
+            { key: 'rating_sosyal', label: t('od_r_social') },
+            { key: 'rating_akademik_baski', label: t('od_r_pressure') },
+            { key: 'rating_guvenlik', label: t('od_r_safety') },
+            { key: 'rating_yemek', label: t('od_r_food') },
+            { key: 'rating_ulasim', label: t('od_r_transport') },
+            { key: 'rating_universite_hazirlik', label: t('od_r_uniprep') },
         ];
 
         function guvenSeviyesiHesapla(n) {
-            if (n >= 15) return { metin: 'Güven Seviyesi: Yüksek', renk: 'bg-green-100 text-green-700' };
-            if (n >= 5) return { metin: 'Güven Seviyesi: Orta', renk: 'bg-amber-100 text-amber-700' };
-            return { metin: 'Güven Seviyesi: Başlangıç', renk: 'bg-slate-100 text-brandGray' };
+            if (n >= 15) return { metin: t('od_trust_high'), renk: 'bg-green-100 text-green-700' };
+            if (n >= 5) return { metin: t('od_trust_medium'), renk: 'bg-amber-100 text-amber-700' };
+            return { metin: t('od_trust_initial'), renk: 'bg-slate-100 text-brandGray' };
         }
 
         async function setupReviewsSection(institutionId) {
@@ -896,7 +896,7 @@
                 const avg = list.reduce((sum, r) => sum + r.rating, 0) / list.length;
                 document.getElementById('avgRatingBox').classList.remove('hidden');
                 document.getElementById('avgRatingValue').textContent = `★ ${avg.toFixed(1)}`;
-                document.getElementById('avgRatingCount').textContent = `${list.length} veli değerlendirdi`;
+                document.getElementById('avgRatingCount').textContent = tf('od_reviews_count', { n: list.length });
 
                 const guven = guvenSeviyesiHesapla(list.length);
                 const guvenEl = document.getElementById('guvenSeviyesi');
@@ -920,9 +920,9 @@
                 }
 
                 document.getElementById('reviewsList').innerHTML = list.map(r => {
-                    const name = namesById[r.user_id] || 'Anonim Kullanıcı';
+                    const name = namesById[r.user_id] || t('od_anonymous');
                     const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-                    const date = new Date(r.created_at).toLocaleDateString('tr-TR');
+                    const date = new Date(r.created_at).toLocaleDateString(getLang() === 'en' ? 'en-US' : 'tr-TR');
                     return `
                         <div class="border-b border-slate-50 pb-3">
                             <div class="flex items-center justify-between mb-1">
@@ -994,7 +994,7 @@
                 const msgEl = document.getElementById('reviewMsg');
 
                 if (selectedRating < 1) {
-                    msgEl.textContent = 'Lütfen bir puan seçin.';
+                    msgEl.textContent = t('od_pick_rating');
                     msgEl.className = 'text-[11px] rounded-lg px-2 py-1 bg-red-50 text-red-700';
                     msgEl.classList.remove('hidden');
                     return;
@@ -1014,10 +1014,10 @@
                 }, { onConflict: 'institution_id,user_id' });
 
                 if (error) {
-                    msgEl.textContent = 'Bir hata oluştu, tekrar deneyin.';
+                    msgEl.textContent = t('od_err_retry2');
                     msgEl.className = 'text-[11px] rounded-lg px-2 py-1 bg-red-50 text-red-700';
                 } else {
-                    msgEl.textContent = 'Yorumunuz kaydedildi, teşekkürler!';
+                    msgEl.textContent = t('od_review_saved');
                     msgEl.className = 'text-[11px] rounded-lg px-2 py-1 bg-green-50 text-green-700';
                     setTimeout(() => window.location.reload(), 1200);
                 }
@@ -1044,7 +1044,7 @@
                     return;
                 }
                 if (!scores || !scores.length) {
-                    panel.innerHTML = '<p class="text-[11px] text-white/70">Kırılım için yeterli kriter verisi yok.</p>';
+                    panel.innerHTML = '<p class="text-[11px] text-white/70">' + t('od_no_breakdown') + '</p>';
                 } else {
                     panel.innerHTML = scores
                         .filter(s => s.score != null && s.scoring_criteria)
@@ -1055,7 +1055,7 @@
                                 <span class="truncate min-w-0">${s.scoring_criteria.name_tr}</span>
                                 <span class="font-bold ${renk} shrink-0">${yon} ${s.score}</span>
                             </div>`;
-                        }).join('') || '<p class="text-[11px] text-white/70">Kırılım için yeterli kriter verisi yok.</p>';
+                        }).join('') || '<p class="text-[11px] text-white/70">' + t('od_no_breakdown') + '</p>';
                 }
                 panel.classList.remove('hidden');
             });
@@ -1069,6 +1069,9 @@
         // %20 eşiği DENEYSELDİR (25.09.2026 dağılımındaki doğal kırılma).
         // Ayrı fonksiyon olmasının sebebi: i18n.js'teki setLang() sayfayı yeniden
         // yüklemiyor; 'eduscor:langchange' olayında bu blok yeni dilde yeniden çizilir.
+        // Yüzde gösterimi dile göre: TR "%2.5", EN "2.5%"
+        function fmtPct(x) { return (typeof getLang === 'function' && getLang() === 'en') ? `${x}%` : `%${x}`; }
+
         const KANIT_ESIGI = 20;
         let _scoreBlockArgs = null;
 
@@ -1127,9 +1130,10 @@
             else document.getElementById('infoGrid').insertAdjacentHTML('beforeend', html);
         }
 
-        document.addEventListener('eduscor:langchange', () => {
-            if (_scoreBlockArgs) renderScoreBlock(..._scoreBlockArgs);
-        });
+        // Bu sayfanin icerigi buyuk olcude JavaScript ile uretiliyor. Dil degisince
+        // her karti tek tek yeniden cizmek yerine sayfa yeni dilde yeniden yuklenir
+        // (secilen dil localStorage'da tutuldugu icin kaybolmaz).
+        document.addEventListener('eduscor:langchange', () => location.reload());
 
         function renderInstitution(inst, scores, ilAdi) {
             document.getElementById('loadingState').classList.add('hidden');
@@ -1138,34 +1142,29 @@
             if (matchScore) {
                 document.getElementById('matchBanner').classList.remove('hidden');
                 document.getElementById('matchBanner').style.background = '';
-                document.getElementById('matchScoreText').textContent = `%${matchScore} Uyumlu (Kişisel Skor: ${matchScore})`;
+                document.getElementById('matchScoreText').textContent = tf('od_match_text', { s: matchScore });
                 setupMatchBreakdown(scores);
-            } else if (scores && scores.length > 0) {
-                // ÖNEMLİ: Kullanıcı kişiselleştirilmiş bir aramadan gelmediyse
-                // (örn. doğrudan link ya da Genel Arama'dan), yine de kriterlerin
-                // VARSAYILAN ağırlıklarıyla hesaplanmış bir "Genel EduScor" göster -
-                // sayfa hiçbir özet skor göstermeden kalmasın.
-                let toplamAgirlik = 0, agirlikliToplam = 0;
-                scores.forEach(s => {
-                    const w = s.scoring_criteria ? s.scoring_criteria.default_weight : null;
-                    if (w != null && s.score != null) {
-                        toplamAgirlik += w;
-                        agirlikliToplam += w * s.score;
-                    }
-                });
-                if (toplamAgirlik > 0) {
-                    const genelSkor = (agirlikliToplam / toplamAgirlik).toFixed(1);
-                    document.getElementById('matchBanner').classList.remove('hidden');
-                    document.getElementById('matchBanner').style.background = '#241A16';
-                    document.querySelector('#matchBanner p.text-\\[11px\\]').textContent = 'Genel EduScor (Mevcut Verilere Göre)';
-                    document.getElementById('matchScoreText').textContent = `${genelSkor} / 100`;
-                }
+            } else if (inst.success_score_v2 != null && (Number(inst.evidence_coverage_v2) || 0) >= KANIT_ESIGI) {
+                // Kullanıcı kişiselleştirilmiş bir aramadan gelmediyse "Genel EduScor"
+                // gösterilir. DEĞİŞTİ (05.10.2026): Eskiden bu skor burada ham kriterlerden
+                // AYRICA hesaplanıyordu - %20 kanıt eşiğini (EDU-SCORE-002) bilmiyor, tek
+                // kriterli okullarda da "genel skor" gösteriyor ve resmi v2 skorundan
+                // farklı çıkabiliyordu. Artık Scoring katmanının ürettiği success_score_v2
+                // OLDUĞU GİBİ okunuyor (EDU-GOV-001: kanıt sahibi katmanda üretilir).
+                // Kanıt eşiğin altındaysa banner gösterilmez; aşağıdaki skor kutusu
+                // "genel skor için veri yetersiz" açıklamasını zaten yapıyor.
+                const genelSkor = (Math.round(Number(inst.success_score_v2) * 10) / 10)
+                    .toLocaleString(getLang() === 'en' ? 'en-US' : 'tr-TR');
+                document.getElementById('matchBanner').classList.remove('hidden');
+                document.getElementById('matchBanner').style.background = '#241A16';
+                document.querySelector('#matchBanner p.text-\\[11px\\]').textContent = t('od_match_general');
+                document.getElementById('matchScoreText').textContent = `${genelSkor} / 100`;
             }
 
             updateFavButton(inst.id);
             document.getElementById('favBtn').addEventListener('click', () => toggleFavorite(inst.id));
 
-            document.getElementById('typeBadge').textContent = inst.institution_types ? inst.institution_types.name_tr : 'Kurum';
+            document.getElementById('typeBadge').textContent = inst.institution_types ? inst.institution_types.name_tr : t('od_institution');
             document.getElementById('instName').textContent = inst.name;
             document.querySelector('#instLocation span').textContent = (inst.locations ? inst.locations.name : '') + ', ' + ilAdi;
             document.getElementById('instAddress').textContent = inst.address || '';
@@ -1180,19 +1179,19 @@
 
             const publicBadge = document.getElementById('publicBadge');
             if (inst.is_public) {
-                publicBadge.textContent = '🏛️ Kamu';
+                publicBadge.textContent = t('od_badge_public');
                 publicBadge.className = 'bg-slate-100 text-brandGray text-[11px] font-bold px-2.5 py-1 rounded';
             } else {
-                publicBadge.textContent = '🎓 Özel';
+                publicBadge.textContent = t('od_badge_private');
                 publicBadge.className = 'bg-red-50 text-brandRedDark text-[11px] font-bold px-2.5 py-1 rounded';
             }
 
             const verifiedBadge = document.getElementById('verifiedBadge');
             if (inst.is_verified) {
-                verifiedBadge.textContent = '✓ Doğrulanmış';
+                verifiedBadge.textContent = t('od_badge_verified');
                 verifiedBadge.className = 'bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded';
             } else {
-                verifiedBadge.textContent = '🔍 Taslak Veri';
+                verifiedBadge.textContent = t('od_badge_draft');
                 verifiedBadge.className = 'bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded';
             }
 
@@ -1227,18 +1226,18 @@
 
             // Kurum Bilgileri kartı - sadece en az bir alan doluysa göster
             const infoItems = [];
-            if (inst.phone) infoItems.push({ label: 'Telefon', value: inst.phone });
-            if (inst.email) infoItems.push({ label: 'E-posta', value: `<a href="mailto:${inst.email}" class="text-brandRed hover:underline">${inst.email}</a>` });
-            if (inst.age_min != null && inst.age_max != null) infoItems.push({ label: 'Yaş Aralığı', value: `${inst.age_min}-${inst.age_max}` });
-            if (inst.student_count) infoItems.push({ label: '👥 Öğrenci Sayısı', value: inst.student_count });
-            if (inst.class_size_avg) infoItems.push({ label: 'Ort. Sınıf Mevcudu', value: inst.class_size_avg });
-            if (inst.fee_info) infoItems.push({ label: 'Ücret', value: inst.fee_info });
-            if (inst.transport_note) infoItems.push({ label: 'Ulaşım', value: inst.transport_note });
-            if (inst.servis_bilgisi) infoItems.push({ label: 'Servis', value: inst.servis_bilgisi });
-            if (inst.guvenlik_bilgisi) infoItems.push({ label: 'Güvenlik', value: inst.guvenlik_bilgisi });
-            if (inst.sosyal_sportif_bilgisi) infoItems.push({ label: 'Sosyal & Sportif', value: inst.sosyal_sportif_bilgisi });
-            if (inst.kontenjan_bilgisi) infoItems.push({ label: 'Kontenjan', value: inst.kontenjan_bilgisi });
-            if (inst.ogretmen_deneyimi_notu) infoItems.push({ label: 'Öğretmen Deneyimi', value: inst.ogretmen_deneyimi_notu });
+            if (inst.phone) infoItems.push({ label: t('od_i_phone'), value: inst.phone });
+            if (inst.email) infoItems.push({ label: t('od_i_email'), value: `<a href="mailto:${inst.email}" class="text-brandRed hover:underline">${inst.email}</a>` });
+            if (inst.age_min != null && inst.age_max != null) infoItems.push({ label: t('od_i_age'), value: `${inst.age_min}-${inst.age_max}` });
+            if (inst.student_count) infoItems.push({ label: t('od_i_students'), value: inst.student_count });
+            if (inst.class_size_avg) infoItems.push({ label: t('od_i_class'), value: inst.class_size_avg });
+            if (inst.fee_info) infoItems.push({ label: t('od_i_fee'), value: inst.fee_info });
+            if (inst.transport_note) infoItems.push({ label: t('od_i_transport'), value: inst.transport_note });
+            if (inst.servis_bilgisi) infoItems.push({ label: t('od_i_bus'), value: inst.servis_bilgisi });
+            if (inst.guvenlik_bilgisi) infoItems.push({ label: t('od_i_security'), value: inst.guvenlik_bilgisi });
+            if (inst.sosyal_sportif_bilgisi) infoItems.push({ label: t('od_i_social'), value: inst.sosyal_sportif_bilgisi });
+            if (inst.kontenjan_bilgisi) infoItems.push({ label: t('od_i_capacity'), value: inst.kontenjan_bilgisi });
+            if (inst.ogretmen_deneyimi_notu) infoItems.push({ label: t('od_i_teacher_exp'), value: inst.ogretmen_deneyimi_notu });
 
             if (infoItems.length > 0) {
                 document.getElementById('infoCard').classList.remove('hidden');
@@ -1262,19 +1261,19 @@
 
             // Yıllık Toplam Maliyet kartı - en az bir kalem doluysa göster
             const maliyetKalemleri = [
-                { label: 'Eğitim', value: inst.ucret_egitim },
-                { label: 'Yemek', value: inst.ucret_yemek },
-                { label: 'Servis', value: inst.ucret_servis },
-                { label: 'Kitap', value: inst.ucret_kitap },
-                { label: 'Kıyafet', value: inst.ucret_kiyafet },
-                { label: 'Etüt/Kurs', value: inst.ucret_etut_kurs },
-                { label: 'Diğer', value: inst.ucret_diger },
+                { label: t('od_c_tuition'), value: inst.ucret_egitim },
+                { label: t('od_c_meals'), value: inst.ucret_yemek },
+                { label: t('od_c_bus'), value: inst.ucret_servis },
+                { label: t('od_c_books'), value: inst.ucret_kitap },
+                { label: t('od_c_uniform'), value: inst.ucret_kiyafet },
+                { label: t('od_c_tutoring'), value: inst.ucret_etut_kurs },
+                { label: t('od_c_other'), value: inst.ucret_diger },
             ].filter(k => k.value != null);
 
             if (maliyetKalemleri.length > 0) {
                 document.getElementById('maliyetCard').classList.remove('hidden');
                 const yil = inst.ucret_yili || new Date().getFullYear();
-                document.getElementById('maliyetDonemBadge').textContent = `📅 ${yil}-${yil + 1} Eğitim Dönemi Verisidir`;
+                document.getElementById('maliyetDonemBadge').textContent = tf('od_cost_period', { y1: yil, y2: yil + 1 });
                 document.getElementById('maliyetGrid').innerHTML = maliyetKalemleri.map(k => `
                     <div>
                         <p class="text-brandGray">${k.label}</p>
@@ -1290,10 +1289,10 @@
                 const facts = [];
                 const ci = inst.campus_info;
                 if (ci.metrekare) facts.push(`📐 ${ci.metrekare} m²`);
-                if (ci.laboratuvar) facts.push('🔬 Laboratuvar');
-                if (ci.kapali_spor_salonu) facts.push('🏀 Kapalı Spor Salonu');
-                if (ci.kütüphane) facts.push('📚 Kütüphane');
-                if (ci.yemekhane) facts.push('🍽️ Yemekhane');
+                if (ci.laboratuvar) facts.push(t('od_fact_lab'));
+                if (ci.kapali_spor_salonu) facts.push(t('od_fact_gym'));
+                if (ci.kütüphane) facts.push(t('od_fact_library'));
+                if (ci.yemekhane) facts.push(t('od_fact_cafeteria'));
                 if (facts.length) {
                     document.getElementById('infoCard').classList.remove('hidden');
                     document.getElementById('campusFacts').innerHTML = facts.map(f =>
@@ -1308,9 +1307,9 @@
                 const typeName = inst.institution_types ? inst.institution_types.name_tr : '';
                 const noCriteriaEl = document.getElementById('noCriteriaMsg');
                 if (typeName === 'Ortaokul') {
-                    noCriteriaEl.innerHTML = 'Bu kurum için henüz kriter bazlı puan verisi yok. <b>Not:</b> Ortaokullar için akademik başarı kriteri bilerek eklenmemiştir — MEB, ortaokulların mezun öğrencilerinin LGS başarısını okul bazında kamuya açık yayınlamamaktadır (araştırdık, merkezi/güvenilir bir kaynak bulunmuyor). Diğer kriterler "Profilini Sahiplen" ile okul yöneticisi tarafından doldurulabilir.';
+                    noCriteriaEl.innerHTML = t('od_no_criteria_middle');
                 } else {
-                    noCriteriaEl.textContent = 'Bu kurum için henüz kriter bazlı puan verisi yok.';
+                    noCriteriaEl.textContent = t('od_no_criteria');
                 }
                 noCriteriaEl.classList.remove('hidden');
             } else {
@@ -1322,7 +1321,7 @@
 
                 if (sorted.length >= 3) {
                     const radarPoints = sorted.map(s => ({
-                        label: (s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter').split(' ')[0],
+                        label: (s.scoring_criteria ? ((getLang() === 'en' && s.scoring_criteria.name_en) || s.scoring_criteria.name_tr) : t('od_criterion')).split(' ')[0],
                         score: s.score,
                     }));
                     const radarEl = document.getElementById('radarChartContainer');
@@ -1335,21 +1334,21 @@
                     const badges = [];
                     if (criteriaKey === 'akademik_basari') {
                         const m = note.match(/yüzdelik dilimi \(([\d.,]+)\)/);
-                        if (m) badges.push({ label: 'Taban Yüzdelik Dilimi', value: `%${m[1]}` });
+                        if (m) badges.push({ label: t('od_b_base_pct'), value: fmtPct(m[1]) });
                         const p = note.match(/taban puanı \(([\d.,]+)\)/);
-                        if (p) badges.push({ label: 'Taban Puanı', value: p[1] });
+                        if (p) badges.push({ label: t('od_b_base_score'), value: p[1] });
                         const y = note.match(/(\d{4}) verisi/);
-                        if (y) badges.push({ label: 'Veri Yılı', value: y[1] });
+                        if (y) badges.push({ label: t('od_b_data_year'), value: y[1] });
                     } else if (criteriaKey === 'universite_yerlestirme') {
                         const toplam = note.match(/toplam (\d+) mezun/);
-                        if (toplam) badges.push({ label: 'Toplam Yerleşen (4 Yıl)', value: toplam[1] });
+                        if (toplam) badges.push({ label: t('od_b_total_placed'), value: toplam[1] });
                         const ilkSene = note.match(/%([\d.,]+) ilk senesinde/);
-                        if (ilkSene) badges.push({ label: 'İlk Sene Yerleşme Başarısı', value: `%${ilkSene[1]}` });
+                        if (ilkSene) badges.push({ label: t('od_b_first_year'), value: fmtPct(ilkSene[1]) });
                         const uni = note.match(/\((\d+) farklı üniversite\)/);
-                        if (uni) badges.push({ label: 'Farklı Üniversite', value: uni[1] });
+                        if (uni) badges.push({ label: t('od_b_unis'), value: uni[1] });
                     } else if (criteriaKey === 'yabanci_dil') {
                         const sure = note.match(/süresi (\d+) yıl/);
-                        if (sure) badges.push({ label: 'Program Süresi', value: `${sure[1]} yıl` });
+                        if (sure) badges.push({ label: t('od_b_duration'), value: tf('od_years', { n: sure[1] }) });
                     }
                     return badges;
                 }
@@ -1359,14 +1358,14 @@
                 // modülü, P1-4). Sayısal bir Trust Score DEĞİLDİR - sadece kaynağın ne
                 // olduğunu ve ne sıklıkla güncellendiğini şeffaf şekilde gösterir.
                 const KRITER_KAYNAK_METADATA = {
-                    akademik_basari: 'Kaynak: MEB LGS Yerleştirme Kılavuzu · Yıllık güncellenir',
-                    yabanci_dil: 'Kaynak: MEB LGS Kılavuzu · Yıllık güncellenir',
-                    universite_yerlestirme: 'Kaynak: Okul sitesi / sinavizcisi.com (YKS sonuçları) · Düzensiz güncellenir',
+                    akademik_basari: t('od_src_akademik'),
+                    yabanci_dil: t('od_src_dil'),
+                    universite_yerlestirme: t('od_src_uni'),
                 };
-                const KRITER_KAYNAK_VARSAYILAN = 'Kaynak: Henüz merkezi kaynak yok — okul yöneticileri "Profilini Sahiplen" ile girebilir';
+                const KRITER_KAYNAK_VARSAYILAN = t('od_src_default');
 
                 criteriaEl.innerHTML = sorted.map(s => {
-                    const name = s.scoring_criteria ? s.scoring_criteria.name_tr : 'Kriter';
+                    const name = s.scoring_criteria ? ((getLang() === 'en' && s.scoring_criteria.name_en) || s.scoring_criteria.name_tr) : t('od_criterion');
                     const weight = s.scoring_criteria ? s.scoring_criteria.default_weight : '';
                     const key = s.scoring_criteria ? s.scoring_criteria.key : '';
                     const pct = Math.max(0, Math.min(100, s.score));
@@ -1537,10 +1536,10 @@
                 const { error } = await sb.from('institutions').update(updatePayload).eq('id', institutionId);
 
                 if (error) {
-                    msgEl.textContent = 'Bir hata oluştu: ' + error.message;
+                    msgEl.textContent = t('od_err_prefix') + ' ' + error.message;
                     msgEl.className = 'text-[11px] text-center rounded-lg px-2 py-1 bg-red-50 text-red-700';
                 } else {
-                    msgEl.textContent = 'Bilgiler kaydedildi! Sayfa yenileniyor...';
+                    msgEl.textContent = t('od_saved_reload');
                     msgEl.className = 'text-[11px] text-center rounded-lg px-2 py-1 bg-green-50 text-green-700';
                     setTimeout(() => window.location.reload(), 1200);
                 }
@@ -1557,11 +1556,11 @@
             <a href="edunode.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_edunode">EduNode</a>
             <a href="giris.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_giris_yap">Giriş Yap</a>
             <a href="kurumlar-icin.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a>
-            <a href="explorer.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_explorer">Platformu Keşfet</a>        <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">Hakkımızda</a>
-            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">İletişim</a>
+            <a href="explorer.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_explorer">Platformu Keşfet</a>        <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="footer_about">Hakkımızda</a>
+            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="footer_contact">İletişim</a>
         </nav>
         <p style="font-size:11px; color:#8A7A72; margin:0; text-align:center;">
-            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;">Gizlilik Politikası</a>
+            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;" data-i18n="footer_privacy">Gizlilik Politikası</a>
         </p>
     </footer>
 
