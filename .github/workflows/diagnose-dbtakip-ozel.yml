@@ -1,0 +1,34 @@
+name: Tanı - dbtakip.com Özel Lise Kapsamı
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bağımlılıkları kur
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+      - name: Özel lise kapsamını ölç (veritabanına yazmaz)
+        run: |
+          set +e
+          python scripts/diagnose_dbtakip_ozel.py > out.log 2>&1
+          rc=$?
+          cat out.log
+          # Run loglari gelistirme ortamindan indirilemiyor; cikti GitHub notu
+          # (annotation) olarak parcalar halinde yaziliyor (adim basina en fazla 10 not).
+          python3 - <<'PY'
+          d = open('out.log', encoding='utf-8', errors='replace').read()
+          parts = [d[i:i+3800] for i in range(0, len(d), 3800)][:10]
+          for n, p in enumerate(parts, 1):
+              p = p.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::notice title=out_{n:02d}::{p}')
+          PY
+          exit $rc
