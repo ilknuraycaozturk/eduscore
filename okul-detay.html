@@ -1071,7 +1071,7 @@
         // yüklemiyor; 'eduscor:langchange' olayında bu blok yeni dilde yeniden çizilir.
         // ===== Kaynak notlarının İngilizce gösterimi =====
         // source_note alanları veri yükleme betiklerinin SABİT şablonlarıyla üretiliyor
-        // (05.10.2026: ~12.000 notun 11.987'si aşağıdaki 7 kalıptan). EN modunda bu
+        // (05.10.2026: ~12.000 notun 11.987'si aşağıdaki kalıplardan; 06.10.2026'da EDU-SCORE-003 kalıbı eklendi). EN modunda bu
         // kalıplar sayıları korunarak İngilizceye çevrilir. Kalıba UYMAYAN notlar (prestijli
         // okullar için elle yazılmış ~18 açıklama) UYDURMA çeviri yapılmadan, "Orijinal not
         // (Türkçe)" etiketiyle olduğu gibi gösterilir. Veritabanındaki not DEĞİŞTİRİLMEZ.
@@ -1089,6 +1089,9 @@
              m => `Source: MEB's official LGS placement guide PDF (${m[1]}). ${m[2].startsWith('bulunmuyor') ? 'The school has no preparatory year; foreign language is taught in the standard curriculum.' : 'The school has a preparatory year (intensive foreign language education).'} NOTE: This score is based only on whether a preparatory year exists; it contains no information on enriched programs such as IB or a second foreign language (a separate source is needed).`],
             [/^Kaynak: sinavizcisi\.com \((\S+)\) - ÖSYM'nin resmi YKS yerleştirme sonuçlarından derlenmiştir\. (\d{4})-(\d{4}) \((\d+) yıllık\) toplam (\d+) mezun yerleşmiş, bunların %([\d.,]+) ilk senesinde yerleşmiştir \((\d+) farklı üniversite\)\. NOT: Bu, tek bir yıla değil son (\d+) yılın toplamına\/ortalamasına dayanır\.$/,
              m => `Source: sinavizcisi.com (${m[1]}) - compiled from ÖSYM's official YKS placement results. In ${m[2]}-${m[3]} (${m[4]} years), a total of ${m[5]} graduates were placed, ${m[6]}% of them in their first year (${m[7]} different universities). NOTE: This is based on the total/average of the last ${m[8]} years, not a single year.`],
+            // EDU-SCORE-003: okulun resmi sitesindeki kapanış puanından tahmin edilen yüzdelik
+            [/^Kaynak: Okulun resmi sitesi \((\S+)\)\. (\d{4}) LGS kapanış puanı ([\d.]+)\. Yüzdelik dilim, aynı yılın (\d+) okulluk MEB yerleştirme verisinden \(tabanpuanlari\.net\) tahmin edildi: %([\d.]+)\. NOT: Resmi yüzdelik değil, tahmindir \(skor = 100 - tahmini yüzdelik dilim\)\.$/,
+             m => `Source: the school's official website (${m[1]}). ${m[2]} LGS closing score: ${m[3]}. The percentile was estimated from the same year's MEB placement data for ${m[4]} schools (tabanpuanlari.net): ${m[5]}%. NOTE: This is an estimate, not an official percentile (score = 100 − estimated percentile).`],
         ];
         // Not, HTML olarak eklendiği için önce kaçışlanır (veritabanından gelen metin).
         function escHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }

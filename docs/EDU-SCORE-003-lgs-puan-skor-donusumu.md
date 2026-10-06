@@ -1,6 +1,6 @@
 # EDU-SCORE-003: LGS Kapanış Puanının Akademik Başarı Skoruna Dönüştürülmesi
 
-*Durum: TASARIM, onay bekliyor · Tarih: 06.10.2026 · Sorumlu modüller: eduscor-scoring-model (dönüşüm), eduscor-trust-uncertainty (güven ve kapsam kuralları)*
+*Durum: UYGULANDI (06.10.2026, proje sahibi onayıyla) · Tarih: 06.10.2026 · Sorumlu modüller: eduscor-scoring-model (dönüşüm), eduscor-trust-uncertainty (güven ve kapsam kuralları)*
 
 ## 1. Sorun
 
@@ -80,9 +80,26 @@ Dönüşüm **yalnızca** şu koşulların hepsi sağlanınca yapılır:
 - **Goodhart riski:** Okulların kendi yayımladığı puanlar artık skoru etkiliyor. Bu yüzden yalnızca kapanış puanı kabul ediliyor (madde 3.2) ve kaynak bağlantısı kaydediliyor (doğrulanabilirlik).
 - **Yıllık bakım:** Her yeni LGS yılında eşleme o yılın verisiyle yeniden kurulmalı. Eski yılın puanları yeni yılın eşlemesiyle dönüştürülmez.
 
-## 7. Onaylanırsa uygulama adımları
+## 7. Uygulama adımları
 
 1. Dönüşümü SQL ile 4 yüksek güvenli okula uygula. Sonuçları yukarıdaki ön hesapla karşılaştır.
 2. Yeni `source_note` şablonunu okul detay sayfasının İngilizce çevirisine ekle.
 3. 4 okulun `success_score_v2` / `evidence_coverage_v2` değerlerini yeniden hesapla. Okul detay sayfasında kontrol et.
 4. Bu belgeyi "UYGULANDI" olarak güncelle ve iş listesindeki maddeyi kapat.
+
+## 8. Uygulama sonucu (06.10.2026)
+
+**Ön koşul olarak kopya kayıtlar birleştirildi.** Saint Benoit, Saint Michel, Sainte Pulcherie, İtalyan ve Notre Dame de Sion veritabanında ikişer kez vardı. 17 Ağustos'taki MEB biçimli kayıtlar ("İSTANBUL - BEYOĞLU - Özel …") korundu. Bu kayıtlarda ilçe, tür ("Yabancı Özel Lise") ve üniversite skoru vardı. 16 Eylül'deki TOZOK kopyalarından web sitesi, telefon, TOZOK işareti ve LGS puanı alanları bu kayıtlara kopyalandı. Kopyaların silinmesi henüz yapılmadı (bkz. iş listesi).
+
+Dört okula `akademik_basari` satırı yazıldı (`trust_model_version = 'EDU-SCORE-003'`). Değerler ön hesapla birebir aynı çıktı:
+
+| Okul | Tahmini yüzdelik | Akademik skor | Genel skor (v2) | Kanıt kapsamı |
+|---|---|---|---|---|
+| Robert | %0,60 | 99,40 | 99,6 | %42 (2 kriter) |
+| Saint Benoit | %5,47 | 94,53 | 95,7 | %42 (2 kriter) |
+| Sainte Pulcherie | %8,14 | 91,86 | 94,6 | %42 (2 kriter) |
+| Saint Michel | %8,24 | 91,76 | 91,8 | %42 (2 kriter) |
+
+Okul detay sayfasındaki İngilizce kaynak notu çevirisine yeni şablon eklendi.
+
+**Yan bulgu:** `success_score_v2` için otomatik yeniden hesaplama yok. Günlük veri yüklemeleri yeni kriter satırı eklediğinde genel skor eski kalıyor. Bugün ~75 okulda saklanan değerin güncel kriter satırlarıyla uyuşmadığı görüldü. İş listesine eklendi.
