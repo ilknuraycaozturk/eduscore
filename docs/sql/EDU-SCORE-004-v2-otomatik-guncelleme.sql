@@ -32,7 +32,8 @@ begin
   update institutions set
     success_score_v2 = case when v_sum_w > 0 then round(v_sum_ws / v_sum_w, 1) end,
     evidence_coverage_v2 = case when v_sum_w > 0 and v_avail > 0 then round(100.0 * v_sum_w / v_avail, 1) end,
-    success_score_v2_criteria_count = case when v_sum_w > 0 then v_n end
+    success_score_v2_criteria_count = case when v_sum_w > 0 then v_n end,
+    success_score_v2_computed_at = now()
   where id = p_institution_id;
 end;
 $$;
