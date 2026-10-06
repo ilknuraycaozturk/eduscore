@@ -1,5 +1,5 @@
 -- EDU-SCORE-004: success_score_v2 / evidence_coverage_v2'yi otomatik güncel tutma
--- 06.10.2026 - HAZIR, henüz UYGULANMADI (onay bekliyor). Uygulanınca bu satır güncellenecek.
+-- 06.10.2026 - UYGULANDI: proje sahibi Supabase SQL Editor'de EDU-SCORE-004-supabase-sql-editor.sql ile çalıştırdı (kontrol: Kadıköy İstanbul AL 77,5 -> 61,3; boş kapsam 0).
 --
 -- Sorun: Genel skor (success_score_v2) ve kanıt kapsamı (evidence_coverage_v2) yalnızca
 -- elle çalıştırılan bir hesaplamayla dolduruluyordu. Günlük yükleme betikleri kriter satırı
