@@ -14,7 +14,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
-    <script src="i18n.js?v=6"></script>
+    <script src="i18n.js?v=9"></script>
     <script src="session-guard.js?v=2"></script>
 </head>
 <body class="bg-[#FDF8F5] text-[#241A16] min-h-screen flex flex-col">
@@ -86,13 +86,13 @@
             <!-- Arama Barı — masaüstünde kaydırırken üstte sabit (sticky) kalır -->
             <div id="filterBar" class="sticky top-0 z-20 bg-[#FDF8F5] pt-0 pb-3 -mx-4 px-4 md:-mx-6 md:px-6">
                 <button id="mobileFilterToggle" class="sm:hidden w-full mb-2 text-xs font-bold text-brandDark bg-white border border-slate-200 rounded-xl py-2.5 flex items-center justify-center gap-2">
-                    🔍 Filtreler <span id="filterToggleIcon">▾</span>
+                    <span data-i18n="ex_filters">🔍 Filtreler</span> <span id="filterToggleIcon">▾</span>
                 </button>
                 <div id="filterBarContent">
                     <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4 flex flex-col gap-2">
                         <div class="flex gap-2">
-                            <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm" placeholder="Kurum arayın...">
-                            <button id="updateBtn" class="bg-[#E8543A] text-white px-4 py-1.5 rounded-lg text-xs font-bold">Ara</button>
+                            <input type="text" id="searchInput" class="w-full bg-transparent outline-none text-sm" placeholder="Kurum arayın..." data-i18n-placeholder="ex_search_ph">
+                            <button id="updateBtn" class="bg-[#E8543A] text-white px-4 py-1.5 rounded-lg text-xs font-bold" data-i18n="ex_search_btn">Ara</button>
                         </div>
                     </div>
                     <div id="categoryChips" class="flex flex-wrap gap-2"></div>
@@ -105,8 +105,8 @@
             <div id="resultsList" class="space-y-4"></div>
             
             <div id="emptyState" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center">
-                <p class="font-semibold">Sonuç bulunamadı</p>
-                <p class="text-xs text-[#8A7A72]">Veritabanımız küresel ölçekte genişliyor, lütfen tekrar deneyin.</p>
+                <p class="font-semibold" data-i18n="ex_no_results">Sonuç bulunamadı</p>
+                <p class="text-xs text-[#8A7A72]" data-i18n="ex_no_results_hint">Veritabanımız küresel ölçekte genişliyor, lütfen tekrar deneyin.</p>
             </div>
         </main>
 
@@ -126,8 +126,8 @@
     <div id="compareBar" class="hidden fixed bottom-0 left-0 right-0 z-[9998] bg-brandDark text-white px-4 py-3 flex items-center justify-between gap-3 shadow-lg">
         <p id="compareBarText" class="text-xs font-semibold truncate min-w-0 flex-1"></p>
         <div class="flex gap-2 shrink-0">
-            <button onclick="clearCompare()" class="text-[11px] text-white/70 hover:text-white underline">Temizle</button>
-            <button id="openCompareBtn" onclick="openCompareDrawer()" class="bg-brandRed hover:bg-brandRedDark text-white text-xs font-bold px-4 py-1.5 rounded-full transition-all">Karşılaştır →</button>
+            <button onclick="clearCompare()" class="text-[11px] text-white/70 hover:text-white underline" data-i18n="ex_clear">Temizle</button>
+            <button id="openCompareBtn" onclick="openCompareDrawer()" class="bg-brandRed hover:bg-brandRedDark text-white text-xs font-bold px-4 py-1.5 rounded-full transition-all" data-i18n="ex_compare_btn">Karşılaştır →</button>
         </div>
     </div>
 
@@ -135,7 +135,7 @@
     <div id="compareDrawer" class="hidden fixed inset-0 bg-black/50 z-[9999] flex items-end sm:items-center justify-center">
         <div class="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[85vh] overflow-y-auto p-5">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-brandDark">Liseleri Karşılaştır</h3>
+                <h3 class="font-bold text-brandDark" data-i18n="ex_compare_title">Liseleri Karşılaştır</h3>
                 <button onclick="closeCompareDrawer()" class="text-brandGray hover:text-brandDark text-xl leading-none">×</button>
             </div>
             <div id="compareTableWrap" class="overflow-x-auto"></div>
@@ -146,20 +146,18 @@
         const sb = supabase.createClient("https://piyxmmzteyygwlurdawi.supabase.co", "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL");
         let map, markersLayer, isMobileMap = false;
 
+        // Kategori etiketleri i18n.js'te: ex_cat_<slug, tire yerine alt çizgi>
         const CATEGORIES = [
-            ["okul-oncesi-k12", "Okul Öncesi & K-12"],
-            ["yuksekogretim", "Yükseköğretim"],
-            ["dil-egitimi", "Dil Eğitimi"],
-            ["online-uzaktan", "Online & Uzaktan"],
-            ["yetiskin-yasam-boyu", "Yetişkin & Yaşam Boyu"],
-            ["ileri-yas", "İleri Yaş"],
-            ["mesleki-teknik", "Mesleki & Teknik"],
-            ["burs-finansman", "Burs & Finansman"],
-            ["yaz-kisa-sureli", "Yaz & Kısa Süreli"],
-            ["sertifika-programlari", "Sertifika Programları"],
-            ["ozel-egitim-kapsayici", "Özel Eğitim & Kapsayıcı"],
-            ["sanat-spor-hobi", "Sanat, Spor & Hobi"],
-        ];
+            "okul-oncesi-k12", "yuksekogretim", "dil-egitimi", "online-uzaktan",
+            "yetiskin-yasam-boyu", "ileri-yas", "mesleki-teknik", "burs-finansman",
+            "yaz-kisa-sureli", "sertifika-programlari", "ozel-egitim-kapsayici", "sanat-spor-hobi",
+        ].map(slug => [slug, t('ex_cat_' + slug.replace(/-/g, '_'))]);
+
+        // Bu sayfadaki metinlerin çoğu veriyle birlikte JS'te üretiliyor; durum
+        // URL'de tutulduğu için dil değişince sayfayı yeniden yüklemek yeterli.
+        document.addEventListener('eduscor:langchange', () => location.reload());
+        document.getElementById('resultsTitle').textContent = t('ex_loading');
+        document.getElementById('mobileToggleBtn').textContent = t('ex_show_map');
 
         const urlParams = new URLSearchParams(window.location.search);
         const locParam = urlParams.get('loc') || '';
@@ -229,12 +227,12 @@
                 list.classList.add('hidden');
                 mapC.classList.remove('hidden');
                 mapC.style.display = 'block';
-                btn.textContent = '📋 Listeyi Göster';
+                btn.textContent = t('ex_show_list');
                 map.invalidateSize();
             } else {
                 list.classList.remove('hidden');
                 mapC.classList.add('hidden');
-                btn.textContent = '📍 Haritayı Göster';
+                btn.textContent = t('ex_show_map');
             }
         }
 
@@ -248,7 +246,7 @@
             if (checkboxEl.checked) {
                 if (compareSelection.length >= 3) {
                     checkboxEl.checked = false;
-                    alert('En fazla 3 kurum karşılaştırabilirsiniz.');
+                    alert(t('ex_compare_max'));
                     return;
                 }
                 compareSelection.push({ id, name });
@@ -271,7 +269,7 @@
             // Göster" butonu artık onun ÜZERİNDE üst üste biniyordu -
             // bandın yüksekliği kadar yukarı kaydırıyoruz.
             mapBtn.style.bottom = '72px';
-            document.getElementById('compareBarText').textContent = `${compareSelection.length} kurum seçildi: ${compareSelection.map(c => c.name).join(', ')}`;
+            document.getElementById('compareBarText').textContent = tf('ex_selected', { n: compareSelection.length, names: compareSelection.map(c => c.name).join(', ') });
             document.getElementById('openCompareBtn').style.opacity = compareSelection.length >= 2 ? '1' : '0.5';
             document.getElementById('openCompareBtn').style.pointerEvents = compareSelection.length >= 2 ? 'auto' : 'none';
         }
@@ -289,7 +287,7 @@
                 .select('id, name, address, is_public, fee_info, locations(name)')
                 .in('id', ids);
             const { data: scoreRows } = await sb.from('institution_criteria_scores')
-                .select('institution_id, score, scoring_criteria(key, name_tr)')
+                .select('institution_id, score, scoring_criteria(key, name_tr, name_en)')
                 .in('institution_id', ids);
 
             const scoresByInst = {};
@@ -300,15 +298,15 @@
 
             const allCriteriaKeys = [...new Set((scoreRows || []).map(s => s.scoring_criteria.key))];
             const criteriaLabels = {};
-            (scoreRows || []).forEach(s => { criteriaLabels[s.scoring_criteria.key] = s.scoring_criteria.name_tr; });
+            (scoreRows || []).forEach(s => { criteriaLabels[s.scoring_criteria.key] = (getLang() === 'en' && s.scoring_criteria.name_en) || s.scoring_criteria.name_tr; });
 
             const rows = [
-                { label: 'Konum', get: (i) => i.locations ? i.locations.name : '—' },
-                { label: 'Tür', get: (i) => i.is_public ? 'Devlet' : 'Özel' },
-                { label: 'Ücret', get: (i) => i.fee_info || '—' },
+                { label: t('ex_row_location'), get: (i) => i.locations ? i.locations.name : '—' },
+                { label: t('ex_row_type'), get: (i) => i.is_public ? t('od_public') : t('od_private') },
+                { label: t('ex_row_fee'), get: (i) => i.fee_info || '—' },
                 ...allCriteriaKeys.map(key => ({
                     label: criteriaLabels[key],
-                    get: (i) => scoresByInst[i.id]?.[key] ? scoresByInst[i.id][key].val : '<span class="text-slate-300">Veri yok</span>',
+                    get: (i) => scoresByInst[i.id]?.[key] ? scoresByInst[i.id][key].val : `<span class="text-slate-300">${t('od_no_data')}</span>`,
                 })),
             ];
 
@@ -339,12 +337,12 @@
 
         function renderCardHTML(r) {
             const verifiedBadge = r.is_verified
-                ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
-                : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+                ? `<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">${t('badge_verified_short')}</span>`
+                : `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">${t('badge_draft_short')}</span>`;
 
             const ratingBadge = (r._rating && r._rating.review_count > 0)
                 ? `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">⭐ ${r._rating.avg_rating} (${r._rating.review_count})</span>`
-                : `<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-medium px-2 py-0.5 rounded italic">Henüz yorum yok</span>`;
+                : `<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-medium px-2 py-0.5 rounded italic">${t('ex_no_reviews')}</span>`;
 
             const extraBadges = [];
             if (r.age_min != null && r.age_max != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🎂 ${r.age_min}-${r.age_max}</span>`);
@@ -354,7 +352,7 @@
             const scores = r._scores || {};
             if (scores.akademik_basari != null) extraBadges.push(`<span class="bg-brandRed/10 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">🎓 LGS: ${scores.akademik_basari}</span>`);
             if (scores.universite_yerlestirme != null) extraBadges.push(`<span class="bg-brandRed/10 text-brandRed text-[10px] font-bold px-2 py-0.5 rounded">🏛️ YKS: ${scores.universite_yerlestirme}</span>`);
-            if (scores.yabanci_dil != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🌐 Dil: ${scores.yabanci_dil}</span>`);
+            if (scores.yabanci_dil != null) extraBadges.push(`<span class="bg-slate-100 text-[#8A7A72] text-[10px] font-bold px-2 py-0.5 rounded">🌐 ${t('ex_lang_badge')}: ${scores.yabanci_dil}</span>`);
 
             const campusFacts = [];
             const ci = r.campus_info || {};
@@ -367,7 +365,7 @@
                 <div class="relative bg-white rounded-2xl border border-slate-200 shadow-sm p-4 hover:border-brandRed/40 hover:shadow-md transition-all">
                     <label class="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/95 rounded-full px-2 py-1 text-[10px] font-bold text-brandGray shadow-sm cursor-pointer" onclick="event.stopPropagation()">
                         <input type="checkbox" class="compare-checkbox" data-id="${r.id}" data-name="${r.name.replace(/"/g, '&quot;')}" onchange="onCompareToggle(this)" onclick="event.stopPropagation()">
-                        Karşılaştır
+                        ${t('ex_compare_chk')}
                     </label>
                     <a href="okul-detay.html?id=${r.id}" class="flex flex-col sm:flex-row gap-4 cursor-pointer">
                     <!-- Görsel Alanı: Mobilde genişlik tam, yükseklik resme göre otomatik (Kırpılma İmkansız). Masaüstünde standart kutu düzeni. -->
@@ -384,9 +382,9 @@
                             </div>
                             <h3 class="font-bold text-base text-[#241A16] pr-16">${r.name}</h3>
                             <p class="text-xs text-[#8A7A72] mt-1">${r.address || r._ilAdi || 'Ankara'}</p>
-                            ${(r._dist != null && isFinite(r._dist)) ? `<p id="dist-${r.id}" class="text-[11px] text-brandRed font-semibold mt-1">📏 ${r._dist.toFixed(1)} km (kuş uçuşu)</p>` : ''}
+                            ${(r._dist != null && isFinite(r._dist)) ? `<p id="dist-${r.id}" class="text-[11px] text-brandRed font-semibold mt-1">${tf('ex_birdseye', { km: r._dist.toFixed(1) })}</p>` : ''}
                         </div>
-                        ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">Web sitesi →</a>` : ''}
+                        ${r.website ? `<a href="${r.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-[11px] text-brandRed hover:underline font-medium mt-1 inline-block">${t('ex_website')}</a>` : ''}
                     </div>
                     </a>
                 </div>
@@ -426,7 +424,7 @@
             const { data, error } = await query;
 
             if (error) {
-                document.getElementById('resultsTitle').textContent = 'Bir hata oluştu';
+                document.getElementById('resultsTitle').textContent = t('ex_error');
                 console.error(error);
                 return;
             }
@@ -462,7 +460,7 @@
                         const varOlanIdler = new Set(finalData.map(r => r.id));
                         const yeniler = fallbackData.filter(r => !varOlanIdler.has(r.id));
                         finalData = [...finalData, ...yeniler];
-                        mahalleUyarisi = `"${qParam}" mahallesinin tam sınırları elimizde olmadığı için, bağlı olduğu "${mahalleEslesme[0].locations.name}" ilçesindeki kurumlar da eklendi (aralarında ${qParam}'da olmayanlar da olabilir).`;
+                        mahalleUyarisi = tf('ex_mahalle_note', { q: qParam, ilce: mahalleEslesme[0].locations.name });
                     }
                 }
             }
@@ -520,13 +518,13 @@
             }
 
             const radiusNotice = (userLat && userLng && radiusParam)
-                ? ` <span class="text-brandRed">(${radiusParam} km içinde)</span>`
+                ? ` <span class="text-brandRed">${tf('ex_within', { r: radiusParam })}</span>`
                 : '';
 
             const noFilterAtAll = !categoryParam && !qParam;
             document.getElementById('resultsTitle').innerHTML = (noFilterAtAll
-                ? `Öne Çıkan Kurumlar (ilk ${results.length})`
-                : `Arama Sonuçları (${results.length}${results.length === DISPLAY_LIMIT ? '+' : ''} kurum)`) + radiusNotice;
+                ? tf('ex_featured', { n: results.length })
+                : tf('ex_results', { n: results.length + (results.length === DISPLAY_LIMIT ? '+' : '') })) + radiusNotice;
 
             if (mahalleUyarisi) {
                 const existing = document.getElementById('mahalleUyariBox');
@@ -552,7 +550,7 @@
             markersLayer.clearLayers();
             results.forEach(r => { if (r.lat && r.lng) L.marker([r.lat, r.lng]).addTo(markersLayer).bindPopup(`<b>${r.name}</b>`); });
             if (userLat && userLng) {
-                L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 }).addTo(markersLayer).bindPopup('Konumunuz');
+                L.circleMarker([userLat, userLng], { radius: 8, color: '#E8543A', fillColor: '#E8543A', fillOpacity: 0.8 }).addTo(markersLayer).bindPopup(t('ex_your_location'));
             }
         }
 
@@ -571,7 +569,7 @@
                     const data = await resp.json();
                     if (data.routes && data.routes[0]) {
                         const minutes = Math.round(data.routes[0].duration / 60);
-                        el.textContent = `🚗 ${minutes} dk (araçla) · 📏 ${r._dist.toFixed(1)} km`;
+                        el.textContent = tf('ex_drive', { min: minutes, km: r._dist.toFixed(1) });
                     }
                 } catch (e) { /* OSRM'e ulaşılamazsa km bilgisi zaten görünür durumda kalır */ }
             }
@@ -587,11 +585,11 @@
             <a href="metodoloji.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_methodology">Metodoloji</a>
             <a href="edunode.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_edunode">EduNode</a>
             <a href="giris.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_giris_yap">Giriş Yap</a>
-            <a href="kurumlar-icin.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a>        <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">Hakkımızda</a>
-            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">İletişim</a>
+            <a href="kurumlar-icin.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a>        <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="footer_about">Hakkımızda</a>
+            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="footer_contact">İletişim</a>
         </nav>
         <p style="font-size:12px; color:#8A7A72; margin:0; text-align:center;">
-            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;">Gizlilik Politikası</a>
+            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;" data-i18n="footer_privacy">Gizlilik Politikası</a>
         </p>
     </footer>
 

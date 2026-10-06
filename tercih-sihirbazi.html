@@ -128,7 +128,7 @@
             .nav-menu .cta-btn, .nav-menu .cta-btn-outline { width: 100%; text-align: center; box-sizing: border-box; }
         }
     </style>
-    <script src="i18n.js?v=6"></script>
+    <script src="i18n.js?v=9"></script>
     <script src="session-guard.js?v=2"></script>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen">
@@ -203,40 +203,40 @@
         <div id="formCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-6">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-brandDark mb-1">LGS Yüzdelik Diliminiz</label>
-                    <p class="text-xs text-brandGray mb-2">Sınav sonuç belgenizde yazan yüzdelik dilim (örn. 5.2). Ne kadar düşükse o kadar iyi bir sıralamadasınız.</p>
-                    <input type="number" id="yuzdelikInput" step="0.01" min="0" max="100" placeholder="örn. 5.2"
+                    <label class="block text-sm font-semibold text-brandDark mb-1" data-i18n="ts_pct_label">LGS Yüzdelik Diliminiz</label>
+                    <p class="text-xs text-brandGray mb-2" data-i18n="ts_pct_help">Sınav sonuç belgenizde yazan yüzdelik dilim (örn. 5.2). Ne kadar düşükse o kadar iyi bir sıralamadasınız.</p>
+                    <input type="number" id="yuzdelikInput" step="0.01" min="0" max="100" placeholder="örn. 5.2" data-i18n-placeholder="ts_pct_ph"
                            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-brandDark mb-1">Program Tercihi</label>
+                    <label class="block text-sm font-semibold text-brandDark mb-1" data-i18n="ts_program_label">Program Tercihi</label>
                     <select id="programSelect" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
-                        <option value="">Farketmez (Tümü)</option>
-                        <option value="fen-lisesi">Fen Lisesi</option>
-                        <option value="sosyal-bilimler-lisesi">Sosyal Bilimler Lisesi</option>
-                        <option value="anadolu-lisesi">Anadolu Lisesi</option>
-                        <option value="anadolu-imam-hatip-lisesi">Anadolu İmam Hatip Lisesi</option>
-                        <option value="mesleki-teknik-anadolu-lisesi">Mesleki ve Teknik Anadolu Lisesi</option>
+                        <option value="" data-i18n="ts_any_all">Farketmez (Tümü)</option>
+                        <option value="fen-lisesi" data-i18n="ts_prog_fen">Fen Lisesi</option>
+                        <option value="sosyal-bilimler-lisesi" data-i18n="ts_prog_sosyal">Sosyal Bilimler Lisesi</option>
+                        <option value="anadolu-lisesi" data-i18n="ts_prog_anadolu">Anadolu Lisesi</option>
+                        <option value="anadolu-imam-hatip-lisesi" data-i18n="ts_prog_aihl">Anadolu İmam Hatip Lisesi</option>
+                        <option value="mesleki-teknik-anadolu-lisesi" data-i18n="ts_prog_mtal">Mesleki ve Teknik Anadolu Lisesi</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-brandDark mb-1">Kamu / Özel</label>
+                    <label class="block text-sm font-semibold text-brandDark mb-1" data-i18n="ts_type_label">Kamu / Özel</label>
                     <select id="typeSelect" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
-                        <option value="">Farketmez</option>
-                        <option value="public">Sadece Devlet</option>
-                        <option value="private">Sadece Özel</option>
+                        <option value="" data-i18n="ts_any">Farketmez</option>
+                        <option value="public" data-i18n="ts_public_only">Sadece Devlet</option>
+                        <option value="private" data-i18n="ts_private_only">Sadece Özel</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-brandDark mb-1">İl <span class="text-brandGray font-normal">(opsiyonel)</span></label>
-                    <input type="text" id="ilInput" placeholder="örn. Ankara (boş bırakırsanız tüm Türkiye)"
+                    <label class="block text-sm font-semibold text-brandDark mb-1" data-i18n-html="ts_province_label">İl <span class="text-brandGray font-normal">(opsiyonel)</span></label>
+                    <input type="text" id="ilInput" placeholder="örn. Ankara (boş bırakırsanız tüm Türkiye)" data-i18n-placeholder="ts_province_ph"
                            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brandRed/30 focus:border-brandRed">
                 </div>
 
-                <button onclick="search()" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-bold py-3 rounded-xl transition-all">
+                <button onclick="search()" class="w-full bg-brandRed hover:bg-brandRedDark text-white font-bold py-3 rounded-xl transition-all" data-i18n="ts_search_btn">
                     🔍 Uygun Liseleri Göster
                 </button>
             </div>
@@ -246,11 +246,11 @@
             <div id="resultsSummary" class="bg-slate-100 text-brandDark text-xs rounded-xl px-4 py-3 mb-4"></div>
 
             <div id="personalizeCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4 hidden">
-                <p class="text-xs font-bold text-brandRed uppercase tracking-wide mb-1">2. Adım</p>
-                <p class="font-bold text-brandDark text-sm mb-1">Sizin İçin Neler Önemli?</p>
-                <p class="text-xs text-brandGray mb-4">Aşağıdaki kriterleri sizin için <strong>en önemliden en az önemliye</strong> doğru sürükleyerek sıralayın. İlginizi çekmeyenleri kapatabilirsiniz. Okulun genel puanı değişmez, sadece SİZE göre sıralama değişir.</p>
+                <p class="text-xs font-bold text-brandRed uppercase tracking-wide mb-1" data-i18n="ts_step2">2. Adım</p>
+                <p class="font-bold text-brandDark text-sm mb-1" data-i18n="ts_what_matters">Sizin İçin Neler Önemli?</p>
+                <p class="text-xs text-brandGray mb-4" data-i18n-html="ts_rank_help">Aşağıdaki kriterleri sizin için <strong>en önemliden en az önemliye</strong> doğru sürükleyerek sıralayın. İlginizi çekmeyenleri kapatabilirsiniz. Okulun genel puanı değişmez, sadece SİZE göre sıralama değişir.</p>
                 <ul id="weightSliders" class="space-y-2"></ul>
-                <button onclick="personalizeResults()" class="mt-4 w-full bg-brandDark hover:bg-black text-white font-semibold text-sm py-2.5 rounded-full transition-all">✨ Bana Göre Sırala</button>
+                <button onclick="personalizeResults()" class="mt-4 w-full bg-brandDark hover:bg-black text-white font-semibold text-sm py-2.5 rounded-full transition-all" data-i18n="ts_personalize_btn">✨ Bana Göre Sırala</button>
                 <p id="personalizeMsg" class="hidden text-xs mt-3 rounded-lg p-2"></p>
             </div>
 
@@ -264,38 +264,39 @@
         const SUPABASE_KEY = "sb_publishable_6WIxgR9-dgumpgAFgZtn5A_iuBG8llL";
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const PROGRAM_LABELS = {
-            'fen-lisesi': 'Fen Lisesi',
-            'sosyal-bilimler-lisesi': 'Sosyal Bilimler Lisesi',
-            'anadolu-lisesi': 'Anadolu Lisesi',
-            'anadolu-imam-hatip-lisesi': 'Anadolu İmam Hatip Lisesi',
-            'mesleki-teknik-anadolu-lisesi': 'Mesleki ve Teknik Anadolu Lisesi',
-            'lise': 'Lise',
-        };
+        // Yüzde gösterimi dile göre: TR "%5.2", EN "5.2%"
+        function fmtPct(x) { return getLang() === 'en' ? `${x}%` : `%${x}`; }
+        // Veritabanından gelen metni HTML'e eklemeden önce kaçışla
+        function escHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
 
         // eduscor-match-decision: MCDM için ağırlıklandırılabilecek kriterler.
         // akademik_basari bilinçli olarak dışarıda bırakıldı - zaten LGS yüzdelik
         // filtresiyle bir "sert kısıt" (hard constraint) olarak kullanıldı, tekrar
         // ağırlıklandırmak çifte sayım olurdu.
         const PERSONALIZABLE_CRITERIA = [
-            { key: 'yabanci_dil', label: 'Yabancı Dil Eğitimi' },
-            { key: 'fiziksel_altyapi', label: 'Fiziksel Altyapı' },
-            { key: 'sosyal_kulturel', label: 'Sosyal / Kültürel Etkinlikler' },
-            { key: 'ogretmen_kalitesi', label: 'Öğretmen Kalitesi' },
-            { key: 'guvenlik_disiplin', label: 'Güvenlik ve Disiplin' },
-            { key: 'universite_yerlestirme', label: 'Üniversiteye Yerleştirme' },
-            { key: 'burs_ucret', label: 'Burs / Erişilebilirlik' },
+            { key: 'yabanci_dil' },
+            { key: 'fiziksel_altyapi' },
+            { key: 'sosyal_kulturel' },
+            { key: 'ogretmen_kalitesi' },
+            { key: 'guvenlik_disiplin' },
+            { key: 'universite_yerlestirme' },
+            { key: 'burs_ucret' },
         ];
+        // Kriter etiketi seçili dilde (i18n.js: ts_c_<key>)
+        const criterionLabel = (key) => t('ts_c_' + key);
 
         // Bir sonraki search() çağrısı için ham veriyi (kriter skorları dahil)
         // sonradan kişiselleştirme adımında yeniden kullanabilmek için saklıyoruz.
         let lastMatches = [];
         let lastHardConstraints = {};
+        // Dil değişince sonuçları yeniden çizebilmek için son görünüm saklanır
+        let lastResultsArgs = null;  // renderResults() argümanları
+        let lastRanked = null;       // kişiselleştirilmiş sıralama (varsa)
 
         async function search() {
             const yuzdelik = parseFloat(document.getElementById('yuzdelikInput').value);
             if (isNaN(yuzdelik) || yuzdelik < 0 || yuzdelik > 100) {
-                alert('Lütfen geçerli bir yüzdelik dilim girin (0-100 arası).');
+                alert(t('ts_invalid_pct'));
                 return;
             }
             const programSlug = document.getElementById('programSelect').value;
@@ -303,8 +304,7 @@
             const ilFilter = document.getElementById('ilInput').value.trim();
 
             const btn = document.querySelector('#formCard button');
-            const originalText = btn.textContent;
-            btn.textContent = '⏳ Aranıyor...';
+            btn.textContent = t('ts_searching');
             btn.disabled = true;
 
             try {
@@ -415,12 +415,14 @@
                 lastMatches = top;
                 lastHardConstraints = { min_yuzdelik_dilim: yuzdelik, program_slug: programSlug || null, kurum_turu: typeFilter || null, il: ilFilter || null };
 
+                lastResultsArgs = [top, matches.length, yuzdelik, ilSuggestion];
+                lastRanked = null;
                 renderResults(top, matches.length, yuzdelik, ilSuggestion);
                 setupPersonalizeSliders();
             } catch (err) {
                 showDebugError('search() hatası: ' + err.message + '\n' + (err.stack || ''));
             } finally {
-                btn.textContent = originalText;
+                btn.textContent = t('ts_search_btn');
                 btn.disabled = false;
             }
         }
@@ -463,9 +465,9 @@
             list.innerHTML = usable.map((c, i) => `
                 <li data-key="${c.key}" class="flex items-center gap-3 bg-slate-50 rounded-xl px-3 py-2.5 cursor-grab active:cursor-grabbing">
                     <span class="rank-num font-bold text-brandRed text-sm w-5 text-center">${i + 1}</span>
-                    <span class="flex-1 text-sm font-medium text-brandDark">${c.label}</span>
+                    <span class="criteria-label flex-1 text-sm font-medium text-brandDark">${criterionLabel(c.key)}</span>
                     <input type="checkbox" checked class="criteria-checkbox w-4 h-4 accent-brandRed"
-                           onchange="updateRankNumbers()" title="Bu kriteri dikkate al">
+                           onchange="updateRankNumbers()" title="${t('ts_include_criterion')}">
                     <span class="text-brandGray text-lg select-none" aria-hidden="true">☰</span>
                 </li>
             `).join('');
@@ -485,7 +487,7 @@
         async function personalizeResults() {
             const btn = document.querySelector('#personalizeCard button');
             btn.disabled = true;
-            btn.textContent = '⏳ Hesaplanıyor...';
+            btn.textContent = t('ts_calculating');
 
             // DOM sırasına göre, sadece işaretli (checkbox açık) kriterleri al.
             // Rank Order Centroid (ROC) formülü: n kriter sıralanmışsa, i.
@@ -533,6 +535,7 @@
                 return b.matchScore - a.matchScore;
             });
 
+            lastRanked = ranked;
             renderPersonalizedResults(ranked);
 
             // Giriş yapılmışsa profili ve eşleştirme çalıştırmasını kaydet
@@ -546,7 +549,7 @@
                         .upsert({
                             user_id: session.user.id,
                             profile_label: 'Tercih Sihirbazı - ' + new Date().toLocaleDateString('tr-TR'),
-                            criteria_weights: weights,
+                            criteria_weights: rocWeights,
                             hard_constraints: lastHardConstraints,
                             updated_at: new Date().toISOString(),
                         })
@@ -559,26 +562,26 @@
 
                     await sb.from('match_runs').insert({
                         user_preference_profile_id: profile.id,
-                        method: 'WSM_v1_partial_criteria',
+                        method: 'ROC_WSM_v1',
                         candidate_institution_ids: ranked.map(r => r.inst.id),
                         result: ranked.map(r => ({ institution_id: r.inst.id, match_score: r.matchScore, criteria_used: r.criteriaUsed })),
                         institution_score_snapshot: snapshot,
                     });
 
-                    msgEl.textContent = '✓ Tercihleriniz kaydedildi, sonraki girişlerinizde hatırlanacak.';
+                    msgEl.textContent = t('ts_saved');
                     msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-green-50 text-green-700';
                 } else {
-                    msgEl.textContent = 'ℹ️ Sonuçlarınızı kaydetmek ve geçmişte görmek için giriş yapabilirsiniz (şu an sadece bu oturumda geçerli).';
+                    msgEl.textContent = t('ts_login_hint');
                     msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-slate-100 text-brandGray';
                 }
             } catch (err) {
-                msgEl.textContent = 'Kaydetme hatası (sıralama yine de uygulandı): ' + err.message;
+                msgEl.textContent = t('ts_save_error') + ' ' + err.message;
                 msgEl.className = 'text-xs mt-3 rounded-lg p-2 bg-amber-50 text-amber-700';
             }
             msgEl.classList.remove('hidden');
 
             btn.disabled = false;
-            btn.textContent = '✨ Bana Göre Sırala';
+            btn.textContent = t('ts_personalize_btn');
         }
 
         function renderPersonalizedResults(ranked) {
@@ -586,12 +589,12 @@
             list.innerHTML = ranked.map((m, idx) => {
                 const loc = m.inst.locations ? m.inst.locations.name : '';
                 const verifiedBadge = m.inst.is_verified
-                    ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
-                    : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+                    ? `<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">${t('badge_verified_short')}</span>`
+                    : `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">${t('badge_draft_short')}</span>`;
                 const scoreDisplay = m.matchScore !== null
                     ? `<div class="text-lg font-bold text-brandDark">${m.matchScore.toFixed(0)}<span class="text-xs font-normal text-brandGray">/100</span></div>
-                       <div class="text-[10px] text-brandGray uppercase tracking-wide">${m.criteriaUsed} kriterden hesaplandı</div>`
-                    : `<div class="text-xs text-brandGray italic">Ortak veri yok</div>`;
+                       <div class="text-[10px] text-brandGray uppercase tracking-wide">${tf('ts_criteria_used', { n: m.criteriaUsed })}</div>`
+                    : `<div class="text-xs text-brandGray italic">${t('ts_no_common')}</div>`;
                 return `
                     <a href="okul-detay.html?id=${m.inst.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
                         <div class="w-10 h-10 rounded-full bg-brandDark text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
@@ -600,7 +603,7 @@
                                 <h3 class="font-bold text-sm text-brandDark">${m.inst.name}</h3>
                                 ${verifiedBadge}
                             </div>
-                            <p class="text-xs text-brandGray">📍 ${loc} · Taban dilim: %${m.yuzdelikDilim}</p>
+                            <p class="text-xs text-brandGray">📍 ${loc} · ${tf('ts_base_pct', { p: fmtPct(m.yuzdelikDilim) })}</p>
                         </div>
                         <div class="text-right shrink-0">${scoreDisplay}</div>
                     </a>
@@ -613,21 +616,19 @@
             section.classList.remove('hidden');
 
             const summary = document.getElementById('resultsSummary');
-            summary.innerHTML = `📊 <b>%${yuzdelik}</b> yüzdelik diliminize göre, gerçekçi olarak girebileceğiniz <b>${totalCount}</b> lise bulundu ` +
-                `(en seçkin ${top.length} tanesi gösteriliyor). ` +
-                `<br><span class="opacity-70">Not: Bu tahmin, okulların geçmiş yıl taban yüzdelik dilimlerine dayanır - gerçek sonuçlar yıldan yıla değişebilir.</span>`;
+            summary.innerHTML = tf('ts_summary', { p: fmtPct(yuzdelik), total: totalCount, shown: top.length });
 
             const list = document.getElementById('resultsList');
             if (top.length === 0) {
                 const suggestionHtml = ilSuggestion
                     ? `<div class="mt-3 text-sm">
-                        <b class="text-brandDark">${ilSuggestion}</b> mi demek istediniz?
-                        <button onclick="document.getElementById('ilInput').value='${ilSuggestion}'; search();"
-                                class="ml-1 text-brandRed underline font-semibold">Bunu dene</button>
+                        ${tf('ts_did_you_mean', { il: `<b class="text-brandDark">${escHtml(ilSuggestion)}</b>` })}
+                        <button onclick="document.getElementById('ilInput').value='${escHtml(ilSuggestion)}'; search();"
+                                class="ml-1 text-brandRed underline font-semibold">${t('ts_try_this')}</button>
                        </div>`
                     : '';
                 list.innerHTML = `<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-brandGray">
-                    Bu kriterlere uygun, verisi olan bir lise bulunamadı. Filtreleri gevşetmeyi deneyin (örn. il seçimini kaldırın).
+                    ${t('ts_no_results')}
                     ${suggestionHtml}
                 </div>`;
                 return;
@@ -636,8 +637,8 @@
             list.innerHTML = top.map((m, idx) => {
                 const loc = m.inst.locations ? m.inst.locations.name : '';
                 const verifiedBadge = m.inst.is_verified
-                    ? '<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ Doğrulanmış</span>'
-                    : '<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">🔍 Taslak</span>';
+                    ? `<span class="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">${t('badge_verified_short')}</span>`
+                    : `<span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">${t('badge_draft_short')}</span>`;
                 return `
                     <a href="okul-detay.html?id=${m.inst.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center gap-4 hover:border-brandRed/40 hover:shadow-md transition-all cursor-pointer">
                         <div class="w-10 h-10 rounded-full bg-brandRed text-white flex items-center justify-center font-bold text-sm shrink-0">${idx + 1}</div>
@@ -645,18 +646,32 @@
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <h3 class="font-bold text-sm text-brandDark">${m.inst.name}</h3>
                                 ${verifiedBadge}
-                                <span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">${m.inst.is_public ? 'Devlet' : 'Özel'}</span>
+                                <span class="bg-slate-100 text-brandGray text-[10px] font-bold px-2 py-0.5 rounded">${m.inst.is_public ? t('od_public') : t('od_private')}</span>
                             </div>
                             <p class="text-xs text-brandGray">📍 ${loc}</p>
                         </div>
                         <div class="text-right shrink-0">
-                            <div class="text-lg font-bold text-brandRed">%${m.yuzdelikDilim}</div>
-                            <div class="text-[10px] text-brandGray uppercase tracking-wide">Okulun Taban Dilimi</div>
+                            <div class="text-lg font-bold text-brandRed">${fmtPct(m.yuzdelikDilim)}</div>
+                            <div class="text-[10px] text-brandGray uppercase tracking-wide">${t('ts_school_base_pct')}</div>
                         </div>
                     </a>
                 `;
             }).join('');
         }
+
+        // Dil değişince: JS ile üretilen metinler (sonuç listesi, kriter etiketleri,
+        // buton yazıları) yeni dilde yeniden çizilir. Kullanıcının girdiği form
+        // değerleri ve sürükleyerek yaptığı kriter sıralaması korunur.
+        document.addEventListener('eduscor:langchange', () => {
+            document.querySelectorAll('#weightSliders li').forEach(li => {
+                li.querySelector('.criteria-label').textContent = criterionLabel(li.dataset.key);
+                li.querySelector('.criteria-checkbox').title = t('ts_include_criterion');
+            });
+            document.getElementById('personalizeMsg').classList.add('hidden');
+            if (!lastResultsArgs) return;
+            renderResults(...lastResultsArgs);
+            if (lastRanked) renderPersonalizedResults(lastRanked);
+        });
     </script>
     <footer style="width:100%; border-top:1px solid #F3EFEA; padding:24px 16px; margin-top:8px; text-align:center;">
         <nav style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 20px; margin-bottom:12px;">
@@ -665,11 +680,11 @@
             <a href="edunode.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_edunode">EduNode</a>
             <a href="giris.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_giris_yap">Giriş Yap</a>
             <a href="kurumlar-icin.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_for_institutions">Okulunuzu Sahiplenin</a>
-            <a href="explorer.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_explorer">Platformu Keşfet</a>        <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">Hakkımızda</a>
-            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;">İletişim</a>
+            <a href="explorer.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="nav_explorer">Platformu Keşfet</a>        <a href="hakkimizda.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="footer_about">Hakkımızda</a>
+            <a href="iletisim.html" style="font-size:12px; color:#8A7A72; text-decoration:none;" data-i18n="footer_contact">İletişim</a>
         </nav>
         <p style="font-size:11px; color:#8A7A72; margin:0; text-align:center;">
-            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;">Gizlilik Politikası</a>
+            © 2026 EduScor · <a href="gizlilik-politikasi.html" style="color:#8A7A72; text-decoration:underline;" data-i18n="footer_privacy">Gizlilik Politikası</a>
         </p>
     </footer>
 

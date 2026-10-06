@@ -19,7 +19,7 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 
 ## Arayüz / i18n
 
-- [ ] `tercih-sihirbazi.html` ve `explorer.html` sayfalarının tam İngilizce desteği (okul-detay tamamlandı).
+- [x] `tercih-sihirbazi.html` ve `explorer.html` sayfalarının tam İngilizce desteği *(tamamlandı: 06.10.2026)*. Aynı işte tercih sihirbazında bir hata da düzeltildi: giriş yapmış kullanıcının "Bana Göre Sırala" tercihleri, ROC geçişinden beri tanımsız bir değişken yüzünden kaydedilemiyordu.
 
 ## Hesaplar / Güvenlik (kullanıcı tarafı)
 
