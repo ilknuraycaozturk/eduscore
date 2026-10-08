@@ -25,7 +25,7 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 
 ## Hesaplar / Güvenlik (kullanıcı tarafı)
 
-- [ ] Kullanılmayan Google OAuth istemcisini (`eduscor-web`) silmek. "Web client 1" kalacak.
+- [x] **Kullanılmayan Google OAuth istemcisini (`eduscor-web`) silmek** *(tamamlandı: 08.10.2026)*. Supabase Google sağlayıcısının kullandığı Client ID (`…ddvoed443…`, "Web client 1") ile karşılaştırılarak diğer istemci (`…2h5cv031…`) silindi. Sitede Google ile giriş test edildi, sorunsuz.
 - [x] **Sohbete yapıştırılmış GitHub token'ını GitHub'dan silmek** *(tamamlandı: 08.10.2026)*. Yeni fine-grained token oluşturuldu (yalnızca `eduscore`, Actions read/write), `WORKFLOW_PAT` secret'ı onunla güncellendi, eski token silindi. Bu sırada `SUPABASE_SERVICE_ROLE_KEY` secret'ı yanlışlıkla üzerine yazıldı; Supabase secret key'i yeniden girilerek düzeltildi ve `derive-email` iş akışının elle çalıştırılmasıyla doğrulandı.
 - [ ] AdSense incelemesi: Google'ın yanıtı bekleniyor.
 - [x] **`scrape_progress` tablosuna sızmış Supabase secret key** *(tamamlandı: 06.10.2026)*. Anahtar döndürüldü, satır silindi, GitHub Actions yeni anahtarla doğrulandı. Kaynak, scraper'daki değişken adı çakışmasıydı ve kodda zaten düzeltilmişti.
