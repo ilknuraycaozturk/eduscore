@@ -159,6 +159,66 @@ def normalize_name(name: str) -> str:
 find_existing_match = _shared_find_existing_match
 
 
+# --- Aynı yerde eşleştirme (Ekim 2026) -----------------------------------
+# find_existing_match() tüm Türkiye'de isim ALT DİZESİ ile eşleştiriyordu:
+# Tunceli'deki "Atatürk İlkokulu", Ankara'daki "Atatürk İlkokulu" ile aynı
+# sayılıp hiç eklenmiyor, üstelik bilgileri (kurum kodu, web) yanlış okula
+# yazılıyordu. Bu yükleyici artık yalnızca AYNI İL (ve biliniyorsa AYNI
+# İLÇE) içinde, normalize edilmiş adı BİREBİR aynı olan kaydı eşleştirir.
+from eduscor_data_utils import normalize_turkish as _norm_tr
+
+
+def _place_from_prefix(name: str) -> tuple[str | None, str | None]:
+    parts = [p.strip() for p in (name or "").split(" - ")]
+    if len(parts) >= 3:
+        return _norm_tr(parts[0]), _norm_tr(parts[1])
+    return None, None
+
+
+def build_place_index(existing: list[dict], locations: list[dict]) -> dict[str, list[dict]]:
+    """Mevcut kurumları normalize ad -> [{row, il, ilce}] olarak indeksler.
+    İl/ilçe önce 'İL - İLÇE - Ad' önekinden, yoksa location_id'den bulunur."""
+    by_id = {l["id"]: l for l in locations}
+
+    def place_of_location(loc_id):
+        loc = by_id.get(loc_id)
+        il = ilce = None
+        while loc:
+            if loc.get("level") == "district" and ilce is None:
+                ilce = _norm_tr(loc["name"])
+            if loc.get("level") == "province":
+                il = _norm_tr(loc["name"])
+                break
+            loc = by_id.get(loc.get("parent_id"))
+        return il, ilce
+
+    index: dict[str, list[dict]] = {}
+    for row in existing:
+        il, ilce = _place_from_prefix(row["name"])
+        if il is None:
+            il, ilce = place_of_location(row.get("location_id"))
+        index.setdefault(normalize_name(row["name"]), []).append({"row": row, "il": il, "ilce": ilce})
+    return index
+
+
+def find_same_place_match(raw_name: str, il_ad: str | None, ilce_ad: str | None,
+                          index: dict[str, list[dict]]) -> dict | None:
+    adaylar = index.get(normalize_name(raw_name), [])
+    il, ilce = (_norm_tr(il_ad) if il_ad else None), (_norm_tr(ilce_ad) if ilce_ad else None)
+    if il is None:
+        return None  # ili bilinmeyen kayıt için eşleştirme yapma (yanlış birleştirme riski)
+    ayni_il = [a for a in adaylar if a["il"] == il]
+    if ilce:
+        ayni_ilce = [a for a in ayni_il if a["ilce"] == ilce]
+        if len(ayni_ilce) == 1:
+            return ayni_ilce[0]["row"]
+        if len(ayni_ilce) > 1:
+            return ayni_ilce[0]["row"]  # aynı ilçede aynı adla mükerrer kayıt zaten var
+        ilcesiz = [a for a in ayni_il if a["ilce"] is None]
+        return ilcesiz[0]["row"] if len(ilcesiz) == 1 else None
+    return ayni_il[0]["row"] if len(ayni_il) == 1 else None
+
+
 def guess_type(name: str) -> str | None:
     lower = turkish_lower(name)  # standart .lower() Türkçe 'İ'yi bozar, bkz. turkish_lower()
     # ÖNEMLİ: Kaynak verilerde (tabanpuanlari.net, MEB vb.) Türkçe "İ" harfi
@@ -218,7 +278,7 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
     dedup yapıyoruz. Aksi halde farklı konum granülerliğinde (mahalle vs
     ilçe) kaydedilmiş aynı okul mükerrer eklenebilir (bu bug'ı canlıda
     yaşadık ve LGS scriptinde düzelttik, aynı düzeltmeyi burada da uyguluyoruz)."""
-    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website,meb_kurum_kodu,email")
+    return fetch_all_paginated(base_url, headers, "/rest/v1/institutions?select=id,name,address,lat,lng,website,meb_kurum_kodu,email,location_id")
 
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, parent_il_id: str,
@@ -301,6 +361,7 @@ def main():
     ankara_id = None
     province_lookup: dict[str, str] = {}
     existing = []
+    place_index: dict[str, list[dict]] = {}
 
     if not args.dry_run:
         type_lookup = get_lookup(supabase_url, headers, "institution_types")
@@ -332,7 +393,9 @@ def main():
         # yere Nominatim'e istek atılmıyor (önceki sürümün 6 saatlik zaman
         # aşımına tekrar tekrar takılmasının asıl sebebi buydu).
         existing = get_existing_institutions(supabase_url, headers, None)
-        print(f"Global dedup kontrolü için {len(existing)} mevcut kurum yüklendi.")
+        all_locations = fetch_all_paginated(supabase_url, headers, "/rest/v1/locations?select=id,parent_id,level,name")
+        place_index = build_place_index(existing, all_locations)
+        print(f"Dedup kontrolü için {len(existing)} mevcut kurum yüklendi (aynı il/ilçe içinde eşleştirme).")
 
     skipped = 0
     skipped_admin = 0
@@ -366,7 +429,10 @@ def main():
         # dry-run modunda gerçek dedup verisi olmadığı için her zaman ilk 5
         # kaydı önizleme amaçlı işleriz (Nominatim'e de gerçekten istek atarız,
         # ama sınırlı sayıda - performans için)
-        match = find_existing_match(raw_name, existing) if existing else None
+        pref_il, pref_ilce = _place_from_prefix(r["raw_name"])
+        row_place_il = r.get("il_ad") or pref_il
+        row_place_ilce = ilce_ad or pref_ilce
+        match = find_same_place_match(raw_name, row_place_il, row_place_ilce, place_index) if place_index else None
 
         if match and match.get("lat"):
             # ÖNEMLİ: Koordinatı zaten varsa BİR DAHA coğrafi kodlama yapma
@@ -521,7 +587,13 @@ def main():
         if resp.status_code in (200, 201):
             inserted += 1
             new_row = resp.json()[0]
-            existing.append({"id": new_row["id"], "name": raw_name, "address": address, "lat": lat, "lng": lng, "website": website})
+            new_entry = {"id": new_row["id"], "name": raw_name, "address": address, "lat": lat, "lng": lng, "website": website}
+            existing.append(new_entry)
+            place_index.setdefault(normalize_name(raw_name), []).append({
+                "row": new_entry,
+                "il": _norm_tr(row_place_il) if row_place_il else None,
+                "ilce": _norm_tr(row_place_ilce) if row_place_ilce else None,
+            })
         else:
             failed += 1
             print(f"UYARI: '{raw_name}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
@@ -539,7 +611,31 @@ def main():
         "dry_run": bool(args.dry_run),
     }
     summary["hesaplanan_toplam"] = (skipped_admin + skipped + inserted + enriched + skipped_dupe + failed)
+    cov_path = Path("data/meb_coverage.json")
+    if cov_path.exists():
+        try:
+            cov = json.loads(cov_path.read_text(encoding="utf-8"))
+            summary["meb_sorgu"] = len(cov)
+            summary["meb_beklenen"] = sum(c["beklenen"] for c in cov if isinstance(c.get("beklenen"), int))
+            summary["meb_cekilen"] = sum(c.get("cekilen", 0) for c in cov)
+            summary["meb_sorunlu_sorgu"] = sum(1 for c in cov if c.get("beklenen") != c.get("cekilen"))
+            summary["il_kodlari"] = sorted({c["il_kodu"] for c in cov})
+        except Exception as e:
+            print(f"UYARI: Kapsama dosyası okunamadı: {e}")
+    summary["tipi_taninmayan_ornek"] = skipped_unknown_names[:30]
     print("YUKLEME_OZETI " + json.dumps(summary, ensure_ascii=False))
+    # GitHub Actions loglarına her ortamdan erişilemediği için özet
+    # scrape_progress tablosuna da yazılır (anahtar: meb_son_yukleme_ozeti).
+    if not args.dry_run:
+        try:
+            requests.post(
+                f"{supabase_url}/rest/v1/scrape_progress?on_conflict=key",
+                headers={**headers, "Prefer": "resolution=merge-duplicates,return=minimal"},
+                json={"key": "meb_son_yukleme_ozeti", "value": json.dumps(summary, ensure_ascii=False)[:5000]},
+                timeout=15,
+            ).raise_for_status()
+        except Exception as e:
+            print(f"UYARI: Özet scrape_progress'e yazılamadı: {e}")
     try:
         Path("data").mkdir(parents=True, exist_ok=True)
         Path("data/meb_load_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
