@@ -338,6 +338,7 @@ def main():
     skipped_admin = 0
     skipped_unknown_names = []
     inserted, enriched, skipped_dupe, geocode_calls = 0, 0, 0, 0
+    failed, no_geocode = 0, 0
     stopped_early = False
 
     for r in raw:
@@ -353,6 +354,9 @@ def main():
             continue
 
         ilce_ad = r.get("ilce_ad") or args.location_name or ""
+        # Coğrafi kodlamada kaydın KENDİ ili kullanılır (önceden her kayıt
+        # "Ankara" ile sorgulanıyordu; Ankara dışı okullar Ankara'ya düşüyordu).
+        geo_il = turkish_title(r["il_ad"]) if r.get("il_ad") else "Ankara"
         raw_name = r["raw_name"].strip()
         address = r.get("raw_info")
         lat, lng = r.get("lat"), r.get("lng")
@@ -390,18 +394,25 @@ def main():
                 if resp.status_code in (200, 204):
                     enriched += 1
                 else:
+                    failed += 1
                     print(f"UYARI: '{raw_name}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
             else:
                 skipped_dupe += 1
             continue
 
-        if geocode_calls >= args.max_geocode:
+        # Coğrafi kodlama bütçesi dolduysa kaydı yine EKLE (koordinatsız);
+        # önceden burada döngü kırılıyordu ve kalan okullar hiç eklenmiyordu.
+        geocode_budget_left = geocode_calls < args.max_geocode
+        if not geocode_budget_left:
             stopped_early = True
-            break
 
-        if not lat or not lng:
+        if (not lat or not lng) and not geocode_budget_left:
+            lat, lng = None, None
+            is_approx_location = False
+            no_geocode += 1
+        elif not lat or not lng:
             clean_name = turkish_capitalize_words(normalize_name(raw_name))
-            geocode_query = f"{clean_name}, {ilce_ad}, Ankara, Türkiye"
+            geocode_query = f"{clean_name}, {ilce_ad}, {geo_il}, Türkiye"
             lat, lng = geocode(geocode_query)
             geocode_calls += 1
             is_approx_location = False
@@ -409,7 +420,7 @@ def main():
                 time.sleep(1)
                 # Bina OSM'de haritalanmamış olabilir (küçük/yeni okullarda sık görülür).
                 # Son çare: ilçe merkezini kullan, yaklaşık konum olarak işaretle.
-                ilce_query = f"{ilce_ad}, Ankara, Türkiye"
+                ilce_query = f"{ilce_ad}, {geo_il}, Türkiye"
                 lat, lng = geocode(ilce_query)
                 is_approx_location = bool(lat)
             time.sleep(1)  # Nominatim kullanım politikası: en fazla 1 istek/saniye
@@ -476,6 +487,7 @@ def main():
                 if resp.status_code in (200, 204):
                     enriched += 1
                 else:
+                    failed += 1
                     print(f"UYARI: '{raw_name}' güncellenemedi -> {resp.status_code} {resp.text[:200]}")
             else:
                 skipped_dupe += 1
@@ -511,6 +523,7 @@ def main():
             new_row = resp.json()[0]
             existing.append({"id": new_row["id"], "name": raw_name, "address": address, "lat": lat, "lng": lng, "website": website})
         else:
+            failed += 1
             print(f"UYARI: '{raw_name}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
 
     print(f"{skipped} kayıt tipi tanınamadığı için atlandı, {skipped_admin} idari birim olduğu için atlandı.")
@@ -519,15 +532,31 @@ def main():
         for n in skipped_unknown_names:
             print(f"  ? {n}")
 
+    summary = {
+        "ham_kayit": len(raw), "idari_birim_atlandi": skipped_admin, "tipi_taninmadi": skipped,
+        "eklendi": inserted, "zenginlestirildi": enriched, "zaten_vardi": skipped_dupe,
+        "hata": failed, "cografi_kodlama": geocode_calls, "koordinatsiz_eklendi": no_geocode,
+        "dry_run": bool(args.dry_run),
+    }
+    summary["hesaplanan_toplam"] = (skipped_admin + skipped + inserted + enriched + skipped_dupe + failed)
+    print("YUKLEME_OZETI " + json.dumps(summary, ensure_ascii=False))
+    try:
+        Path("data").mkdir(parents=True, exist_ok=True)
+        Path("data/meb_load_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        print(f"UYARI: Yükleme özeti yazılamadı: {e}")
+
     if args.dry_run:
         print("... (dry-run, Supabase'e yazılmadı)")
         return
 
     print(f"Tamamlandı: {inserted} yeni kurum eklendi, {enriched} mevcut kurum zenginleştirildi, {skipped_dupe} zaten var olduğu için atlandı, {geocode_calls} yeni coğrafi kodlama yapıldı.")
     if stopped_early:
-        print(f"\n⚠️ PARTİ SINIRINA ULAŞILDI ({args.max_geocode} yeni coğrafi kodlama). "
-              f"İşlenmemiş kayıtlar kaldı - workflow'u TEKRAR ÇALIŞTIRIN, kaldığı yerden devam edecek "
-              f"(zaten eklenen kayıtlar tekrar işlenmeyecek, hızlıca atlanacak).")
+        print(f"\nNOT: Coğrafi kodlama bütçesi ({args.max_geocode}) doldu; {no_geocode} kurum koordinatsız eklendi. "
+              f"Koordinatları ayrı bir adımda tamamlanmalı.")
+    if failed:
+        print(f"HATA: {failed} kayıt Supabase'e yazılamadı.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

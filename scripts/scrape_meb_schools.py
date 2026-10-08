@@ -85,8 +85,38 @@ def _log_progress_to_supabase(message: str, key: str = "meb_debug_live") -> None
         _write_local_debug(f"SUPABASE_LOG_HATASI: {type(e).__name__}: {str(e)[:300]}")
 
 
+COVERAGE: list[dict] = []
+COVERAGE_PATH = Path("data/meb_coverage.json")
+
+
 def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int = 20000) -> list[dict]:
-    """MEB okullar tablosunu render edip satırları döndürür."""
+    """MEB okullar tablosunu render edip satırları döndürür ve her sorgu için
+    MEB'in bildirdiği toplam ('N kayıttan') ile çekilen satır sayısını
+    data/meb_coverage.json dosyasına kaydeder (kapsama kontrolü için)."""
+    meta: dict = {"beklenen": None, "durum": "ok"}
+    results = _scrape_okullar_raw(il_kodu, ilce_kodu, timeout_ms, meta)
+    COVERAGE.append({"il_kodu": str(il_kodu), "ilce_kodu": str(ilce_kodu) if ilce_kodu else None,
+                     "beklenen": meta["beklenen"], "cekilen": len(results), "durum": meta["durum"]})
+    try:
+        COVERAGE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        COVERAGE_PATH.write_text(json.dumps(COVERAGE, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        print(f"UYARI: Kapsama dosyası yazılamadı: {e}")
+    return results
+
+
+def _parse_toplam_kayit(info_metni: str) -> int | None:
+    """'151 kayıttan 1 - 100 arasındaki kayıtlar gösteriliyor' -> 151.
+    'Kayıt yok' / '0 kayıttan' -> 0. Tanınmazsa None."""
+    m = re.search(r"([\d.]+)\s*kay[ıi]ttan", info_metni, re.IGNORECASE)
+    if m:
+        return int(m.group(1).replace(".", ""))
+    if re.search(r"kay[ıi]t\s+yok|bulunamad", info_metni, re.IGNORECASE):
+        return 0
+    return None
+
+
+def _scrape_okullar_raw(il_kodu: str, ilce_kodu: str | None, timeout_ms: int, meta: dict) -> list[dict]:
     url = f"{MEB_URL}?ILKODU={il_kodu}"
     if ilce_kodu:
         url += f"&ILCEKODU={ilce_kodu}"
@@ -101,6 +131,7 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
         except Exception as e:
             _log_progress_to_supabase(f"il={il_kodu} ilce={ilce_kodu} | DURDU: goto_hatasi err={str(e)[:150]}")
             print(f"HATA: Sayfa yuklenemedi ({url}): {e}")
+            meta["durum"] = "sayfa_yuklenemedi"
             browser.close()
             return results
 
@@ -109,6 +140,13 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
             page.wait_for_selector("table tr td", timeout=timeout_ms)
         except Exception:
             print(f"UYARI: {url} için tablo satırı bulunamadı (boş sonuç ya da sayfa yapısı değişmiş olabilir).")
+            meta["durum"] = "tablo_bos"
+            try:
+                info_el = page.query_selector("[id*='_INFO' i]") or page.query_selector(".dataTables_info")
+                if info_el:
+                    meta["beklenen"] = _parse_toplam_kayit(info_el.inner_text().strip())
+            except Exception:
+                pass
             browser.close()
             return results
 
@@ -144,6 +182,7 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
                        or page.query_selector("[class*='dataTables_info' i]"))
             if info_el:
                 info_metni = info_el.inner_text().strip()
+                meta["beklenen"] = _parse_toplam_kayit(info_metni)
                 print(f"TEŞHİS: Toplam kayıt bilgi metni: '{info_metni}'")
                 _log_progress_to_supabase(
                     f"il={il_kodu} ilce={ilce_kodu} | dataTables_info='{info_metni}'",
@@ -195,6 +234,7 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
             page_num += 1
 
         if page_num > max_pages:
+            meta["durum"] = "max_pages_asildi"
             _log_progress_to_supabase(f"il={il_kodu} ilce={ilce_kodu} | DURDU: max_pages({max_pages})_asildi kayit={len(results)}")
 
         browser.close()
@@ -395,21 +435,37 @@ def main():
         all_data = []
         for idx, il_kodu in enumerate(il_kodlari, 1):
             print(f"\n=== [{idx}/{len(il_kodlari)}] İl kodu {il_kodu} ===")
-            try:
-                il_data = scrape_okullar(il_kodu, None)
-                for row in il_data:
+            # ÖNEMLİ (Ekim 2026): "tüm il" sorgusu (?ILKODU=X, ilçesiz) MEB
+            # sunucusunda kırpılıyor (bkz. --all-ilceler açıklaması). Toplu yol
+            # da artık her ilçeyi AYRI sorguluyor; ilçe listesi referans
+            # tablodan okunamazsa il atlanmaz, kapsama dosyasına hata yazılır.
+            ilceler = discover_ilceler(il_kodu)
+            if not ilceler:
+                print(f"  HATA: İl {il_kodu} için ilçe listesi bulunamadı.")
+                COVERAGE.append({"il_kodu": str(il_kodu), "ilce_kodu": None, "beklenen": None,
+                                 "cekilen": 0, "durum": "ilce_listesi_yok"})
+            il_toplam = 0
+            for ilce in ilceler:
+                try:
+                    ilce_data = scrape_okullar(il_kodu, ilce["kod"])
+                except Exception as e:
+                    print(f"  HATA: İl {il_kodu} / {ilce['ad']} çekilemedi -> {e}")
+                    COVERAGE.append({"il_kodu": str(il_kodu), "ilce_kodu": str(ilce["kod"]), "beklenen": None,
+                                     "cekilen": 0, "durum": f"hata: {str(e)[:150]}"})
+                    continue
+                for row in ilce_data:
                     parts = [p.strip() for p in row["raw_name"].split(" - ", 2)]
-                    if len(parts) >= 2:
+                    if len(parts) >= 3:
                         row["il_ad"] = parts[0]
                         row["ilce_ad"] = parts[1]
-                        row["raw_name"] = parts[2] if len(parts) > 2 else parts[1]
+                        row["raw_name"] = parts[2]
                     else:
                         row["il_ad"] = None
-                        row["ilce_ad"] = None
-                all_data.extend(il_data)
-                print(f"  İl {il_kodu}: {len(il_data)} kayıt bulundu (toplam: {len(all_data)})")
-            except Exception as e:
-                print(f"  HATA: İl {il_kodu} çekilemedi -> {e}")
+                        row["ilce_ad"] = ilce["ad"]
+                all_data.extend(ilce_data)
+                il_toplam += len(ilce_data)
+                print(f"  {ilce['ad']}: {len(ilce_data)} kayıt")
+            print(f"  İl {il_kodu}: {il_toplam} kayıt, {len(ilceler)} ilçe (toplam: {len(all_data)})")
 
             # ÖNEMLİ: Her il sonrası dosyayı YENİDEN YAZIYORUZ (ara kayıt) - iş
             # zaman aşımına uğrarsa bile şimdiye kadar çekilen veri dosyada
@@ -418,6 +474,7 @@ def main():
             out_path = Path(args.output)
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
+            COVERAGE_PATH.write_text(json.dumps(COVERAGE, ensure_ascii=False, indent=2), encoding="utf-8")
 
         print(f"\nTOPLAM {len(all_data)} kayıt ({len(il_kodlari)} il) -> {args.output}")
         return
@@ -454,6 +511,7 @@ def main():
             out_path = Path(args.output)
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(json.dumps(all_data, ensure_ascii=False, indent=2), encoding="utf-8")
+            COVERAGE_PATH.write_text(json.dumps(COVERAGE, ensure_ascii=False, indent=2), encoding="utf-8")
 
         print(f"\nTOPLAM {len(all_data)} kayıt ({len(ilceler)} ilçe) -> {args.output}")
         return

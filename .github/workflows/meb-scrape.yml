@@ -107,7 +107,7 @@ jobs:
           fi
 
       - name: Ham veriyi artifact olarak kaydet
-        if: steps.determine_batch.outputs.skip_today != 'true'
+        if: always() && steps.determine_batch.outputs.skip_today != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: meb-raw-data
@@ -161,12 +161,21 @@ jobs:
         run: |
           OLD_START=${{ needs.scrape.outputs.batch_start }}
           NEW_START=$(python3 -c "print((int('$OLD_START') - 1 + 13) % 81 + 1)")
-          curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d "{\"value\": \"$NEW_START\"}"
-          echo "Sıradaki parti başlangıcı: il $NEW_START"
+          set -euo pipefail
+          curl -sS --fail-with-body -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d "{\"value\": \"$NEW_START\", \"updated_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+          SAVED=$(curl -sS --fail-with-body "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_next_il_kodu&select=value" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['value'])")
+          if [ "$SAVED" != "$NEW_START" ]; then
+            echo "HATA: Parti ilerlemesi kaydedilemedi (beklenen $NEW_START, veritabanında $SAVED)."
+            exit 1
+          fi
+          echo "Sıradaki parti başlangıcı: il $NEW_START (veritabanında doğrulandı)"
           # ÖNEMLİ: Eğer yeni başlangıç eski başlangıçtan KÜÇÜKSE, bu 81'i
           # geçip başa döndüğümüz (bir tam döngü tamamlandığı) anlamına gelir
           # - bu durumda otomatik olarak aylık moda geçiyoruz.
           if [ "$NEW_START" -lt "$OLD_START" ]; then
-            curl -s -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "aylik"}'
+            curl -sS --fail-with-body -X PATCH "$SUPABASE_URL/rest/v1/scrape_progress?key=eq.meb_schedule_mode" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" -H "Prefer: return=minimal" -d '{"value": "aylik"}'
             echo "🎉 81 il tam tur tamamlandı - otomatik olarak AYLIK moda geçildi (her ayın 1'i çalışacak)."
           fi
+
+      - name: Kapsama kontrolü (MEB'in bildirdiği toplam = çekilen satır)
+        run: python scripts/check_meb_coverage.py data/meb_coverage.json data/meb_load_summary.json
