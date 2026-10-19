@@ -192,12 +192,21 @@ def build_place_index(existing: list[dict], locations: list[dict]) -> dict[str, 
             loc = by_id.get(loc.get("parent_id"))
         return il, ilce
 
+    iller = {_norm_tr(l["name"]) for l in locations if l.get("level") == "province"}
     index: dict[str, list[dict]] = {}
     for row in existing:
+        key = normalize_name(row["name"])
         il, ilce = _place_from_prefix(row["name"])
         if il is None:
+            # "İL - Ad" (2 parçalı) biçimi: önceki lise yüklemeleri böyle kaydetmişti;
+            # il önekini ayırmazsak "İL - İLÇE - Ad" biçimli MEB kaydıyla eşleşmiyor
+            # ve kopya oluşuyordu (19.10.2026'da 4.733 kopya birleştirildi).
+            parts = [p.strip() for p in row["name"].split(" - ")]
+            if len(parts) == 2 and _norm_tr(parts[0]) in iller:
+                key, il = normalize_name(parts[1]), _norm_tr(parts[0])
+        if il is None:
             il, ilce = place_of_location(row.get("location_id"))
-        index.setdefault(normalize_name(row["name"]), []).append({"row": row, "il": il, "ilce": ilce})
+        index.setdefault(key, []).append({"row": row, "il": il, "ilce": ilce})
     return index
 
 
