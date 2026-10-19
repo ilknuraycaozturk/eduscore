@@ -1,6 +1,6 @@
 # EduScor — Açık İş Listesi (Backlog)
 
-*Son güncelleme: 08.10.2026*
+*Son güncelleme: 19.10.2026*
 
 Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten iş `[x]` ile işaretlenir ve tarihi yazılır; liste silinmez.
 
@@ -18,6 +18,12 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 - [x] **TOZOK kopyalarının silinmesi** *(tamamlandı: 06.10.2026)*. 5 okulun (İtalyan, Notre Dame de Sion, Saint Benoit, Saint Michel, Sainte Pulcherie) TOZOK kopyaları, verileri asıl kayıtlara aktarıldıktan sonra silindi.
 - [x] **Diğer TOZOK kopyalarını taramak** *(tamamlandı: 06.10.2026)*. 79 TOZOK kaydı ad (il bazında), web alan adı ve telefona göre MEB biçimli kayıtlarla karşılaştırıldı. Yalnızca 2 kopya çıktı: Saint Joseph İstanbul ve Saint Joseph İzmir. Telefon, web ve MSP bilgisi asıl kayıtlara aktarıldı, kopyalar silindi. Kopyalardaki dbtakip LGS puanları (464,42 ve 360) doğrulanmamış olduğu için aktarılmadı. Saint Joseph İstanbul'un ilçesi okulun kendi sitesine göre Şişli'den **Kadıköy**'e düzeltildi. Kalan 77 kaydın MEB tarafında karşılığı yok.
 - [x] **Yer tutucu telefon `0 212 212 12 12`** *(tamamlandı: 06.10.2026)*. TOZOK listesinde 4 ilgisiz okulda (Elit Gençler, Galileo Galilei, Sezin, Koç) aynı numara vardı. Okulların kendi sitelerinden doğrulanan numaralarla hem `tozok_msp_ozel_okullar` hem `institutions` tablosunda düzeltildi. İz `data_anomalies` tablosunda.
+
+- [x] **MEB toplu taramasının düzeltilmesi ve 81 il yeniden tarama** *(tamamlandı: 08.10.2026)*. Ölçüm ve nedenler: `docs/EDU-DATA-001-meb-kapsama-olcumu.md`. Resmi ilkokul kapsaması %98,5; ilkokul %91, ortaokul %84, lise %84 (fark büyük ölçüde özel okullar).
+- [x] **Veri temizliği B1–B3** *(tamamlandı: 19.10.2026)*. Ankara'ya düşmüş 4.261 koordinat boşaltıldı; başka ildeki okula yazılmış 307 kurum kodu/e-posta temizlendi; "İL - Ad" ve "İL - İLÇE - Ad" biçimli 4.733 lise kopyası birleştirildi (eski kayıt korundu). Yedekler: `_yedek_20261019_*` tabloları.
+- [ ] **Koordinat tamamlama (B4)** *(eklendi: 19.10.2026)*: `geocode-institutions.yml` iş akışı hazır; `LOCATIONIQ_API_KEY` secret'ı eklenince günde ~4.800 kurum işleyecek (~58 bin koordinatsız kurum, ~2 hafta). LocationIQ ücretsiz planının atıf ve veri saklama koşulları kayıt sırasında doğrulanmalı.
+- [ ] **Özel okullar için kaynak**: MEB okul listesi yalnızca resmi okulları veriyor; ~2.100 özel ilkokul ve karşılığı ortaokul/liseler eksik.
+- [ ] **Eşleşmesi belirsiz kalanlar**: 29 belirsiz lise çifti, kurum kodu iki farklı ilde kalan 12 grup, aynı kodu taşıyan 50 grup; %95 altındaki 8 il (Hakkari, Sinop, Trabzon, Artvin, Edirne, Ordu, Bilecik, Gümüşhane) ve 2017 ilçe referansında olmayan yeni ilçeler.
 
 ## Arayüz / i18n
 
