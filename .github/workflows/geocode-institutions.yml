@@ -1,0 +1,35 @@
+name: Kurum konumlarını tamamla (LocationIQ)
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Bu çalıştırmada en fazla kaç kurum işlensin (ücretsiz plan: günde 5.000)"
+        required: true
+        default: "4800"
+      dry_run:
+        description: "true ise veritabanına yazmaz"
+        required: true
+        default: "false"
+  schedule:
+    - cron: "17 1 * * *"  # Her gün 01:17 UTC (04:17 TR)
+
+jobs:
+  geocode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Konumları tamamla
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LOCATIONIQ_API_KEY: ${{ secrets.LOCATIONIQ_API_KEY }}
+        run: |
+          ARGS="--limit ${{ inputs.limit || '4800' }}"
+          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python scripts/geocode_institutions.py $ARGS
