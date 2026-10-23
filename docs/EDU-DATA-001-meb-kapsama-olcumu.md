@@ -81,4 +81,4 @@ Referans ayrımı (Tablo 2.4.b): ortaokul 18.878 = resmî 16.650 + özel 2.228. 
 - Özel ilkokul/ortaokuldaki küçük fazlalık, ÖOKGM'nin güncel listesi ile Haziran 2025 istatistiği arasındaki tarih farkından gelebilir (doğrulanmadı).
 - Özel/resmî ayrımı okul adındaki "Özel" sözcüğüne göre yapıldı; kayıtta ayrı bir alan yok.
 - Ortaöğretimdeki fazlalığın nedeni hâlâ belirlenmedi (açık iş).
-- Yeni eklenen 4.508+ özel kurumun koordinatı yok; ÖOKGM adresleri kayıtta.
+- Bu çalıştırmalarla 11.318 özel kurum eklendi (anaokulu ve lise dahil); 11.307'sinin koordinatı yok, yalnızca 106'sının MEB sitesi var. ÖOKGM adresleri kayıtta.
