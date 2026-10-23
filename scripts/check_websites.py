@@ -47,6 +47,7 @@ ILLER = ["adana", "adiyaman", "afyonkarahisar", "agri", "aksaray", "amasya", "an
          "sakarya", "samsun", "sanliurfa", "siirt", "sinop", "sivas", "sirnak", "tekirdag", "tokat", "trabzon",
          "tunceli", "usak", "van", "yalova", "yozgat", "zonguldak"]
 TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.I | re.S)
+MEB_BASLIK_RE = re.compile(r"^\s*([^/|]+?)\s*/\s*([^/|]+?)\s*(?:-\s+(.*))?$")
 OG_RE = re.compile(r"<meta[^>]+property=[\"']og:site_name[\"'][^>]+content=[\"']([^\"']+)", re.I)
 
 
@@ -79,6 +80,17 @@ def host_of(url: str) -> str:
 def degerlendir(ad: str, il: str | None, ilce: str | None, baslik: str) -> tuple[str, float | None]:
     if not baslik.strip():
         return "belirsiz", None
+    # MEB okul siteleri başlığı "İL / İLÇE - Okul Adı" biçiminde verir: il/ilçe birebir karşılaştırılır.
+    m = MEB_BASLIK_RE.match(baslik.split(" | ")[0])
+    if m and ascii_tr(m.group(1)) in ILLER:
+        b_il, b_ilce, b_ad = ascii_tr(m.group(1)), ascii_tr(m.group(2)), (m.group(3) or "").strip()
+        if il and b_il != ascii_tr(il):
+            return "eslesmiyor", None
+        if ilce and b_ilce != ascii_tr(ilce):
+            return "eslesmiyor", None
+        if not b_ad:
+            return "belirsiz", None
+        baslik = b_ad
     cekirdek = re.sub(r"^.* - ", "", ad)
     ad_tok = tokens(cekirdek)
     ayirt = {w for w in ad_tok if w not in GENEL and len(w) > 1}

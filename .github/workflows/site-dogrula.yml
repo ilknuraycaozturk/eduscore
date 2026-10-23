@@ -11,6 +11,14 @@ on:
         description: "Bu çalıştırmada en fazla kaç kurum (saniyede 1 sayfa)"
         required: true
         default: "5000"
+      yeniden_gun:
+        description: "Bu kadar gün içinde denetlenmiş kurumları atla (0 = hepsini yeniden denetle)"
+        required: true
+        default: "30"
+  # İlk tam tarama için geçici: 6 saatte bir 10.000 kurum (~54 bin site, ~1,5 gün).
+  # Tarama bitince (özette islenen = 0) bu zamanlama kaldırılacak.
+  schedule:
+    - cron: "41 */6 * * *"
 
 concurrency:
   group: site-dogrula
@@ -19,7 +27,7 @@ concurrency:
 jobs:
   dogrula:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,4 +38,4 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python scripts/check_websites.py --kapsam "${{ inputs.kapsam }}" --limit "${{ inputs.limit }}"
+        run: python scripts/check_websites.py --kapsam "${{ inputs.kapsam || 'hepsi' }}" --limit "${{ inputs.limit || '10000' }}" --yeniden-gun "${{ inputs.yeniden_gun || '30' }}"
