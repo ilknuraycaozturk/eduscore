@@ -82,3 +82,14 @@ Referans ayrımı (Tablo 2.4.b): ortaokul 18.878 = resmî 16.650 + özel 2.228. 
 - Özel/resmî ayrımı okul adındaki "Özel" sözcüğüne göre yapıldı; kayıtta ayrı bir alan yok.
 - Ortaöğretimdeki fazlalığın nedeni hâlâ belirlenmedi (açık iş).
 - Bu çalıştırmalarla 11.318 özel kurum eklendi (anaokulu ve lise dahil); 11.307'sinin koordinatı yok, yalnızca 106'sının MEB sitesi var. ÖOKGM adresleri kayıtta.
+
+## Ortaöğretim fazlalığı ve birleştirme (23.10.2026)
+
+Fazlalık (13.221 / 12.423) türlere göre incelendi (Tablo 2.6). Nedenler:
+
+- **Kopya lise kayıtları (744).** Ağustos'ta LGS kaynağından gelen "İL - Ad" biçimli 580 kayıt ve Temmuz–Ağustos'tan kalan kurum kodsuz 164 kayıt, MEB listesinden gelen kayıtlarla aynı okul; eski adlarda yalnızca alan sözcüğü eksik ("Ahi Evran MTAL" / "Ahi Evran Ticaret MTAL"). Kural: aynı il (kodsuzlarda aynı ilçe) ve tür; eski adın tüm sözcükleri MEB adında var; MEB adındaki fazla sözcükler yalnızca ilçe adı ya da Ticaret, Turizm, Denizcilik, Sağlık, Tarım, Kız; tek aday. Birleştirildi: eski kayıt korundu, MEB adı, ilçesi, kurum kodu, sitesi ve e-postası aktarıldı, kopya silindi. Yedek: `_yedek_20261023_birlestirme`, `_yedek_20261023_birlestirme_bagli`, çift listesi `_birlestirme_20261023`.
+- **Kriter puanı çakışmaları (291).** Aynı kriter iki kayıtta da vardı. Her kriterde güven puanı (`trust_score_computed`) yüksek olan, eşitse kaynak tarihi yeni olan tutuldu: 140 kriterde MEB kopyasındaki 2026 verisi (güven 0,88) eski kaydın 2022 verisinin (0,72) yerine geçti; seçim listesi `_birlestirme_20261023_kriter_secim`. Etkilenen 140 okulun genel skoru tetikleyiciyle yeniden hesaplandı.
+- **Milletlerarası okullar (193 / 81).** Bizdeki tür ilkokul ve ortaokul kampüslerini de içeriyor; MEB yalnızca lise kısmını sayıyor. Kayıt hatası değil.
+- **Çok Programlı Anadolu Lisesi (581).** Bizde "Anadolu Lisesi" türünde, MEB mesleki kategoride sayıyor; toplamı etkilemiyor.
+
+Sonuç: **ortaöğretim 12.477 (%100,4)**. Kalan 96 "İL - Ad" biçimli lise kaydının 29'u belirsiz çift; 67'si MEB okul listesinde karşılığı olmayan, meb.k12.tr sitesi olan gerçek okullar (ör. Sinop–Durağan ve Trabzon–Şalpazarı'nda MEB listesi hiç lise döndürmüyor). MEB listesinin bazı ilçelerde lise vermemesi ayrıca ölçülecek.
