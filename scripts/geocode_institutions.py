@@ -81,12 +81,12 @@ def main() -> int:
             loc = locs.get(loc.get("parent_id"))
         return il, ilce
 
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=args.retry_days)).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=args.retry_days)).strftime("%Y-%m-%dT%H:%M:%SZ")
     recent_fail = {a["institution_id"] for a in fetch_all(
         base, h, f"/rest/v1/geocode_attempts?select=institution_id&status=neq.ok&attempted_at=gte.{cutoff}")}
     todo = [r for r in fetch_all(base, h, "/rest/v1/institutions?select=id,name,location_id&lat=is.null&order=id")
             if r["id"] not in recent_fail]
-    gun_basi = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    gun_basi = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")  # URL içinde "+" boşluğa dönüşmesin
     r_cnt = requests.get(f"{base}/rest/v1/geocode_request_log?select=id&provider=eq.locationiq&requested_at=gte.{gun_basi}",
                          headers={**h, "Prefer": "count=exact", "Range": "0-0"}, timeout=30)
     r_cnt.raise_for_status()
