@@ -24,7 +24,7 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 - [ ] **Koordinat tamamlama (B4)** *(güncellendi: 23.10.2026)*: Asıl kaynak okulların kendi MEB siteleri (`/tema/iletisim.php` harita koordinatı); `meb-site-coords.yml` her gün 05:23'te en fazla 4.500 okul işliyor (~11 gün). 50 okulluk denemede %88 başarı. LocationIQ (`geocode-institutions.yml`, zamanlaması kapalı) yalnızca sitesi olmayan ~3.400 kurum için, sıkı doğrulamayla ve ücretsiz plan sınırını asla aşmayacak şekilde (son 24 saatte en fazla 4.500 istek) kullanılacak. Deneme kayıtları: `geocode_attempts`.
 - [ ] **Puanlama: konum güvenini kullanmak** *(eklendi: 23.10.2026)*: `institutions.konum_kaynagi` / `konum_guven` (yüksek = okul sitesi, orta = doğrulanmış arama, düşük = eski/bilinmiyor/yaklaşık) eklendi ve dolduruldu. "Konum, Ulaşım ve Çevre" kriterinin bu güveni nasıl kullanacağı scoring modülünde kararlaştırılacak.
 - [ ] **Özel okullar için kaynak**: MEB okul listesi yalnızca resmi okulları veriyor; ~2.100 özel ilkokul ve karşılığı ortaokul/liseler eksik.
-- [ ] **Eşleşmesi belirsiz kalanlar**: 29 belirsiz lise çifti, kurum kodu iki farklı ilde kalan 12 grup, aynı kodu taşıyan 50 grup; %95 altındaki 8 il (Hakkari, Sinop, Trabzon, Artvin, Edirne, Ordu, Bilecik, Gümüşhane) ve 2017 ilçe referansında olmayan yeni ilçeler.
+- [ ] **Eşleşmesi belirsiz kalanlar**: 29 belirsiz lise çifti, kurum kodu iki farklı ilde kalan 12 grup, aynı kodu taşıyan 50 grup. *(23.10.2026: Derecik ve Kemalpaşa ilçeleri eklendi; resmi ilkokul kapsaması %98,7, 77/81 il ≥ %95. Edirne, Ordu, Bilecik, Gümüşhane MEB listesiyle tam; fark istatistik–liste farkı olabilir.)*
 
 ## Arayüz / i18n
 

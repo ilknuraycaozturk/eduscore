@@ -51,3 +51,10 @@ Düzeltmeler (commit `fd937b8`, `f463246`): toplu tarama ilçe ilçe; kopya eşl
 - %95 altında kalan iller (resmi ilkokul): Hakkari %84, Sinop %84, Trabzon %89, Artvin %90, Edirne %91, Ordu %94, Bilecik %94, Gümüşhane %94. Olası nedenler: 2017 ilçe referansında olmayan yeni ilçeler (ör. Hakkari–Derecik, 2018) ve kapsama kontrolünün kırmızı verdiği iki parti (il kodları 6,24,31,32,36,41,54,55,57,60,64,68,69,78 ve 7,10,17,19,25,29,37,38,42,43,49,53,61,77).
 - Ortaokul ve ortaöğretim için il bazında resmi/özel ayrımı bu tablolarda yok; ortaöğretimdeki fazlalığın (~2.770) nedeni henüz belirlenmedi (birebir aynı adlı kopya yalnızca 45).
 - Koordinatsız kurum: 54.173. Ankara dışında olup koordinatı Ankara'da görünen eski kayıt: 4.261.
+
+## Üçüncü ölçüm (23.10.2026)
+
+- 2017 ilçe referansında olmayan iki ilçe eklendi ve tarandı: Hakkari–Derecik (MEB kodu 7, 48 kurum) ve Artvin–Kemalpaşa (kod 9, 11 kurum). Kodlar tarama sonucundaki okul adlarıyla ("HAKKARİ - DERECİK - …", "ARTVİN - KEMALPAŞA - …") doğrulandı.
+- Tarayıcıya geçici sayfa hataları için 3 denemeye kadar yeniden deneme eklendi; düşük kalan 8 il yeniden tarandı, kapsama kontrolü yeşil (MEB'in bildirdiği toplam = çekilen).
+- **Resmi ilkokul kapsaması: %98,7 (22.687 / 22.980); 81 ilin 77'si ≥ %95.**
+- %95 altında kalan 4 il (Edirne %91, Ordu %94, Bilecik %94, Gümüşhane %94): MEB listesi bu illerde eksiksiz çekildi (toplamlar tutuyor). Kalan fark, MEB'in güncel okul listesi ile Haziran 2025 istatistiği arasındaki farktan geliyor olabilir (kapanan/birleşen okullar); doğrulanmadı, bilinen sınırlama olarak kaydedildi.
