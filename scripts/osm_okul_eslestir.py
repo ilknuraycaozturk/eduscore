@@ -166,7 +166,15 @@ def main() -> int:
     ilce_med = {k: med(v) for k, v in by_ilce.items() if len(v) >= 3}
     il_med = {k: med(v) for k, v in by_il.items() if len(v) >= 3}
 
+    # Üniversite/yurt/dershane gibi okul dışı nesneler elenir; amenity=college yalnızca adı okul/kolej/lise ise.
+    YASAK = {"universite", "universitesi", "fakulte", "fakultesi", "yurdu", "yurt", "dershane", "dershanesi", "myo", "enstitu"}
+    OKULCA = {"kolej", "koleji", "lisesi", "okulu", "okullari", "ilkokulu", "ortaokulu", "anaokulu", "kampusu"}
+    osm = [o for o in osm if not (tok(o["ad"]) & YASAK) and (o.get("tur") != "college" or (tok(o["ad"]) & OKULCA))]
     osm_t = [(o, tok(o["ad"]) - GENEL, tok(o["ad"])) for o in osm]
+    # Zincir markalar (ör. Sınav, Final, Bahçeşehir): ayırt edici sözcüğü yalnızca marka olan
+    # okul, en yakın kampüse kendiliğinden bağlanmaz.
+    from collections import Counter as _C
+    marka_sayisi = _C(w for _, ot, _ in osm_t for w in ot)
     dizin = defaultdict(set)
     for i, (_, ot, _) in enumerate(osm_t):
         for w in ot:
@@ -203,10 +211,13 @@ def main() -> int:
                 continue
             # Ters yön: OSM adındaki ayırt edici sözcüklerin en az yarısı okul adında olmalı
             # ("Barbaros Hayrettin Paşa İlkokulu" ≠ "Özel Barbaros Anaokulu").
-            if ot and len(ortak) / len(ot) < 0.5:
+            if ot and (len(ortak) / len(ot) < (0.67 if len(ot) >= 3 else 1.0)):
                 continue
             # Kademe çelişkisi: OSM adı tek bir kademe söylüyor ve kampüs/kolej adı değilse,
             # okulun kademesiyle örtüşmeli ("Beytepe Ortaokulu" ≠ "Özel Beytepe Anaokulu").
+            ih_k, ih_o = {"imam", "hatip"} <= ham, {"imam", "hatip"} <= o_ham
+            if ih_k != ih_o and (("meslek" in o_ham) or ("mesleki" in o_ham) or ih_o or ("mesleki" in ham)):
+                continue
             o_kademe = kademe(o_ham)
             if o_kademe and k_kademe and not (o_kademe & k_kademe) and not (o_ham & KAMPUS):
                 continue
@@ -225,7 +236,8 @@ def main() -> int:
         for o_, d_ in sorted(liste, key=lambda x: x[1]):
             if not any(km((o_["lat"], o_["lng"]), (c["lat"], c["lng"])) < 0.2 for c, _ in kumeler):
                 kumeler.append((o_, d_))
-        durum = "zayif" if en_iyi < 0.75 else ("tekil" if len(kumeler) == 1 else "coklu")
+        zincir = len(a) == 1 and marka_sayisi[next(iter(a))] >= 5
+        durum = "zayif" if (en_iyi < 0.75 or zincir) else ("tekil" if len(kumeler) == 1 else "coklu")
         sayac[durum] += 1
         o, d = kumeler[0]
         liste = kumeler
