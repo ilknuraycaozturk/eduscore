@@ -1,7 +1,7 @@
 """OpenStreetMap'teki okul kayıtlarını indirir ve koordinatı olmayan kurumlarla
 ad + yakınlık üzerinden eşleştirme ADAYLARI üretir. institutions tablosuna YAZMAZ.
 
-1. Overpass API: Türkiye'deki amenity=school/kindergarten/college ve adı olan
+1. Geofabrik Türkiye çıkarımı (osmium ile süzülmüş): amenity=school/kindergarten/college ve adı olan
    tüm nesneler (nokta/alan/ilişki; alanlar için merkez noktası) -> osm_okullar
 2. Hedef: koordinatı olmayan ve MEB okul sitesi olmayan kurumlar.
 3. Aday kuralı:
@@ -75,36 +75,34 @@ def main() -> int:
                       headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                       json={"key": "osm_eslesme_son_ozet", "value": json.dumps({"hata": msg[:900]}, ensure_ascii=False)}, timeout=20)
 
-    # Ülke çapındaki tek sorgu Overpass'ta zaman aşımına uğruyor (504); Türkiye
-    # kutusu 1,6° x 2,4° karolara bölünür, her karo ayrı sorgulanır.
-    import time
-    elems, eksik = [], []
-    lat0, lat1, lon0, lon1 = 35.8, 42.2, 25.6, 44.9
-    karolar = [(a, b, a + 1.6, b + 2.4) for a in [lat0 + i * 1.6 for i in range(4)]
-               for b in [lon0 + j * 2.4 for j in range(9)] if b < lon1]
-    for (s_, w_, n_, e_) in karolar:
-        q = SORGU_KARO.format(bbox=f"{s_:.2f},{w_:.2f},{n_:.2f},{e_:.2f}")
-        tamam = False
-        for deneme in range(3):
-            uc = OVERPASS_UCLARI[deneme % len(OVERPASS_UCLARI)]
-            try:
-                r = requests.post(uc, data={"data": q}, timeout=400,
-                                  headers={"User-Agent": "EduScor-Crawler/1.0 (+destek@eduscor.com)"})
-                if r.status_code == 200:
-                    elems.extend(r.json().get("elements", []))
-                    tamam = True
-                    break
-                print(f"  karo {s_:.1f},{w_:.1f} {uc} HTTP {r.status_code}")
-            except Exception as ex:
-                print(f"  karo {s_:.1f},{w_:.1f} {uc}: {ex}")
-            time.sleep(15 * (deneme + 1))
-        if not tamam:
-            eksik.append(f"{s_:.1f},{w_:.1f}")
-        time.sleep(3)
-    print(f"Karolar: {len(karolar)}, eksik: {eksik}")
-    if eksik:
-        hata_yaz(f"Overpass: {len(eksik)} karo alınamadı: {eksik}")
+    girdi = sys.argv[1] if len(sys.argv) > 1 else None
+    if not girdi:
+        hata_yaz("Girdi dosyası (osmium export geojsonseq) verilmedi")
         return 1
+    # Geofabrik Türkiye çıkarımı osmium ile süzülüp GeoJSON satırlarına çevrilir
+    # (Overpass sunucuları ülke ölçeğinde zaman aşımına uğruyor).
+    elems = []
+    with open(girdi, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip().lstrip("\x1e")
+            if not line:
+                continue
+            ft = json.loads(line)
+            g, t = ft.get("geometry") or {}, ft.get("properties") or {}
+            pts = []
+
+            def topla(c):
+                if c and isinstance(c[0], (int, float)):
+                    pts.append(c)
+                else:
+                    for x in c or []:
+                        topla(x)
+            topla(g.get("coordinates"))
+            if not pts:
+                continue
+            lon = sum(p[0] for p in pts) / len(pts)
+            lat = sum(p[1] for p in pts) / len(pts)
+            elems.append({"type": str(ft.get("id", "x"))[:1] or "x", "id": ft.get("id"), "lat": lat, "lon": lon, "tags": t})
     osm = []
     for e in elems:
         lat = e.get("lat") or (e.get("center") or {}).get("lat")
@@ -112,7 +110,7 @@ def main() -> int:
         t = e.get("tags", {})
         if lat is None or lon is None or not t.get("name"):
             continue
-        osm.append({"osm_id": f"{e['type'][0]}{e['id']}", "ad": t.get("name"), "tur": t.get("amenity"),
+        osm.append({"osm_id": str(e["id"]), "ad": t.get("name"), "tur": t.get("amenity"),
                     "lat": lat, "lng": lon, "website": t.get("website") or t.get("contact:website"),
                     "etiketler": {k: v for k, v in t.items() if k in ("name:tr", "operator", "isced:level", "addr:street",
                                                                         "addr:housenumber", "addr:city", "addr:district")}})

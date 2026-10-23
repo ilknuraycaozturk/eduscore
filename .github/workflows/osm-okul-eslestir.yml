@@ -10,15 +10,21 @@ concurrency:
 jobs:
   eslestir:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests
-      - name: OSM indir ve aday üret
+      - run: pip install requests && sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Geofabrik Türkiye çıkarımını indir ve okulları süz
+        run: |
+          curl -sSL --fail -o turkey.osm.pbf https://download.geofabrik.de/europe/turkey-latest.osm.pbf
+          osmium tags-filter turkey.osm.pbf nwr/amenity=school,kindergarten,college -o okullar.osm.pbf
+          osmium export okullar.osm.pbf -f geojsonseq --add-unique-id=type_id -o okullar.geojsonseq
+          wc -l okullar.geojsonseq
+      - name: Aday üret
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python scripts/osm_okul_eslestir.py
+        run: python scripts/osm_okul_eslestir.py okullar.geojsonseq
