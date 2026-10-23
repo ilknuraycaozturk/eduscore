@@ -29,9 +29,8 @@ from eduscor_data_utils import normalize_turkish
 
 OVERPASS_UCLARI = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
                    "https://overpass.private.coffee/api/interpreter"]
-SORGU = """[out:json][timeout:900];
-area["ISO3166-1"="TR"][admin_level=2]->.tr;
-nwr(area.tr)["amenity"~"^(school|kindergarten|college)$"]["name"];
+SORGU_KARO = """[out:json][timeout:300];
+nwr["amenity"~"^(school|kindergarten|college)$"]["name"]({bbox});
 out center tags;"""
 GENEL = {"ozel", "okulu", "okullari", "okul", "anaokulu", "ilkokulu", "ortaokulu", "lisesi", "lise", "anadolu",
          "fen", "turk", "cocuk", "kreş", "kres", "yuva", "yuvasi", "kurumu", "egitim", "ve", "t", "c", "i", "ii",
@@ -76,23 +75,35 @@ def main() -> int:
                       headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                       json={"key": "osm_eslesme_son_ozet", "value": json.dumps({"hata": msg[:900]}, ensure_ascii=False)}, timeout=20)
 
-    elems, son_hata = None, ""
-    for uc in OVERPASS_UCLARI:
-        print(f"Overpass sorgusu gönderiliyor: {uc}")
-        try:
-            r = requests.post(uc, data={"data": SORGU}, timeout=1000,
-                              headers={"User-Agent": "EduScor-Crawler/1.0 (+destek@eduscor.com)"})
-            if r.status_code != 200:
-                son_hata = f"{uc} HTTP {r.status_code}: {r.text[:300]}"
-                print(son_hata)
-                continue
-            elems = r.json().get("elements", [])
-            break
-        except Exception as e:
-            son_hata = f"{uc}: {e}"
-            print(son_hata)
-    if elems is None:
-        hata_yaz("Overpass: " + son_hata)
+    # Ülke çapındaki tek sorgu Overpass'ta zaman aşımına uğruyor (504); Türkiye
+    # kutusu 1,6° x 2,4° karolara bölünür, her karo ayrı sorgulanır.
+    import time
+    elems, eksik = [], []
+    lat0, lat1, lon0, lon1 = 35.8, 42.2, 25.6, 44.9
+    karolar = [(a, b, a + 1.6, b + 2.4) for a in [lat0 + i * 1.6 for i in range(4)]
+               for b in [lon0 + j * 2.4 for j in range(9)] if b < lon1]
+    for (s_, w_, n_, e_) in karolar:
+        q = SORGU_KARO.format(bbox=f"{s_:.2f},{w_:.2f},{n_:.2f},{e_:.2f}")
+        tamam = False
+        for deneme in range(3):
+            uc = OVERPASS_UCLARI[deneme % len(OVERPASS_UCLARI)]
+            try:
+                r = requests.post(uc, data={"data": q}, timeout=400,
+                                  headers={"User-Agent": "EduScor-Crawler/1.0 (+destek@eduscor.com)"})
+                if r.status_code == 200:
+                    elems.extend(r.json().get("elements", []))
+                    tamam = True
+                    break
+                print(f"  karo {s_:.1f},{w_:.1f} {uc} HTTP {r.status_code}")
+            except Exception as ex:
+                print(f"  karo {s_:.1f},{w_:.1f} {uc}: {ex}")
+            time.sleep(15 * (deneme + 1))
+        if not tamam:
+            eksik.append(f"{s_:.1f},{w_:.1f}")
+        time.sleep(3)
+    print(f"Karolar: {len(karolar)}, eksik: {eksik}")
+    if eksik:
+        hata_yaz(f"Overpass: {len(eksik)} karo alınamadı: {eksik}")
         return 1
     osm = []
     for e in elems:
