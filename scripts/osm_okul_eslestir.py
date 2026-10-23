@@ -35,7 +35,8 @@ out center tags;"""
 GENEL = {"ozel", "okulu", "okullari", "okul", "anaokulu", "ilkokulu", "ortaokulu", "lisesi", "lise", "anadolu",
          "fen", "turk", "cocuk", "kreş", "kres", "yuva", "yuvasi", "kurumu", "egitim", "ve", "t", "c", "i", "ii",
          "kampusu", "kampus", "subesi", "sube", "ilk", "orta", "bilim", "teknoloji", "sosyal", "bilimler",
-         "uluslararasi", "milletlerarasi", "school", "kindergarten", "college", "kolej", "koleji", "kolejleri"}
+         "uluslararasi", "milletlerarasi", "school", "kindergarten", "college", "kolej", "koleji", "kolejleri",
+         "mesleki", "teknik", "merkez", "imam", "hatip", "spor", "guzel", "sanatlar"}
 
 
 def ascii_tr(s: str) -> str:
@@ -177,12 +178,14 @@ def main() -> int:
     adaylar, sayac = [], defaultdict(int)
     for k in hedef:
         ham = tok(re.sub(r"^.* - ", "", k["name"]))
-        a = ham - GENEL
+        il, ilce = yer(k["location_id"])
+        # Okulun kendi il/ilçe adı ayırt edici sayılmaz ("Özel Fethiye Ortaokulu" ≠ "Fethiye Gazi Ortaokulu").
+        yer_tok = tok(locs[il]["name"] if il in locs else "") | tok(locs[ilce]["name"] if ilce in locs else "")
+        a = ham - GENEL - yer_tok
         k_kademe = kademe(ham)
         if not a:
             sayac["ayirt_edici_yok"] += 1
             continue
-        il, ilce = yer(k["location_id"])
         merkez, sinir = (ilce_med.get(ilce), 20) if ilce in ilce_med else (il_med.get(il), 40)
         if not merkez:
             sayac["konum_referansi_yok"] += 1
@@ -191,6 +194,7 @@ def main() -> int:
         aday_i = set().union(*(dizin.get(w, set()) for w in a))
         for i in aday_i:
             o, ot, o_ham = osm_t[i]
+            ot = ot - yer_tok
             ortak = a & ot
             if not ortak:
                 continue
