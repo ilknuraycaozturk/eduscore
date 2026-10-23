@@ -1,0 +1,33 @@
+name: Okul web sitelerini doğrula (salt okunur)
+
+on:
+  workflow_dispatch:
+    inputs:
+      kapsam:
+        description: "paylasilan: birden çok kurumda geçen siteler; hepsi: tüm siteler"
+        required: true
+        default: "paylasilan"
+      limit:
+        description: "Bu çalıştırmada en fazla kaç kurum (saniyede 1 sayfa)"
+        required: true
+        default: "5000"
+
+concurrency:
+  group: site-dogrula
+  cancel-in-progress: false
+
+jobs:
+  dogrula:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Siteleri denetle
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/check_websites.py --kapsam "${{ inputs.kapsam }}" --limit "${{ inputs.limit }}"
