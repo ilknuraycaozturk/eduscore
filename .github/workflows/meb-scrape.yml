@@ -39,6 +39,12 @@ on:
   schedule:
     - cron: "0 3 * * *"  # Her gün 03:00 UTC (06:00 TR saati) - mod kontrolü içeride yapılır
 
+# Aynı il listesi için iki çalıştırma aynı anda çalışmasın (eşzamanlı yüklemeler
+# aynı okulu iki kez ekleyebilir). Farklı il listeleri paralel çalışabilir.
+concurrency:
+  group: meb-scrape-${{ inputs.il_kodu_listesi || inputs.il_kodu || github.event_name }}
+  cancel-in-progress: false
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
