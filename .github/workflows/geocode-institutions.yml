@@ -11,8 +11,10 @@ on:
         description: "true ise veritabanına yazmaz"
         required: true
         default: "false"
-  schedule:
-    - cron: "17 1 * * *"  # Her gün 01:17 UTC (04:17 TR)
+  # Günlük zamanlama, okul sitelerinden (meb.k12.tr) koordinat okuma işi
+  # tamamlanana kadar kapalı; LocationIQ yalnızca sitesi olmayan kurumlar için.
+  # schedule:
+  #   - cron: "17 1 * * *"
 
 # Aynı anda yalnızca bir çalıştırma (ücretsiz plan sınırı aşılmasın).
 concurrency:

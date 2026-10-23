@@ -49,6 +49,33 @@ def clean_name(name: str) -> str:
     return parts[-1] if len(parts) >= 2 else name.strip()
 
 
+def _tokens(text: str) -> set[str]:
+    import re
+    t = normalize_turkish(text)
+    return {w for w in re.split(r"[^a-z0-9]+", t) if w and w not in {"ozel", "t", "c"}}
+
+
+OKUL_TURLERI = {"school", "kindergarten", "college"}
+
+
+def dogrula(res: dict, okul_adi: str, il: str, ilce: str | None) -> str:
+    """Yalnızca BİNA düzeyinde, adı okulla örtüşen ve aynı il/ilçede olan sonucu
+    kabul eder. 23.10.2026 deneme çalışmasında gevşek kabulün komşu ilçedeki
+    başka okulları, köy merkezlerini ve yolları 'bulunmuş' saydığı görüldü."""
+    shown = normalize_turkish(res.get("display_name", ""))
+    if normalize_turkish(il) not in shown:
+        return "il_uyusmuyor"
+    if res.get("class") not in ("amenity", "building") or res.get("type") not in OKUL_TURLERI:
+        return "belirsiz"
+    if ilce and normalize_turkish(ilce) != "merkez" and normalize_turkish(ilce) not in shown:
+        return "belirsiz"
+    ad_sonuc = _tokens(res.get("display_name", "").split(",")[0])
+    ad_okul = _tokens(okul_adi)
+    if not ad_okul or len(ad_okul & ad_sonuc) / len(ad_okul) < 0.8:
+        return "belirsiz"
+    return "ok"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=4500)
@@ -99,12 +126,13 @@ def main() -> int:
         print("Günlük tavana ulaşıldı; yarın devam edilecek.")
         return 0
 
-    stats = {"ok": 0, "bulunamadi": 0, "il_uyusmuyor": 0, "hata": 0}
+    stats = {"ok": 0, "bulunamadi": 0, "il_uyusmuyor": 0, "belirsiz": 0, "hata": 0}
     for n, r in enumerate(todo[: args.limit], 1):
         il, ilce = place(r.get("location_id"))
         if not il:
             continue
-        q = ", ".join(x for x in [clean_name(r["name"]), ilce, il, "Türkiye"] if x)
+        ilce_q = None if (ilce and normalize_turkish(ilce) == "merkez") else ilce  # OSM'de "Merkez" ilçe adı yok
+        q = ", ".join(x for x in [clean_name(r["name"]), ilce_q, il, "Türkiye"] if x)
         status, res = "hata", {}
         # İstek ATILMADAN ÖNCE kayda geçer: iş yarıda kesilse bile sayım eksik kalmaz.
         requests.post(f"{base}/rest/v1/geocode_request_log", headers={**h, "Prefer": "return=minimal"},
@@ -121,7 +149,7 @@ def main() -> int:
                 resp.raise_for_status()
                 res = resp.json()[0]
                 shown = normalize_turkish(res.get("display_name", ""))
-                status = "ok" if normalize_turkish(il) in shown else "il_uyusmuyor"
+                status = dogrula(res, clean_name(r["name"]), il, ilce)
         except Exception as e:
             print(f"  hata ({r['id']}): {str(e)[:120]}")
         stats[status] += 1
