@@ -1,0 +1,24 @@
+name: OSM okul kayıtlarıyla konum eşleştirme adayları (salt okunur)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: osm-okul-eslestir
+  cancel-in-progress: false
+
+jobs:
+  eslestir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: OSM indir ve aday üret
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/osm_okul_eslestir.py
