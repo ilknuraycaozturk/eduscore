@@ -76,6 +76,37 @@ def dogrula(res: dict, okul_adi: str, il: str, ilce: str | None) -> str:
     return "ok"
 
 
+_KISALTMA = [(r"\bMAH(?:ALLESİ|\.)?(?=\s|$)", "Mahallesi"), (r"\bCAD(?:DESİ|\.)?(?=\s|$)", "Caddesi"),
+             (r"\bSK(?:\.)?(?=\s|$)", "Sokak"), (r"\bSOK(?:AK|\.)?(?=\s|$)", "Sokak"),
+             (r"\bBLV(?:\.)?(?=\s|$)", "Bulvarı"), (r"\bBULV(?:\.)?(?=\s|$)", "Bulvarı")]
+
+
+def adres_sorgusu(adres: str, ilce: str | None, il: str) -> str:
+    """ÖOKGM adresini ("X MAH. Y SK. NO: 24 İÇ KAPI ... İLÇE / İL") arama motorunun
+    anlayacağı "Y Sokak 24, X Mahallesi, İlçe, İl" biçimine çevirir."""
+    import re
+    a = re.sub(r"\s+", " ", adres.strip())
+    a = re.sub(r"\s*\S+\s*/\s*\S+\s*$", "", a)            # sondaki "İLÇE / İL"
+    for kalip, yerine in _KISALTMA:
+        a = re.sub(kalip, yerine, a, flags=re.I)
+    m_mah = re.search(r"^(.*?Mahallesi)", a, re.I)
+    mahalle = m_mah.group(1).strip() if m_mah else None
+    geri = a[m_mah.end():].strip() if m_mah else a
+    m_no = re.search(r"\bNO\s*:?\s*([0-9]+[A-Z]?)", geri, re.I)
+    no = m_no.group(1) if m_no else None
+    m_yol = re.search(r"^(.*?\b(?:Caddesi|Sokak|Bulvarı))", geri, re.I)
+    yol = m_yol.group(1).strip() if m_yol else None
+    sokak = " ".join(x for x in [yol, no] if x) if yol else None
+    if not sokak:
+        return None  # yalnızca mahalle düzeyi: doğrulamada zaten reddedilir, istek harcanmaz
+
+    def tr_baslik(x: str) -> str:
+        return " ".join(w[:1] + w[1:].replace("I", "ı").replace("İ", "i").lower() for w in x.split())
+
+    parcalar = [sokak, mahalle, ilce, il, "Türkiye"]
+    return ", ".join(tr_baslik(p) if p.isupper() or any(c.isupper() for c in p[1:]) else p for p in parcalar if p)
+
+
 ADRES_KABUL_SINIF = {"building", "amenity", "highway", "shop", "office"}
 
 
@@ -158,7 +189,10 @@ def main() -> int:
             continue
         ilce_q = None if (ilce and normalize_turkish(ilce) == "merkez") else ilce  # OSM'de "Merkez" ilçe adı yok
         if args.yontem == "adres":
-            q = ", ".join(x for x in [r["address"].strip(), ilce_q, il, "Türkiye"] if x)
+            q = adres_sorgusu(r["address"], ilce_q, il)
+            if not q:
+                stats["sokak_yok"] = stats.get("sokak_yok", 0) + 1
+                continue
         else:
             q = ", ".join(x for x in [clean_name(r["name"]), ilce_q, il, "Türkiye"] if x)
         status, res = "hata", {}
