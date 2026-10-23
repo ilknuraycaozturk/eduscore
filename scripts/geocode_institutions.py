@@ -112,7 +112,7 @@ ADRES_KABUL_SINIF = {"building", "amenity", "highway", "shop", "office"}
 
 def _yol_anahtari(x: str) -> str:
     import re
-    t = normalize_turkish(x or "")
+    t = _sade(x)
     t = re.sub(r"\b(sokak|sokagi|sk|caddesi|cadde|cad|bulvari|bulvar|blv)\b", " ", t)
     return re.sub(r"[^a-z0-9çğıöşü/]+", "", t)
 
@@ -136,13 +136,17 @@ def yol_eslesiyor(sorgu: str, res: dict) -> bool:
     return True
 
 
+def _sade(x: str) -> str:
+    return normalize_turkish(x or "").translate(str.maketrans("âîû", "aiu"))
+
+
 def dogrula_adres(res: dict, il: str, ilce: str | None, sorgu: str = "") -> str:
     """Adres sorgusu: sonuç bina ya da sokak düzeyinde ve aynı il/ilçede olmalı.
     Mahalle/ilçe/il merkezine düşen sonuç 'belirsiz' sayılır (çok kaba)."""
-    shown = normalize_turkish(res.get("display_name", ""))
-    if normalize_turkish(il) not in shown:
+    shown = _sade(res.get("display_name", ""))
+    if _sade(il) not in shown:
         return "il_uyusmuyor"
-    if ilce and normalize_turkish(ilce) != "merkez" and normalize_turkish(ilce) not in shown:
+    if ilce and _sade(ilce) != "merkez" and _sade(ilce) not in shown:
         return "belirsiz"
     sinif, tur = res.get("class"), res.get("type")
     if sinif in ADRES_KABUL_SINIF or (sinif == "place" and tur == "house"):
