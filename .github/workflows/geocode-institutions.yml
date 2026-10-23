@@ -11,6 +11,10 @@ on:
         description: "true ise veritabanına yazmaz"
         required: true
         default: "false"
+      yontem:
+        description: "ad: okul adıyla (bina düzeyi, güven orta); adres: kayıtlı adresle (güven düşük)"
+        required: true
+        default: "ad"
   # Günlük zamanlama, okul sitelerinden (meb.k12.tr) koordinat okuma işi
   # tamamlanana kadar kapalı; LocationIQ yalnızca sitesi olmayan kurumlar için.
   # schedule:
@@ -37,6 +41,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           LOCATIONIQ_API_KEY: ${{ secrets.LOCATIONIQ_API_KEY }}
         run: |
-          ARGS="--limit ${{ inputs.limit || '4500' }}"
+          ARGS="--limit ${{ inputs.limit || '4500' }} --yontem ${{ inputs.yontem || 'ad' }} --sadece-sitesiz"
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/geocode_institutions.py $ARGS

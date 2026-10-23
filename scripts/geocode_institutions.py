@@ -76,11 +76,32 @@ def dogrula(res: dict, okul_adi: str, il: str, ilce: str | None) -> str:
     return "ok"
 
 
+ADRES_KABUL_SINIF = {"building", "amenity", "highway", "shop", "office"}
+
+
+def dogrula_adres(res: dict, il: str, ilce: str | None) -> str:
+    """Adres sorgusu: sonuç bina ya da sokak düzeyinde ve aynı il/ilçede olmalı.
+    Mahalle/ilçe/il merkezine düşen sonuç 'belirsiz' sayılır (çok kaba)."""
+    shown = normalize_turkish(res.get("display_name", ""))
+    if normalize_turkish(il) not in shown:
+        return "il_uyusmuyor"
+    if ilce and normalize_turkish(ilce) != "merkez" and normalize_turkish(ilce) not in shown:
+        return "belirsiz"
+    sinif, tur = res.get("class"), res.get("type")
+    if sinif in ADRES_KABUL_SINIF or (sinif == "place" and tur == "house"):
+        return "ok"
+    return "belirsiz"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=4500)
     ap.add_argument("--retry-days", type=int, default=30)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--yontem", choices=["ad", "adres"], default="ad",
+                    help="ad: okul adıyla ara (bina düzeyi, güven orta); adres: kayıtlı adresle ara (güven düşük)")
+    ap.add_argument("--sadece-sitesiz", action="store_true",
+                    help="MEB okul sitesi olanları atla (onlar meb_site_coords.py ile tamamlanıyor)")
     args = ap.parse_args()
 
     base = os.environ.get("SUPABASE_URL")
@@ -111,8 +132,12 @@ def main() -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=args.retry_days)).strftime("%Y-%m-%dT%H:%M:%SZ")
     recent_fail = {a["institution_id"] for a in fetch_all(
         base, h, f"/rest/v1/geocode_attempts?select=institution_id&status=neq.ok&attempted_at=gte.{cutoff}")}
-    todo = [r for r in fetch_all(base, h, "/rest/v1/institutions?select=id,name,location_id&lat=is.null&order=id")
+    todo = [r for r in fetch_all(base, h, "/rest/v1/institutions?select=id,name,location_id,website,address&lat=is.null&order=id")
             if r["id"] not in recent_fail]
+    if args.sadece_sitesiz:
+        todo = [r for r in todo if "meb.k12.tr" not in (r.get("website") or "")]
+    if args.yontem == "adres":
+        todo = [r for r in todo if (r.get("address") or "").strip()]
     gun_basi = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")  # URL içinde "+" boşluğa dönüşmesin
     r_cnt = requests.get(f"{base}/rest/v1/geocode_request_log?select=id&provider=eq.locationiq&requested_at=gte.{gun_basi}",
                          headers={**h, "Prefer": "count=exact", "Range": "0-0"}, timeout=30)
@@ -132,7 +157,10 @@ def main() -> int:
         if not il:
             continue
         ilce_q = None if (ilce and normalize_turkish(ilce) == "merkez") else ilce  # OSM'de "Merkez" ilçe adı yok
-        q = ", ".join(x for x in [clean_name(r["name"]), ilce_q, il, "Türkiye"] if x)
+        if args.yontem == "adres":
+            q = ", ".join(x for x in [r["address"].strip(), ilce_q, il, "Türkiye"] if x)
+        else:
+            q = ", ".join(x for x in [clean_name(r["name"]), ilce_q, il, "Türkiye"] if x)
         status, res = "hata", {}
         # İstek ATILMADAN ÖNCE kayda geçer: iş yarıda kesilse bile sayım eksik kalmaz.
         requests.post(f"{base}/rest/v1/geocode_request_log", headers={**h, "Prefer": "return=minimal"},
@@ -149,7 +177,8 @@ def main() -> int:
                 resp.raise_for_status()
                 res = resp.json()[0]
                 shown = normalize_turkish(res.get("display_name", ""))
-                status = dogrula(res, clean_name(r["name"]), il, ilce)
+                status = (dogrula_adres(res, il, ilce) if args.yontem == "adres"
+                          else dogrula(res, clean_name(r["name"]), il, ilce))
         except Exception as e:
             print(f"  hata ({r['id']}): {str(e)[:120]}")
         stats[status] += 1
@@ -167,7 +196,8 @@ def main() -> int:
                           json=attempt, timeout=20).raise_for_status()
             if status == "ok" and not args.dry_run:
                 requests.patch(f"{base}/rest/v1/institutions?id=eq.{r['id']}", headers=h,
-                               json={"lat": lat, "lng": lng, "konum_kaynagi": "locationiq", "konum_guven": "orta"}, timeout=20).raise_for_status()
+                               json={"lat": lat, "lng": lng, "konum_kaynagi": "locationiq",
+                                     "konum_guven": "dusuk" if args.yontem == "adres" else "orta"}, timeout=20).raise_for_status()
         if n % 200 == 0:
             print(f"  {n} işlendi: {stats}")
         time.sleep(1.05)
@@ -177,7 +207,7 @@ def main() -> int:
         requests.post(f"{base}/rest/v1/scrape_progress?on_conflict=key",
                       headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                       json={"key": "geocode_son_ozet",
-                            "value": json.dumps({**stats, "tarih": datetime.now(timezone.utc).isoformat()})},
+                            "value": json.dumps({**stats, "yontem": args.yontem, "tarih": datetime.now(timezone.utc).isoformat()})},
                       timeout=20)
     return 0
 
