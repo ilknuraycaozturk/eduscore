@@ -2,6 +2,11 @@ name: OSM okul kayıtlarıyla konum eşleştirme adayları (salt okunur)
 
 on:
   workflow_dispatch:
+    inputs:
+      kaynak:
+        description: "indir: Geofabrik'ten yeniden indir; db: daha önce indirilen osm_okullar tablosunu kullan"
+        required: true
+        default: "indir"
 
 concurrency:
   group: osm-okul-eslestir
@@ -16,9 +21,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests && sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - run: pip install requests
       - name: Geofabrik Türkiye çıkarımını indir ve okulları süz
+        if: ${{ inputs.kaynak != 'db' }}
         run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
           curl -sSL --fail -o turkey.osm.pbf https://download.geofabrik.de/europe/turkey-latest.osm.pbf
           osmium tags-filter turkey.osm.pbf nwr/amenity=school,kindergarten,college -o okullar.osm.pbf
           osmium export okullar.osm.pbf -f geojsonseq --add-unique-id=type_id -o okullar.geojsonseq
@@ -27,4 +34,4 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python scripts/osm_okul_eslestir.py okullar.geojsonseq
+        run: python scripts/osm_okul_eslestir.py ${{ inputs.kaynak == 'db' && '--db' || 'okullar.geojsonseq' }}
