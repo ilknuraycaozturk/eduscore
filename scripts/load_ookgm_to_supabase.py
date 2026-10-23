@@ -114,7 +114,11 @@ def map_tur(ham_tur: str) -> str | None:
     return None
 
 
-from eduscor_data_utils import normalize_name, find_existing_match  # EDU-DATA-001
+from eduscor_data_utils import normalize_name, normalize_turkish  # EDU-DATA-001
+# Aynı il/ilçe içinde, adı birebir aynı kaydı eşleştiren ortak kurallar (MEB
+# yükleyicisiyle aynı; Ekim 2026'da il-bağımsız alt dize eşleştirmesinin yol
+# açtığı kopya ve yanlış zenginleştirme hataları nedeniyle).
+from load_to_supabase import build_place_index, find_same_place_match, get_existing_institutions as _get_existing_full
 
 
 def get_lookup(base_url: str, headers: dict, table: str) -> dict[str, str]:
@@ -162,9 +166,12 @@ def get_existing_institutions(base_url: str, headers: dict, location_id: str) ->
 
 def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_id: str,
                             location_cache: dict, dry_run: bool) -> str | None:
+    """ankara_id adı tarihsel; artık kaydın KENDİ ilinin id'si geçilir
+    (önceden tüm ilçeler Ankara'nın altına açılıyordu)."""
     key = turkish_title(ilce_adi.strip())
-    if key in location_cache:
-        return location_cache[key]
+    cache_key = f"{ankara_id}:{key}"
+    if cache_key in location_cache:
+        return location_cache[cache_key]
 
     resp = requests.get(
         f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{ankara_id}&name=eq.{key}",
@@ -173,7 +180,7 @@ def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_i
     resp.raise_for_status()
     rows = resp.json()
     if rows:
-        location_cache[key] = rows[0]["id"]
+        location_cache[cache_key] = rows[0]["id"]
         return rows[0]["id"]
 
     if dry_run:
@@ -183,7 +190,7 @@ def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, ankara_i
     resp = requests.post(f"{base_url}/rest/v1/locations", headers={**headers, "Prefer": "return=representation"}, json=payload)
     resp.raise_for_status()
     new_id = resp.json()[0]["id"]
-    location_cache[key] = new_id
+    location_cache[cache_key] = new_id
     print(f"Yeni ilçe konumu oluşturuldu: {key}")
     return new_id
 
@@ -215,6 +222,7 @@ def main():
             print(f"ATLANDI (tanınamayan tür): '{r['raw_name']}' -> '{r['kurum_turu_ham']}'")
             continue
         prepared.append({
+            "il": (r.get("il") or "").strip(),
             "name": r["raw_name"].strip(),
             "ilce": r.get("ilce", "").strip(),
             "institution_type_slug": type_slug,
@@ -259,29 +267,30 @@ def main():
         if not fixed_location_id:
             print(f"HATA: '{args.location_name}' locations tablosunda bulunamadı.")
             sys.exit(1)
-    else:
-        resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&name=eq.Ankara", headers=headers)
-        resp.raise_for_status()
-        ankara_rows = resp.json()
-        if not ankara_rows:
-            print("HATA: 'Ankara' locations tablosunda bulunamadı.")
-            sys.exit(1)
-        ankara_id = ankara_rows[0]["id"]
+    resp = requests.get(f"{supabase_url}/rest/v1/locations?select=id,name&level=eq.province", headers=headers)
+    resp.raise_for_status()
+    il_id = {normalize_turkish(r["name"]): r["id"] for r in resp.json()}
 
-    # Global dedup için tüm mevcut kurumları bir kez çek
-    existing = get_existing_institutions(supabase_url, headers, None)
-    print(f"Global dedup kontrolü için {len(existing)} mevcut kurum yüklendi.")
+    existing = _get_existing_full(supabase_url, headers, None)
+    all_locations = fetch_all_paginated(supabase_url, headers, "/rest/v1/locations?select=id,parent_id,level,name")
+    place_index = build_place_index(existing, all_locations)
+    print(f"Dedup için {len(existing)} mevcut kurum yüklendi (aynı il/ilçe içinde eşleştirme).")
 
-    inserted, enriched, skipped_dupe = 0, 0, 0
+    inserted, enriched, skipped_dupe, failed, il_yok = 0, 0, 0, 0, 0
     for item in prepared:
+        il_parent = il_id.get(normalize_turkish(item["il"])) if item["il"] else None
         if fixed_location_id:
             location_id = fixed_location_id
         else:
-            location_id = get_or_create_location(supabase_url, headers, item["ilce"], ankara_id, location_cache, args.dry_run)
+            if not il_parent:
+                il_yok += 1
+                print(f"ATLANDI (il bulunamadı): '{item['name']}' il='{item['il']}'")
+                continue
+            location_id = get_or_create_location(supabase_url, headers, item["ilce"], il_parent, location_cache, args.dry_run)
             if not location_id:
                 continue
 
-        match = find_existing_match(item["name"], existing)
+        match = find_same_place_match(item["name"], item["il"] or None, item["ilce"] or None, place_index)
         if match:
             needs_update = {}
             if not match.get("address") and item["address"]:
@@ -289,11 +298,14 @@ def main():
             if not match.get("phone") and item.get("phone"):
                 needs_update["phone"] = item["phone"]
             if needs_update:
-                requests.patch(
+                pr = requests.patch(
                     f"{supabase_url}/rest/v1/institutions?id=eq.{match['id']}",
                     headers=headers, json=needs_update,
                 )
-                enriched += 1
+                if pr.status_code in (200, 204):
+                    enriched += 1
+                else:
+                    failed += 1
             else:
                 skipped_dupe += 1
             continue
@@ -316,11 +328,36 @@ def main():
         if resp.status_code in (200, 201):
             inserted += 1
             new_row = resp.json()[0]
-            existing.append({"id": new_row["id"], "name": item["name"], "address": item["address"]})
+            entry = {"id": new_row["id"], "name": item["name"], "address": item["address"]}
+            existing.append(entry)
+            place_index.setdefault(normalize_name(item["name"]), []).append(
+                {"row": entry, "il": normalize_turkish(item["il"]) if item["il"] else None,
+                 "ilce": normalize_turkish(item["ilce"]) if item["ilce"] else None})
         else:
+            failed += 1
             print(f"UYARI: '{item['name']}' eklenemedi -> {resp.status_code} {resp.text[:200]}")
 
+    summary = {"ham_kayit": len(raw), "tipi_taninmadi": skipped, "il_bulunamadi": il_yok,
+               "eklendi": inserted, "zenginlestirildi": enriched, "zaten_vardi": skipped_dupe, "hata": failed}
+    cov_path = Path("data/ookgm_coverage.json")
+    sorunlu = []
+    if cov_path.exists():
+        cov = json.loads(cov_path.read_text(encoding="utf-8"))
+        sorunlu = [c for c in cov if c.get("beklenen") is None or c.get("beklenen") != c.get("cekilen")]
+        summary.update({"iller": len(cov), "ookgm_beklenen": sum(c["beklenen"] or 0 for c in cov),
+                        "ookgm_cekilen": sum(c["cekilen"] for c in cov), "sorunlu_iller": sorunlu[:40]})
+    print("OOKGM_OZETI " + json.dumps(summary, ensure_ascii=False))
+    try:
+        requests.post(f"{supabase_url}/rest/v1/scrape_progress?on_conflict=key",
+                      headers={**headers, "Prefer": "resolution=merge-duplicates,return=minimal"},
+                      json={"key": "ookgm_son_yukleme_ozeti", "value": json.dumps(summary, ensure_ascii=False)[:5000]},
+                      timeout=15).raise_for_status()
+    except Exception as e:
+        print(f"UYARI: özet yazılamadı: {e}")
     print(f"Tamamlandı: {inserted} yeni, {enriched} zenginleştirildi, {skipped_dupe} zaten vardı.")
+    if failed or sorunlu or il_yok:
+        print("HATA: yazma hatası, il eşleşmesi ya da ÖOKGM toplamıyla uyuşmazlık var (bkz. özet).")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

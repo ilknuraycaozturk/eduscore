@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       il:
-        description: "İl adı BÜYÜK HARF (örn. ANKARA)"
-        required: true
-        default: "ANKARA"
+        description: "İl adı BÜYÜK HARF (örn. ANKARA); il_listesi doluysa boş bırakın"
+        required: false
+        default: ""
+      il_listesi:
+        description: "Virgülle ayrılmış il adları BÜYÜK HARF (örn. BAYBURT,TUNCELİ); birden çok il için"
+        required: false
+        default: ""
       tur:
         description: "kurs: özel kurslar / okul: özel okullar"
         required: true
@@ -24,9 +28,14 @@ on:
         required: true
         default: "true"
 
+concurrency:
+  group: ookgm-${{ inputs.il_listesi || inputs.il }}
+  cancel-in-progress: false
+
 jobs:
   scrape-and-load:
     runs-on: ubuntu-latest
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +48,12 @@ jobs:
 
       - name: ÖOKGM verisini çek
         run: |
-          ARGS="--il \"${{ inputs.il }}\" --tur \"${{ inputs.tur }}\" --output data/ookgm_raw.json"
+          if [ -n "${{ inputs.il_listesi }}" ]; then
+            ARGS="--il-listesi \"${{ inputs.il_listesi }}\""
+          else
+            ARGS="--il \"${{ inputs.il }}\""
+          fi
+          ARGS="$ARGS --tur \"${{ inputs.tur }}\" --output data/ookgm_raw.json"
           FILTER="${{ inputs.filter_metin }}"
           if [ -n "$FILTER" ]; then
             ARGS="$ARGS --filter-metin \"$FILTER\""
@@ -62,7 +76,10 @@ jobs:
           eval python scripts/load_ookgm_to_supabase.py $ARGS
 
       - name: Ham veriyi artifact olarak kaydet
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ookgm-raw-data
-          path: data/ookgm_raw.json
+          path: |
+            data/ookgm_raw.json
+            data/ookgm_coverage.json

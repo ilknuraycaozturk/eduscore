@@ -97,25 +97,45 @@ def get_total_pages(html: str) -> int:
     return 50  # bilinmiyorsa güvenli bir üst sınır, boş sayfa gelince zaten duracak
 
 
-def scrape_all(il: str, tur: str, max_pages: int = 50) -> list[dict]:
-    all_rows: list[dict] = []
-    first_page_html = fetch_page(il, tur, 1)
-    all_rows.extend(parse_table(first_page_html))
-    est_pages = min(get_total_pages(first_page_html), max_pages)
+def _beklenen(html: str) -> int | None:
+    m = re.search(r"(\d+)\s*adet kurum bulundu", html)
+    return int(m.group(1)) if m else None
 
-    print(f"Tahmini sayfa sayısı: {est_pages} (il={il}, tur={tur})")
+
+def scrape_all(il: str, tur: str, max_pages: int = 50) -> tuple[list[dict], int | None]:
+    """Tüm sayfaları çeker; aynı satır birden fazla sayfada gelirse (site sayfa
+    parametresini yok sayıp hepsini tek sayfada verebiliyor) tekrarı atar.
+    Dönüş: (satırlar, ÖOKGM'nin bildirdiği toplam)."""
+    all_rows: list[dict] = []
+    seen: set[tuple] = set()
+
+    def ekle(rows):
+        yeni = 0
+        for r in rows:
+            k = (r["ilce"], r["raw_name"], r["kurum_turu_ham"], r["address"])
+            if k not in seen:
+                seen.add(k); all_rows.append(r); yeni += 1
+        return yeni
+
+    first_page_html = fetch_page(il, tur, 1)
+    beklenen = _beklenen(first_page_html)
+    ekle(parse_table(first_page_html))
+    est_pages = min(get_total_pages(first_page_html), max_pages)
+    print(f"ÖOKGM toplamı: {beklenen}; 1. sayfadan {len(all_rows)} kayıt (il={il}, tur={tur})")
 
     for page in range(2, est_pages + 1):
+        if beklenen is not None and len(all_rows) >= beklenen:
+            break
         time.sleep(0.5)  # sunucuya nazik davran
         html = fetch_page(il, tur, page)
         rows = parse_table(html)
-        if not rows:
-            print(f"Sayfa {page}: kayıt yok, durduruluyor.")
+        yeni = ekle(rows)
+        if not rows or yeni == 0:
+            print(f"Sayfa {page}: yeni kayıt yok, durduruluyor.")
             break
-        all_rows.extend(rows)
-        print(f"Sayfa {page}: {len(rows)} kayıt.")
+        print(f"Sayfa {page}: {yeni} yeni kayıt.")
 
-    return all_rows
+    return all_rows, beklenen
 
 
 def turkish_lower(s: str) -> str:
@@ -128,14 +148,31 @@ def turkish_lower(s: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="ÖOKGM özel kurum/kurs listesini çeker.")
-    parser.add_argument("--il", required=True, help="İl adı BÜYÜK HARF (örn. ANKARA)")
+    parser.add_argument("--il", default=None, help="İl adı BÜYÜK HARF (örn. ANKARA)")
+    parser.add_argument("--il-listesi", default=None, help="Virgülle ayrılmış il adları (BÜYÜK HARF); --il yerine")
     parser.add_argument("--tur", required=True, choices=["kurs", "okul"], help="kurs: özel kurslar, okul: özel okullar")
     parser.add_argument("--filter-metin", default=None, help="Sadece adres/ilçe içinde bu metni içeren kayıtlar tutulur (örn. Bağlıca)")
     parser.add_argument("--output", default="data/ookgm_raw.json")
     args = parser.parse_args()
 
-    print(f"ÖOKGM verisi çekiliyor: il={args.il} tur={args.tur}")
-    rows = scrape_all(args.il, args.tur)
+    iller = [x.strip() for x in (args.il_listesi or args.il or "").split(",") if x.strip()]
+    if not iller:
+        parser.error("--il ya da --il-listesi gerekli")
+    rows, kapsama = [], []
+    for il in iller:
+        try:
+            il_rows, beklenen = scrape_all(il, args.tur)
+        except Exception as e:
+            print(f"HATA: {il} çekilemedi -> {e}")
+            il_rows, beklenen = [], None
+        for r in il_rows:
+            r["il"] = il
+        rows.extend(il_rows)
+        kapsama.append({"il": il, "tur": args.tur, "beklenen": beklenen, "cekilen": len(il_rows)})
+        print(f"  {il}: ÖOKGM {beklenen} / çekilen {len(il_rows)}")
+        time.sleep(1)
+    Path("data").mkdir(parents=True, exist_ok=True)
+    Path("data/ookgm_coverage.json").write_text(json.dumps(kapsama, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Toplam {len(rows)} ham kayıt bulundu.")
 
     if rows:
