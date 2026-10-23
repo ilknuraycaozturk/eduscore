@@ -93,10 +93,22 @@ def scrape_okullar(il_kodu: str, ilce_kodu: str | None = None, timeout_ms: int =
     """MEB okullar tablosunu render edip satırları döndürür ve her sorgu için
     MEB'in bildirdiği toplam ('N kayıttan') ile çekilen satır sayısını
     data/meb_coverage.json dosyasına kaydeder (kapsama kontrolü için)."""
-    meta: dict = {"beklenen": None, "durum": "ok"}
-    results = _scrape_okullar_raw(il_kodu, ilce_kodu, timeout_ms, meta)
+    # Geçici hatalarda (sayfa yüklenemedi, sayı uyuşmadı) 3 denemeye kadar tekrar
+    # dene; her denemede bekleme ve zaman aşımı artar. Son denemenin sonucu kaydedilir.
+    for deneme in range(1, 4):
+        meta: dict = {"beklenen": None, "durum": "ok"}
+        results = _scrape_okullar_raw(il_kodu, ilce_kodu, timeout_ms * deneme, meta)
+        tamam = (meta["durum"] == "ok" and meta["beklenen"] == len(results)) or \
+                (meta["durum"] == "tablo_bos" and meta["beklenen"] == 0)
+        if tamam or deneme == 3:
+            break
+        print(f"  Yeniden deneniyor ({deneme + 1}/3): il={il_kodu} ilce={ilce_kodu} "
+              f"durum={meta['durum']} beklenen={meta['beklenen']} cekilen={len(results)}")
+        time.sleep(10 * deneme)
+    meta["deneme"] = deneme
     COVERAGE.append({"il_kodu": str(il_kodu), "ilce_kodu": str(ilce_kodu) if ilce_kodu else None,
-                     "beklenen": meta["beklenen"], "cekilen": len(results), "durum": meta["durum"]})
+                     "beklenen": meta["beklenen"], "cekilen": len(results), "durum": meta["durum"],
+                     "deneme": meta.get("deneme", 1)})
     try:
         COVERAGE_PATH.parent.mkdir(parents=True, exist_ok=True)
         COVERAGE_PATH.write_text(json.dumps(COVERAGE, ensure_ascii=False, indent=2), encoding="utf-8")
