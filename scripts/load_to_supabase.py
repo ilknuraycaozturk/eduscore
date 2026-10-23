@@ -634,6 +634,9 @@ def main():
             summary["meb_cekilen"] = sum(c.get("cekilen", 0) for c in cov)
             summary["meb_sorunlu_sorgu"] = sum(1 for c in cov if c.get("beklenen") != c.get("cekilen"))
             summary["il_kodlari"] = sorted({c["il_kodu"] for c in cov})
+            summary["sorunlu_sorgular"] = [
+                {k: c.get(k) for k in ("il_kodu", "ilce_kodu", "beklenen", "cekilen", "durum")}
+                for c in cov if c.get("beklenen") != c.get("cekilen")][:40]
         except Exception as e:
             print(f"UYARI: Kapsama dosyası okunamadı: {e}")
     summary["tipi_taninmayan_ornek"] = skipped_unknown_names[:30]
