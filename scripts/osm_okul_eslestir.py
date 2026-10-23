@@ -27,7 +27,8 @@ import requests
 
 from eduscor_data_utils import normalize_turkish
 
-OVERPASS = "https://overpass-api.de/api/interpreter"
+OVERPASS_UCLARI = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
+                   "https://overpass.private.coffee/api/interpreter"]
 SORGU = """[out:json][timeout:900];
 area["ISO3166-1"="TR"][admin_level=2]->.tr;
 nwr(area.tr)["amenity"~"^(school|kindergarten|college)$"]["name"];
@@ -70,11 +71,29 @@ def main() -> int:
         return 1
     h = {"apikey": skey, "Authorization": f"Bearer {skey}", "Content-Type": "application/json"}
 
-    print("Overpass sorgusu gönderiliyor...")
-    r = requests.post(OVERPASS, data={"data": SORGU}, timeout=1000,
-                      headers={"User-Agent": "EduScor-Crawler/1.0 (+destek@eduscor.com)"})
-    r.raise_for_status()
-    elems = r.json().get("elements", [])
+    def hata_yaz(msg):
+        requests.post(f"{base}/rest/v1/scrape_progress?on_conflict=key",
+                      headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
+                      json={"key": "osm_eslesme_son_ozet", "value": json.dumps({"hata": msg[:900]}, ensure_ascii=False)}, timeout=20)
+
+    elems, son_hata = None, ""
+    for uc in OVERPASS_UCLARI:
+        print(f"Overpass sorgusu gönderiliyor: {uc}")
+        try:
+            r = requests.post(uc, data={"data": SORGU}, timeout=1000,
+                              headers={"User-Agent": "EduScor-Crawler/1.0 (+destek@eduscor.com)"})
+            if r.status_code != 200:
+                son_hata = f"{uc} HTTP {r.status_code}: {r.text[:300]}"
+                print(son_hata)
+                continue
+            elems = r.json().get("elements", [])
+            break
+        except Exception as e:
+            son_hata = f"{uc}: {e}"
+            print(son_hata)
+    if elems is None:
+        hata_yaz("Overpass: " + son_hata)
+        return 1
     osm = []
     for e in elems:
         lat = e.get("lat") or (e.get("center") or {}).get("lat")
@@ -87,10 +106,14 @@ def main() -> int:
                     "etiketler": {k: v for k, v in t.items() if k in ("name:tr", "operator", "isced:level", "addr:street",
                                                                         "addr:housenumber", "addr:city", "addr:district")}})
     print(f"OSM okul nesnesi: {len(osm)}")
+    osm = list({o["osm_id"]: o for o in osm}.values())
     for i in range(0, len(osm), 1000):
-        requests.post(f"{base}/rest/v1/osm_okullar?on_conflict=osm_id",
-                      headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
-                      json=osm[i:i + 1000], timeout=120).raise_for_status()
+        rr = requests.post(f"{base}/rest/v1/osm_okullar?on_conflict=osm_id",
+                           headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
+                           json=osm[i:i + 1000], timeout=120)
+        if rr.status_code >= 300:
+            hata_yaz(f"osm_okullar yazılamadı: {rr.status_code} {rr.text[:400]}")
+            return 1
 
     locs = {l["id"]: l for l in fetch_all(base, h, "/rest/v1/locations?select=id,parent_id,level,name")}
 
