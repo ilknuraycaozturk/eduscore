@@ -58,3 +58,27 @@ Düzeltmeler (commit `fd937b8`, `f463246`): toplu tarama ilçe ilçe; kopya eşl
 - Tarayıcıya geçici sayfa hataları için 3 denemeye kadar yeniden deneme eklendi; düşük kalan 8 il yeniden tarandı, kapsama kontrolü yeşil (MEB'in bildirdiği toplam = çekilen).
 - **Resmi ilkokul kapsaması: %98,7 (22.687 / 22.980); 81 ilin 77'si ≥ %95.**
 - %95 altında kalan 4 il (Edirne %91, Ordu %94, Bilecik %94, Gümüşhane %94): MEB listesi bu illerde eksiksiz çekildi (toplamlar tutuyor). Kalan fark, MEB'in güncel okul listesi ile Haziran 2025 istatistiği arasındaki farktan geliyor olabilir (kapanan/birleşen okullar); doğrulanmadı, bilinen sınırlama olarak kaydedildi.
+
+## Dördüncü ölçüm (23.10.2026, özel okullar eklendikten sonra)
+
+Özel okullar ÖOKGM'nin resmî kurum listesinden (özel okul, 81 il) alındı. Yükleyici MEB yükleyicisiyle aynı kurallara getirildi: ilçe kendi ilinin altına açılıyor (önceden hepsi Ankara'nın altına açılıyordu), eşleştirme yalnızca aynı il/ilçe içinde ve ad birebir, ÖOKGM'nin bildirdiği toplam ("N adet kurum bulundu") ile çekilen sayı her ilde karşılaştırılıyor. 81 ilin hepsinde toplam = çekilen; yazma hatası 0, ili bulunamayan kayıt 0.
+
+Kopya kontrolü (Ankara, İstanbul, İzmir): aynı ilde benzer adlı 50 çift incelendi. Hepsi ya özel okul ile aynı adı taşıyan farklı bir resmî okul ("Özel Üsküdar İlkokulu" / "Üsküdar İlkokulu") ya da farklı ilçedeki ayrı kampüsler. Aynı okulun ikinci kaydı bulunmadı.
+
+Referans ayrımı (Tablo 2.4.b): ortaokul 18.878 = resmî 16.650 + özel 2.228. Resmî ortaokulların 898'i "İmam Hatip Lisesi bünyesinde İmam Hatip Ortaokulu"; bunlar MEB okul listesinde ayrı kurum olarak görünmüyor, bu yüzden listelenebilir resmî ortaokul 15.752.
+
+| Kademe | MEB | Bizde | Kapsama |
+|---|---|---|---|
+| İlkokul (toplam) | 25.099 | 24.876 | %99,1 |
+| – resmî | 22.980 | 22.695 | %98,8 |
+| – özel | 2.119 | 2.181 | %102,9 |
+| Ortaokul (toplam) | 18.878 | 17.738 | %94,0 |
+| – resmî (listelenebilir) | 15.752 | 15.499 | %98,4 |
+| – özel | 2.228 | 2.239 | %100,5 |
+| Ortaöğretim | 12.423 | 13.221 | %106,4 |
+
+- İlkokulda 81 ilin 77'si %95–105 aralığında; altında kalanlar Kırşehir %94, Edirne, Gümüşhane, Ordu (%94,5–95).
+- Özel ilkokul/ortaokuldaki küçük fazlalık, ÖOKGM'nin güncel listesi ile Haziran 2025 istatistiği arasındaki tarih farkından gelebilir (doğrulanmadı).
+- Özel/resmî ayrımı okul adındaki "Özel" sözcüğüne göre yapıldı; kayıtta ayrı bir alan yok.
+- Ortaöğretimdeki fazlalığın nedeni hâlâ belirlenmedi (açık iş).
+- Yeni eklenen 4.508+ özel kurumun koordinatı yok; ÖOKGM adresleri kayıtta.
