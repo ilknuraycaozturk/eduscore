@@ -110,7 +110,33 @@ def adres_sorgusu(adres: str, ilce: str | None, il: str) -> str:
 ADRES_KABUL_SINIF = {"building", "amenity", "highway", "shop", "office"}
 
 
-def dogrula_adres(res: dict, il: str, ilce: str | None) -> str:
+def _yol_anahtari(x: str) -> str:
+    import re
+    t = normalize_turkish(x or "")
+    t = re.sub(r"\b(sokak|sokagi|sk|caddesi|cadde|cad|bulvari|bulvar|blv)\b", " ", t)
+    return re.sub(r"[^a-z0-9çğıöşü/]+", "", t)
+
+
+def yol_eslesiyor(sorgu: str, res: dict) -> bool:
+    """Sorgudaki sokak/cadde adı ile sonucun yol adı birebir aynı olmalı
+    (626/4. Sokak ≠ 611/3. Sokak, 54 Sokak ≠ 5. Sokak). Okul binası olarak
+    dönen sonuçlarda (class=building/amenity) yol, adresin ikinci parçasıdır."""
+    import re
+    yol_q = re.sub(r"\s+[0-9]+[a-zA-Z]?$", "", sorgu.split(",")[0].strip())
+    parcalar = [p.strip() for p in res.get("display_name", "").split(",")]
+    adaylar = [p for p in parcalar[:4] if re.search(r"(sokak|sokağı|caddesi|bulvarı|cadde)", p, re.I)]
+    if not any(_yol_anahtari(a) == _yol_anahtari(yol_q) for a in adaylar):
+        return False
+    # Mahalle de aynı olmalı ("Cumhuriyet Caddesi" gibi adlar birçok mahallede var).
+    mah_q = next((p.strip() for p in sorgu.split(",") if p.strip().lower().endswith("mahallesi")), None)
+    if mah_q:
+        anahtar = _yol_anahtari(re.sub(r"\s*Mahallesi$", "", mah_q, flags=re.I))
+        if not any(_yol_anahtari(re.sub(r"\s*Mahallesi$", "", p, flags=re.I)) == anahtar for p in parcalar):
+            return False
+    return True
+
+
+def dogrula_adres(res: dict, il: str, ilce: str | None, sorgu: str = "") -> str:
     """Adres sorgusu: sonuç bina ya da sokak düzeyinde ve aynı il/ilçede olmalı.
     Mahalle/ilçe/il merkezine düşen sonuç 'belirsiz' sayılır (çok kaba)."""
     shown = normalize_turkish(res.get("display_name", ""))
@@ -120,7 +146,7 @@ def dogrula_adres(res: dict, il: str, ilce: str | None) -> str:
         return "belirsiz"
     sinif, tur = res.get("class"), res.get("type")
     if sinif in ADRES_KABUL_SINIF or (sinif == "place" and tur == "house"):
-        return "ok"
+        return "ok" if (not sorgu or yol_eslesiyor(sorgu, res)) else "belirsiz"
     return "belirsiz"
 
 
@@ -211,7 +237,7 @@ def main() -> int:
                 resp.raise_for_status()
                 res = resp.json()[0]
                 shown = normalize_turkish(res.get("display_name", ""))
-                status = (dogrula_adres(res, il, ilce) if args.yontem == "adres"
+                status = (dogrula_adres(res, il, ilce, q) if args.yontem == "adres"
                           else dogrula(res, clean_name(r["name"]), il, ilce))
         except Exception as e:
             print(f"  hata ({r['id']}): {str(e)[:120]}")
