@@ -23,6 +23,12 @@ import requests
 from eduscor_data_utils import normalize_turkish
 
 LOCATIONIQ_URL = "https://us1.locationiq.com/v1/search"
+# ÜCRETSİZ PLAN SINIRI ASLA AŞILMAZ: LocationIQ Free = 5.000 istek/gün, 2 istek/sn.
+# Son 24 saatte yapılmış TÜM denemeler sayılır (deneme modu dahil); elle
+# başlatılan ek çalıştırmalar da bu tavanı geçemez. Kayan 24 saatlik pencere,
+# LocationIQ'nun günü hangi saat diliminde sıfırladığından bağımsız olarak
+# herhangi bir takvim gününde 4.500'ü aşmamayı garanti eder. Saniyede ~1 istek.
+GUNLUK_TAVAN = 4500
 
 
 def fetch_all(base: str, headers: dict, path: str, page: int = 1000) -> list[dict]:
@@ -45,7 +51,7 @@ def clean_name(name: str) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--limit", type=int, default=4800)
+    ap.add_argument("--limit", type=int, default=4500)
     ap.add_argument("--retry-days", type=int, default=30)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -80,7 +86,18 @@ def main() -> int:
         base, h, f"/rest/v1/geocode_attempts?select=institution_id&status=neq.ok&attempted_at=gte.{cutoff}")}
     todo = [r for r in fetch_all(base, h, "/rest/v1/institutions?select=id,name,location_id&lat=is.null&order=id")
             if r["id"] not in recent_fail]
-    print(f"Koordinatsız ve sırada bekleyen: {len(todo)} kurum; bu çalıştırmada en fazla {args.limit}.")
+    gun_basi = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    r_cnt = requests.get(f"{base}/rest/v1/geocode_request_log?select=id&provider=eq.locationiq&requested_at=gte.{gun_basi}",
+                         headers={**h, "Prefer": "count=exact", "Range": "0-0"}, timeout=30)
+    r_cnt.raise_for_status()
+    bugun = int(r_cnt.headers.get("Content-Range", "*/0").split("/")[-1] or 0)
+    kalan = max(0, GUNLUK_TAVAN - bugun)
+    args.limit = min(args.limit, kalan)
+    print(f"Son 24 saatte yapılan istek: {bugun}; tavan {GUNLUK_TAVAN}; bu çalıştırmada en fazla {args.limit}.")
+    print(f"Koordinatsız ve sırada bekleyen: {len(todo)} kurum.")
+    if args.limit == 0:
+        print("Günlük tavana ulaşıldı; yarın devam edilecek.")
+        return 0
 
     stats = {"ok": 0, "bulunamadi": 0, "il_uyusmuyor": 0, "hata": 0}
     for n, r in enumerate(todo[: args.limit], 1):
@@ -89,6 +106,9 @@ def main() -> int:
             continue
         q = ", ".join(x for x in [clean_name(r["name"]), ilce, il, "Türkiye"] if x)
         status, res = "hata", {}
+        # İstek ATILMADAN ÖNCE kayda geçer: iş yarıda kesilse bile sayım eksik kalmaz.
+        requests.post(f"{base}/rest/v1/geocode_request_log", headers={**h, "Prefer": "return=minimal"},
+                      json={"provider": "locationiq"}, timeout=20).raise_for_status()
         try:
             resp = requests.get(LOCATIONIQ_URL, params={"key": lkey, "q": q, "format": "json",
                                                         "countrycodes": "tr", "limit": 1}, timeout=20)
@@ -108,7 +128,8 @@ def main() -> int:
 
         lat = float(res["lat"]) if status == "ok" else None
         lng = float(res["lon"]) if status == "ok" else None
-        if not args.dry_run:
+        # Deneme modunda da deneme kaydı yazılır; yalnızca kurum koordinatı yazılmaz.
+        if True:
             attempt = {"institution_id": r["id"], "attempted_at": datetime.now(timezone.utc).isoformat(),
                        "status": status, "provider": "locationiq", "query": q,
                        "result_display_name": res.get("display_name"), "result_class": res.get("class"),
@@ -116,7 +137,7 @@ def main() -> int:
             requests.post(f"{base}/rest/v1/geocode_attempts?on_conflict=institution_id",
                           headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                           json=attempt, timeout=20).raise_for_status()
-            if status == "ok":
+            if status == "ok" and not args.dry_run:
                 requests.patch(f"{base}/rest/v1/institutions?id=eq.{r['id']}", headers=h,
                                json={"lat": lat, "lng": lng}, timeout=20).raise_for_status()
         if n % 200 == 0:

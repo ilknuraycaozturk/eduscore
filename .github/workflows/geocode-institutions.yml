@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "Bu çalıştırmada en fazla kaç kurum işlensin (ücretsiz plan: günde 5.000)"
+        description: "Bu çalıştırmada en fazla kaç kurum (betik günlük toplamı her durumda 4.500 ile sınırlar)"
         required: true
-        default: "4800"
+        default: "4500"
       dry_run:
         description: "true ise veritabanına yazmaz"
         required: true
@@ -14,10 +14,15 @@ on:
   schedule:
     - cron: "17 1 * * *"  # Her gün 01:17 UTC (04:17 TR)
 
+# Aynı anda yalnızca bir çalıştırma (ücretsiz plan sınırı aşılmasın).
+concurrency:
+  group: geocode-locationiq
+  cancel-in-progress: false
+
 jobs:
   geocode:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,6 +35,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           LOCATIONIQ_API_KEY: ${{ secrets.LOCATIONIQ_API_KEY }}
         run: |
-          ARGS="--limit ${{ inputs.limit || '4800' }}"
+          ARGS="--limit ${{ inputs.limit || '4500' }}"
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/geocode_institutions.py $ARGS
