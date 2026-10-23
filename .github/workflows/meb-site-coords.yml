@@ -1,0 +1,38 @@
+name: Okul sitelerinden konum oku (meb.k12.tr)
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Bu çalıştırmada en fazla kaç okul sitesi (saniyede 1 sayfa)"
+        required: true
+        default: "4500"
+      dry_run:
+        description: "true ise veritabanına yazmaz"
+        required: true
+        default: "false"
+  schedule:
+    - cron: "23 2 * * *"  # Her gün 02:23 UTC (05:23 TR)
+
+concurrency:
+  group: meb-site-coords
+  cancel-in-progress: false
+
+jobs:
+  coords:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Okul sitelerinden konumları oku
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ARGS="--limit ${{ inputs.limit || '4500' }}"
+          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python scripts/meb_site_coords.py $ARGS
