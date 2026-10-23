@@ -1,6 +1,6 @@
 # EduScor — Açık İş Listesi (Backlog)
 
-*Son güncelleme: 19.10.2026*
+*Son güncelleme: 23.10.2026*
 
 Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten iş `[x]` ile işaretlenir ve tarihi yazılır; liste silinmez.
 
@@ -21,7 +21,8 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 
 - [x] **MEB toplu taramasının düzeltilmesi ve 81 il yeniden tarama** *(tamamlandı: 08.10.2026)*. Ölçüm ve nedenler: `docs/EDU-DATA-001-meb-kapsama-olcumu.md`. Resmi ilkokul kapsaması %98,5; ilkokul %91, ortaokul %84, lise %84 (fark büyük ölçüde özel okullar).
 - [x] **Veri temizliği B1–B3** *(tamamlandı: 19.10.2026)*. Ankara'ya düşmüş 4.261 koordinat boşaltıldı; başka ildeki okula yazılmış 307 kurum kodu/e-posta temizlendi; "İL - Ad" ve "İL - İLÇE - Ad" biçimli 4.733 lise kopyası birleştirildi (eski kayıt korundu). Yedekler: `_yedek_20261019_*` tabloları.
-- [ ] **Koordinat tamamlama (B4)** *(eklendi: 19.10.2026)*: `geocode-institutions.yml` iş akışı hazır; `LOCATIONIQ_API_KEY` secret'ı eklenince günde ~4.800 kurum işleyecek (~58 bin koordinatsız kurum, ~2 hafta). LocationIQ ücretsiz planının atıf ve veri saklama koşulları kayıt sırasında doğrulanmalı.
+- [ ] **Koordinat tamamlama (B4)** *(güncellendi: 23.10.2026)*: Asıl kaynak okulların kendi MEB siteleri (`/tema/iletisim.php` harita koordinatı); `meb-site-coords.yml` her gün 05:23'te en fazla 4.500 okul işliyor (~11 gün). 50 okulluk denemede %88 başarı. LocationIQ (`geocode-institutions.yml`, zamanlaması kapalı) yalnızca sitesi olmayan ~3.400 kurum için, sıkı doğrulamayla ve ücretsiz plan sınırını asla aşmayacak şekilde (son 24 saatte en fazla 4.500 istek) kullanılacak. Deneme kayıtları: `geocode_attempts`.
+- [ ] **Puanlama: konum güvenini kullanmak** *(eklendi: 23.10.2026)*: `institutions.konum_kaynagi` / `konum_guven` (yüksek = okul sitesi, orta = doğrulanmış arama, düşük = eski/bilinmiyor/yaklaşık) eklendi ve dolduruldu. "Konum, Ulaşım ve Çevre" kriterinin bu güveni nasıl kullanacağı scoring modülünde kararlaştırılacak.
 - [ ] **Özel okullar için kaynak**: MEB okul listesi yalnızca resmi okulları veriyor; ~2.100 özel ilkokul ve karşılığı ortaokul/liseler eksik.
 - [ ] **Eşleşmesi belirsiz kalanlar**: 29 belirsiz lise çifti, kurum kodu iki farklı ilde kalan 12 grup, aynı kodu taşıyan 50 grup; %95 altındaki 8 il (Hakkari, Sinop, Trabzon, Artvin, Edirne, Ordu, Bilecik, Gümüşhane) ve 2017 ilçe referansında olmayan yeni ilçeler.
 
