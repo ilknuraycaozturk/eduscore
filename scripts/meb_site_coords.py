@@ -8,7 +8,7 @@ Kurallar:
 - Saniyede en fazla 1 sayfa (sitelere yük bindirmemek için), çalıştırma
   başına en fazla --limit kurum. Açıklayıcı User-Agent.
 - Doğrulama: Türkiye sınırları içinde olmalı; Ankara dışı bir okul için
-  Ankara'yı gösteren koordinat ve aynı ilçedeki diğer okulların ortancasından
+  Ankara şehir merkezine (25 km) düşen koordinat ve aynı ilçedeki diğer okulların ortancasından
   60 km'den uzak koordinat 'belirsiz' sayılır; 3'ten fazla kurumda aynen
   tekrar eden koordinat (şablon varsayılanı) 'belirsiz' sayılır.
 - Her deneme geocode_attempts tablosuna provider='meb_okul_sitesi' ile yazılır;
@@ -32,6 +32,7 @@ import requests
 USER_AGENT = "EduScor-Crawler/1.0 (+destek@eduscor.com; egitim karsilastirma platformu)"
 COORD_RE = re.compile(r"(?:[?&;]q|ll|center)=\s*([34]\d\.\d{3,})\s*,\s*([2-4]\d\.\d{3,})", re.I)
 PROVIDER = "meb_okul_sitesi"
+ANKARA_MERKEZ = (39.925, 32.855)
 
 
 def fetch_all(base: str, h: dict, path: str, page: int = 1000) -> list[dict]:
@@ -113,8 +114,8 @@ def main() -> int:
                     o = ortanca.get(r.get("location_id"))
                     if not (35.8 <= lat <= 42.2 and 25.6 <= lng <= 44.9):
                         durum = "il_uyusmuyor"
-                    elif il and il != "Ankara" and 39.4 <= lat <= 40.5 and 31.9 <= lng <= 33.6:
-                        durum = "belirsiz"
+                    elif il and il != "Ankara" and km((lat, lng), ANKARA_MERKEZ) < 25:
+                        durum = "belirsiz"  # Ankara dışı okul için Ankara şehir merkezi (olası varsayılan/yanlış giriş)
                     elif o and km((lat, lng), o) > 60:
                         durum = "belirsiz"
                     elif tekrar[(round(lat, 4), round(lng, 4))] >= 3:
@@ -124,9 +125,9 @@ def main() -> int:
         except Exception as e:
             print(f"  hata {url}: {str(e)[:100]}")
         stats[durum] += 1
-        if durum != "ok":
-            lat = lng = None
-        else:
+        # Aday koordinat 'belirsiz'/'il_uyusmuyor' olsa da deneme kaydında saklanır
+        # (izlenebilir kanıt); kurum kaydına yalnızca 'ok' olan yazılır.
+        if durum == "ok":
             tekrar[(round(lat, 4), round(lng, 4))] += 1
 
         if not args.dry_run:
