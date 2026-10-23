@@ -167,7 +167,7 @@ def main() -> int:
                           json=attempt, timeout=20).raise_for_status()
             if status == "ok" and not args.dry_run:
                 requests.patch(f"{base}/rest/v1/institutions?id=eq.{r['id']}", headers=h,
-                               json={"lat": lat, "lng": lng}, timeout=20).raise_for_status()
+                               json={"lat": lat, "lng": lng, "konum_kaynagi": "locationiq", "konum_guven": "orta"}, timeout=20).raise_for_status()
         if n % 200 == 0:
             print(f"  {n} işlendi: {stats}")
         time.sleep(1.05)

@@ -481,11 +481,13 @@ def main():
         if not geocode_budget_left:
             stopped_early = True
 
+        geocoded_now = False
         if (not lat or not lng) and not geocode_budget_left:
             lat, lng = None, None
             is_approx_location = False
             no_geocode += 1
         elif not lat or not lng:
+            geocoded_now = True
             clean_name = turkish_capitalize_words(normalize_name(raw_name))
             geocode_query = f"{clean_name}, {ilce_ad}, {geo_il}, Türkiye"
             lat, lng = geocode(geocode_query)
@@ -589,6 +591,9 @@ def main():
             "email": f"{meb_kurum_kodu}@meb.k12.tr" if meb_kurum_kodu else None,
             "lat": lat,
             "lng": lng,
+            # eduscor-trust-uncertainty: koordinatın kaynağı ve güveni puanlamaya aktarılır
+            "konum_kaynagi": ("nominatim" if geocoded_now else "eski_bilinmiyor") if lat else None,
+            "konum_guven": (("dusuk" if is_approx_location else "orta") if geocoded_now else "dusuk") if lat else None,
             "is_verified": False,
             "description": description,
         }

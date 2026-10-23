@@ -138,7 +138,7 @@ def main() -> int:
                           timeout=20).raise_for_status()
             if durum == "ok":
                 requests.patch(f"{base}/rest/v1/institutions?id=eq.{r['id']}&lat=is.null", headers=h,
-                               json={"lat": lat, "lng": lng}, timeout=20).raise_for_status()
+                               json={"lat": lat, "lng": lng, "konum_kaynagi": "meb_okul_sitesi", "konum_guven": "yuksek"}, timeout=20).raise_for_status()
         if n % 250 == 0:
             print(f"  {n} işlendi: {dict(stats)}")
         time.sleep(1.0)
