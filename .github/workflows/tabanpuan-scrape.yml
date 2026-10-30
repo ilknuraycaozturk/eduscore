@@ -11,12 +11,18 @@ on:
         description: "true ise Supabase'e yazmaz, sadece önizler"
         required: true
         default: "false"
+      denetim:
+        description: "true ise yazmaz; yeni eşleştirme kuralını veritabanındaki mevcut atamalarla karşılaştırır (lgs_eslesme_denetimi)"
+        required: true
+        default: "false"
   # ÖNEMLİ: Her gün otomatik olarak tüm Türkiye'yi (81 il) tekrar tarar -
   # script zaten "zaten var/aynı" kayıtları hızlıca atlayıp sadece yeni/
   # değişen verileri işlediği için güvenlidir. 30 gün boyunca günlük
   # çalıştıktan sonra otomatik olarak AYLIĞA (her ayın 8'i) geçer.
-  schedule:
-    - cron: "0 4 * * 3"  # Haftada bir, çarşamba 04:00 UTC (Actions aylık dakika sınırı, 30.10.2026)
+  # 30.10.2026: Zamanlama, yeni eşleştirme kuralıyla denetim çalıştırması (denetim=true)
+  # yapılıp sonuç onaylanana kadar KAPALI. Açılınca haftalık: "0 4 * * 3".
+  # schedule:
+  #   - cron: "0 4 * * 3"
 
 jobs:
   check_mode:
@@ -101,7 +107,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
+          if [ "${{ inputs.denetim || 'false' }}" = "true" ]; then
+            python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --denetim
+          elif [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
             python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json --dry-run
           else
             python scripts/load_tabanpuan_to_supabase.py --input data/tabanpuan_raw.json
