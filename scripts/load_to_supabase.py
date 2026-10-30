@@ -335,7 +335,7 @@ def main():
                               "Belirtilmezse her kayıt kendi ilçesine (--all-ilceler çıktısındaki 'ilce_ad') göre otomatik konumlandırılır.")
     parser.add_argument("--category-slug", default="okul-oncesi-k12")
     parser.add_argument("--dry-run", action="store_true", help="Sadece ne ekleneceğini yazdır, Supabase'e yazma")
-    parser.add_argument("--max-geocode", type=int, default=400,
+    parser.add_argument("--max-geocode", type=int, default=0,
                          help="ÖNEMLİ: GitHub Actions'ın 6 saatlik zaman aşımına takılmamak için, bu "
                               "çalıştırmada YENİ coğrafi kodlama (geocode) çağrısı sayısını sınırlar. "
                               "Zaten işlenmiş/eşleşen kayıtlar bu sınıra dahil değildir (hızlıca atlanır). "
@@ -495,13 +495,11 @@ def main():
             lat, lng = geocode(geocode_query)
             geocode_calls += 1
             is_approx_location = False
-            if not lat:
-                time.sleep(1)
-                # Bina OSM'de haritalanmamış olabilir (küçük/yeni okullarda sık görülür).
-                # Son çare: ilçe merkezini kullan, yaklaşık konum olarak işaretle.
-                ilce_query = f"{ilce_ad}, {geo_il}, Türkiye"
-                lat, lng = geocode(ilce_query)
-                is_approx_location = bool(lat)
+            # 30.10.2026: İlçe merkezine "yaklaşık konum" yazan son çare KALDIRILDI.
+            # Bu yol 3.300'den fazla okulu il/ilçe merkezindeki aynı noktaya
+            # yığmıştı (ör. Antalya merkezinde 160 okul). Koordinat artık yalnızca
+            # doğrulamalı ayrı işlerle yazılıyor (meb_site_coords, OSM, LocationIQ);
+            # bu yükleyicide coğrafi kodlama varsayılan olarak kapalı (--max-geocode 0).
             time.sleep(1)  # Nominatim kullanım politikası: en fazla 1 istek/saniye
         else:
             is_approx_location = False
