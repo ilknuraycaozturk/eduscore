@@ -1,6 +1,6 @@
 # EduScor — Açık İş Listesi (Backlog)
 
-*Son güncelleme: 23.10.2026*
+*Son güncelleme: 30.10.2026*
 
 Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten iş `[x]` ile işaretlenir ve tarihi yazılır; liste silinmez.
 
@@ -29,7 +29,12 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 - [ ] **Okul web sitelerinin doğruluğu** *(eklendi: 23.10.2026)*: `site-dogrula.yml` (salt okunur) her sitenin ana sayfa başlığını okul adı ve il/ilçeyle karşılaştırıp `website_dogrulama` tablosuna yazıyor. Birden çok okulda geçen 197 sitede (413 okul) 183 kayıt eşleşmedi (ör. Kars'taki okulda Adıyaman'daki okulun sitesi). Tüm siteler (~54 bin) için tarama başladı; 6 saatte bir 10.000 site, ~1,5 gün. Bitince zamanlama kaldırılacak, paylaşılan 413 kayıt yeni kuralla bir kez daha denetlenecek, düzeltme kuralı onaya sunulacak.
 - [ ] **Sitesi olmayan kurumların koordinatı (LocationIQ)** *(güncellendi: 23.10.2026)*: ~13.800 kurum (çoğu ÖOKGM özel okul). Okul adıyla arama işe yaramadı (200'de 3). ÖOKGM adresi "Sokak No, Mahalle, İlçe, İl" biçimine çevrilip aranıyor; sonuç ancak sokak adı, mahalle, ilçe ve il birebir tutarsa kabul ediliyor (konum güveni: düşük, sokak düzeyi). Denemede ~%41 bulundu. `geocode-institutions.yml` her gün 04:17'de çalışıyor, son 24 saatte en fazla 4.500 istek (ücretsiz plan 5.000). ~3 gün.
 - [ ] **OSM okul kayıtlarıyla konum** *(eklendi: 23.10.2026)*: Geofabrik Türkiye çıkarımından 26.024 OSM okul nesnesi (`osm_okullar`, 5.057'sinde web sitesi) indirildi; `osm-okul-eslestir.yml` (salt okunur) ad + yakınlıkla aday üretiyor (`osm_eslesme_adaylari`). Kurallar: iki yönlü ad örtüşmesi, okulun kendi il/ilçe adı sayılmaz, kademe ve okul türü çelişkisi elenir, üniversite/yurt elenir, 200 m içindeki adaylar tek yer, yalnızca marka adıyla eşleşen zincir okullar otomatik bağlanmaz. 50'lik örnekte yanlış görülmedi; 747 "tekil" eşleşme yazıldı (`konum_kaynagi='osm'`, güven orta; geri almak için `konum_kaynagi='osm'` olanlar boşaltılır). Bekleyen: 1.851 "zayıf" aday (çoğu zincir kampüs) LocationIQ sokak sonucu yakınındaki kampüsle doğrulanabilir; kalanlar için mahalle merkezi (güven düşük) seçeneği.
+- [ ] **Kalan kurumlara mahalle merkezi** *(eklendi: 30.10.2026, onaylandı)*: `mahalle-merkezi.yml` (elle, önce `dry_run=true`). LocationIQ adres taraması bittikten sonra çalıştırılacak; adresindeki mahallenin OSM merkezi, ilçe yakınında tek yer olarak bulunursa güven düşük ile yazılır (`konum_kaynagi='mahalle_merkezi'`).
 - [ ] **Eşleşmesi belirsiz kalanlar**: 29 belirsiz lise çifti, kurum kodu iki farklı ilde kalan 12 grup, aynı kodu taşıyan 50 grup. *(23.10.2026: Derecik ve Kemalpaşa ilçeleri eklendi; resmi ilkokul kapsaması %98,7, 77/81 il ≥ %95. Edirne, Ordu, Bilecik, Gümüşhane MEB listesiyle tam; fark istatistik–liste farkı olabilir.)*
+
+## Altyapı
+
+- [ ] **GitHub Actions aylık dakika sınırı** *(eklendi: 30.10.2026)*: Depo özel (private), ücretsiz planda ayda 2.000 dakika. Ekim'de ~3.050 dakika harcandı; 24.10.2026'dan beri tüm zamanlanmış işler "spending limit" nedeniyle başlamadı (koordinat, LocationIQ, site doğrulama, YKS, LGS, e-posta, adres). Pages yayını da Actions kullandığı için site güncellemeleri de etkilenebilir. Karar (Ayca, 30.10.2026): ücretsiz kalınacak, yük azaltılacak. Yapılan: YKS, LGS (tabanpuanlari), kriter çıkarımı, e-posta ve adres türetme haftalığa; MEB taraması aylığa (ayın 1'i); site doğrulamanın 6 saatlik zamanlaması kaldırıldı ve doğrulama koordinat taramasının içine alındı (site başka okula aitse koordinat yazılmıyor). Kasım tahmini: ~1.350 dk. Sınır yenilenince ilk çalıştırmalar kontrol edilecek.
 
 ## Arayüz / i18n
 
