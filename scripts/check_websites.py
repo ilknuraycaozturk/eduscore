@@ -119,9 +119,45 @@ def degerlendir(ad: str, il: str | None, ilce: str | None, baslik: str) -> tuple
     return "belirsiz", round(oran, 2)
 
 
+def adaylari_dogrula(base: str, h: dict, yer) -> int:
+    """website_aday tablosundaki doğrulanmamış site adaylarını denetler. Başlık okulla
+    eşleşirse (ve kurumun sitesi hâlâ boşsa) institutions.website'a yazar; aksi hâlde reddeder."""
+    adaylar = fetch_all(base, h, "/rest/v1/website_aday?select=institution_id,url&durum=eq.dogrulanmadi")
+    kurum = {k["id"]: k for k in fetch_all(base, h, "/rest/v1/institutions?select=id,name,website,location_id&id=in.("
+                                           + ",".join(a["institution_id"] for a in adaylar) + ")")} if adaylar else {}
+    s = requests.Session()
+    s.headers["User-Agent"] = USER_AGENT
+    stats = Counter()
+    for a in adaylar:
+        k = kurum.get(a["institution_id"])
+        if not k:
+            continue
+        durum, baslik = "reddedildi", ""
+        try:
+            r = s.get(a["url"], timeout=20, allow_redirects=True)
+            if r.status_code == 200:
+                t = r.text[:200000]
+                baslik = " | ".join(html.unescape(m.strip()) for m in TITLE_RE.findall(t)[:1] + OG_RE.findall(t)[:1])
+                il, ilce = yer(k.get("location_id"))
+                if degerlendir(k["name"], il, ilce, baslik)[0] == "eslesiyor":
+                    durum = "dogrulandi"
+        except Exception as e:
+            print(f"  erişilemedi {a['url']}: {str(e)[:80]}")
+        stats[durum] += 1
+        requests.patch(f"{base}/rest/v1/website_aday?institution_id=eq.{k['id']}", headers=h,
+                       json={"durum": durum}, timeout=20).raise_for_status()
+        if durum == "dogrulandi" and not k.get("website"):
+            requests.patch(f"{base}/rest/v1/institutions?id=eq.{k['id']}&website=is.null", headers=h,
+                           json={"website": a["url"]}, timeout=20).raise_for_status()
+        print(f"  {durum}: {k['name']} <- {a['url']} [{baslik[:60]}]")
+        time.sleep(1.0)
+    print("ADAY_OZETI " + json.dumps(dict(stats), ensure_ascii=False))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--kapsam", choices=["paylasilan", "hepsi"], default="paylasilan",
+    ap.add_argument("--kapsam", choices=["paylasilan", "hepsi", "adaylar"], default="paylasilan",
                     help="paylasilan: birden çok kurumda geçen siteler; hepsi: tüm siteler")
     ap.add_argument("--limit", type=int, default=5000)
     ap.add_argument("--yeniden-gun", type=int, default=30, help="Bu kadar gün içinde denetlenenleri atla")
@@ -147,6 +183,8 @@ def main() -> int:
             loc = locs.get(loc.get("parent_id"))
         return il, ilce
 
+    if args.kapsam == "adaylar":
+        return adaylari_dogrula(base, h, yer)
     kurumlar = fetch_all(base, h, "/rest/v1/institutions?select=id,name,website,location_id&website=not.is.null&order=id")
     kurumlar = [k for k in kurumlar if (k.get("website") or "").strip()]
     if args.kapsam == "paylasilan":

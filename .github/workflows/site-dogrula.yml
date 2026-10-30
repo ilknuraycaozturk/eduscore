@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       kapsam:
-        description: "paylasilan: birden çok kurumda geçen siteler; hepsi: tüm siteler"
+        description: "paylasilan: birden çok kurumda geçen siteler; hepsi: tüm siteler; adaylar: website_aday tablosundaki önerilen siteleri doğrula"
         required: true
         default: "paylasilan"
       limit:
