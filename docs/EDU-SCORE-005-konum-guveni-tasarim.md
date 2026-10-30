@@ -1,6 +1,13 @@
 # EDU-SCORE-005 — Konum güveninin puanlamada kullanımı (tasarım önerisi)
 
-*Tarih: 30.10.2026 · Durum: ÖNERİ — onaylanmadı, kod yazılmadı*
+*Tarih: 30.10.2026 · Durum: KARAR VERİLDİ (Ayca, 30.10.2026) — kod yazılmadı*
+
+## Karar (30.10.2026, Ayca)
+
+- **Toplu taşıma yakınlığı** (OSM'den, ücretsiz) ve **servis bilgisi** (yalnızca okulun kendi beyanı) **kurumsal puana girmez**.
+- İkisi de yalnızca **eşleştirme/öneri** tarafında kullanılır (eduscor-match-decision): ailenin konumuna göre öneri yaparken ve aile kendi kişisel puanını oluştururken.
+- Bu nedenle bu belgedeki "Öneri (B)" kurumsal puan için uygulanmayacak; konum güveni tablosu eşleştirme modülünde (uzaklık ve durak yakınlığının ± belirsizliği) kullanılmak üzere aynen geçerli.
+- **Sonuç (onay bekliyor):** `konum_ulasim` (ağırlık 5) şu an her kurumun kanıt kapsamı paydasında (`criteria_available_v2`: lise 100, diğer 43) sayılıyor. Kurumsal olmayacağı için paydadan çıkarılması gerekir (lise 95, diğer 38); böylece hiçbir okul tamamlayamayacağı bir kriter yüzünden "eksik kanıtlı" görünmez. Genel skor (ağırlıklı ortalama) değişmez, çünkü bu kriterde hiç puan yok.
 
 ## Mevcut durum (ölçüm)
 
