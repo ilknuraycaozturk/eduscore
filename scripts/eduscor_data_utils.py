@@ -127,3 +127,17 @@ def find_existing_institution(name: str, il_adi: str, supabase_url: str, service
             if il_norm is None or il_norm in row_name_norm.split(" - ")[0]:
                 return row
     return None
+
+
+# 30.10.2026: Aynı ilçenin farklı yazımları ("Tasova"/"Taşova", "Kadiköy"/"Kadıköy",
+# "Marmara Ereğlisi"/"Marmaraereğlisi", "Ondokuzmayıs"/"19 Mayıs") ayrı ilçe kaydı
+# olarak açılıyordu (24 ilde). İlçe eşleştirmesi bu anahtarla yapılır.
+_ILCE_TAKMA_AD = {"19mayis": "ondokuzmayis"}
+
+
+def ilce_anahtari(ad: str) -> str:
+    import re
+    n = (ad or "").strip().replace("İ", "i").replace("I", "i").lower()
+    n = n.translate(str.maketrans("çğıöşüâîû", "cgiosuaiu"))
+    n = re.sub(r"[^a-z0-9]", "", n)
+    return _ILCE_TAKMA_AD.get(n, n)

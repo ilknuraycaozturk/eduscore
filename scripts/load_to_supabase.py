@@ -302,12 +302,14 @@ def get_or_create_location(base_url: str, headers: dict, ilce_adi: str, parent_i
         return location_cache[key]
 
     district_name = turkish_title(ilce_adi.strip())
+    # Aynı ilin ilçeleri yazım farkı gözetmeden karşılaştırılır (ilce_anahtari).
+    from eduscor_data_utils import ilce_anahtari
     resp = requests.get(
-        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{parent_il_id}&name=eq.{district_name}",
+        f"{base_url}/rest/v1/locations?select=id,name&parent_id=eq.{parent_il_id}&level=eq.district",
         headers=headers,
     )
     resp.raise_for_status()
-    rows = resp.json()
+    rows = [r for r in resp.json() if ilce_anahtari(r["name"]) == ilce_anahtari(ilce_adi)]
     if rows:
         location_cache[key] = rows[0]["id"]
         return rows[0]["id"]
