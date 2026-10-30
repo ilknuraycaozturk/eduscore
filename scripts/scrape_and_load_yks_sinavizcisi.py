@@ -58,7 +58,38 @@ def fetch_all_paginated(base_url: str, headers: dict, path: str, page_size: int 
     return all_rows
 
 
-def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 15000) -> tuple[str | None, int | None]:
+ALAN_SOZCUKLERI = {"kiz", "ticaret", "turizm", "tarim", "saglik", "denizcilik", "ve", "erkek"}
+
+
+def ascii_tr(s: str) -> str:
+    s = turkish_lower(s or "")
+    return s.translate(str.maketrans("çğıöşüâîû", "cgiosuaiu"))
+
+
+def ad_sozcukleri(s: str) -> list[str]:
+    return [w for w in re.split(r"[^a-z0-9]+", ascii_tr(s.replace(".", " "))) if w]
+
+
+def slug_sozcukleri(href: str) -> list[str]:
+    m = re.search(r"/lise/(.+?)--\d+", href or "")
+    return [w for w in (m.group(1).split("-") if m else []) if w]
+
+
+def ad_tutuyor(okul_adi: str, href: str) -> bool:
+    """30.10.2026: İlk arama sonucunu körü körüne almak yerine, sonucun adresindeki
+    okul adı bizim okul adımızla aynı olmalı ("Saray AİHL" ≠ "Aksaray AİHL",
+    "Atatürk AL" ≠ "Karşıyaka Atatürk AL"). Tek izin verilen fark alan sözcükleri
+    (Kız, Ticaret, Turizm, Tarım, Sağlık, Denizcilik)."""
+    a, b = ad_sozcukleri(okul_adi), slug_sozcukleri(href)
+    if not b:
+        return False
+    if "".join(a) == "".join(b):
+        return True
+    return not (set(b) - set(a)) and (set(a) - set(b)) <= ALAN_SOZCUKLERI
+
+
+def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 15000,
+                        yer_sozcukleri: set[str] | None = None) -> tuple[str | None, int | None]:
     page.goto(f"{BASE_URL}/", wait_until="networkidle", timeout=timeout_ms)
     page.wait_for_timeout(800)
 
@@ -87,6 +118,15 @@ def search_and_find_url(page, okul_adi: str, is_public: bool, timeout_ms: int = 
         non_ozel = [c for c in candidates if "ÖZEL" not in c[1].upper()]
         if non_ozel:
             candidates = non_ozel
+
+    # Yalnızca adı birebir tutan sonuçlar. Okul adı ülkede tek değilse (yer_sozcukleri
+    # verilmişse) kart metninde okulun il ya da ilçe adı da geçmeli; geçmiyorsa
+    # tahmin edilmez, okul eşleşmemiş sayılır.
+    candidates = [c for c in candidates if ad_tutuyor(okul_adi, c[0])]
+    if yer_sozcukleri:
+        candidates = [c for c in candidates if set(ad_sozcukleri(c[1])) & yer_sozcukleri]
+    if len(candidates) != 1:
+        return None, None
 
     # Arama sonucu kartında "... • Lise • 537 öğrenci" gibi bir metin de
     # geçiyor - bunu ekstra bir sayfa ziyareti yapmadan (bedavaya) yakalayıp
@@ -172,8 +212,22 @@ def main():
 
     all_lise = fetch_all_paginated(
         supabase_url, headers,
-        f"/rest/v1/institutions?select=id,name,is_public&institution_type_id=in.({','.join(type_ids)})",
+        f"/rest/v1/institutions?select=id,name,is_public,location_id&institution_type_id=in.({','.join(type_ids)})",
     )
+    # Aynı adlı lise sayısı ve her okulun il/ilçe adı (ad ülkede tek değilse yer doğrulaması için)
+    ad_sayisi = {}
+    for i in all_lise:
+        k = "".join(ad_sozcukleri(bare_name(i["name"])))
+        ad_sayisi[k] = ad_sayisi.get(k, 0) + 1
+    locs = {l["id"]: l for l in fetch_all_paginated(supabase_url, headers, "/rest/v1/locations?select=id,parent_id,level,name")}
+
+    def yer_sozcukleri(loc_id):
+        out, loc = set(), locs.get(loc_id)
+        while loc:
+            if loc["level"] in ("district", "province"):
+                out |= set(ad_sozcukleri(loc["name"])) - {"merkez"}
+            loc = locs.get(loc.get("parent_id"))
+        return out
     todo = [i for i in all_lise if i["id"] not in already_scored_ids][: args.max_batch]
     print(f"Toplam {len(all_lise)} lise, {len(todo)} kurum bu çalıştırmada işlenecek.")
 
@@ -200,7 +254,10 @@ def main():
 
             name = bare_name(inst["name"])
             try:
-                url, ogrenci_sayisi = search_and_find_url(page, name, inst.get("is_public", True))
+                tekil = ad_sayisi.get("".join(ad_sozcukleri(name)), 1) == 1
+                url, ogrenci_sayisi = search_and_find_url(
+                    page, name, inst.get("is_public", True),
+                    yer_sozcukleri=None if tekil else yer_sozcukleri(inst.get("location_id")))
                 if not url:
                     unmatched.append(inst["name"])
                     processed += 1
