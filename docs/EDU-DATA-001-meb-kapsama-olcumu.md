@@ -93,3 +93,10 @@ Fazlalık (13.221 / 12.423) türlere göre incelendi (Tablo 2.6). Nedenler:
 - **Çok Programlı Anadolu Lisesi (581).** Bizde "Anadolu Lisesi" türünde, MEB mesleki kategoride sayıyor; toplamı etkilemiyor.
 
 Sonuç: **ortaöğretim 12.477 (%100,4)**. Kalan 96 "İL - Ad" biçimli lise kaydının 29'u belirsiz çift; 67'si MEB okul listesinde karşılığı olmayan, meb.k12.tr sitesi olan gerçek okullar (ör. Sinop–Durağan ve Trabzon–Şalpazarı'nda MEB listesi hiç lise döndürmüyor). MEB listesinin bazı ilçelerde lise vermemesi ayrıca ölçülecek.
+
+## Yer tutucu koordinatların temizlenmesi (30.10.2026, onaylandı)
+
+- Kaynağı bilinmeyen eski koordinatların çoğu okulun konumu değil, il/ilçe merkezi çıktı: en az 3 okulun birebir aynı noktayı paylaştığı 267 nokta (ör. Antalya merkezinde 160, Afyon merkezinde 150, Ankara–Ulus'ta 124 okul). Kaynak: MEB yükleyicisi, okul adı bulunamayınca ilçe merkezini "yaklaşık konum" olarak yazıyordu (kaldırıldı; yükleyicide coğrafi kodlama artık varsayılan kapalı).
+- Bu noktalar hem haritada yanlış kesinlik gösteriyordu, hem de günlük okul sitesi taraması yalnızca koordinatsız okulları işlediği için bu okulların gerçek konumu hiç alınamıyordu; ayrıca ilçe ortancasını kaydırıp doğru koordinatların "ilçeden uzak" diye reddedilmesine yol açabiliyordu (Alanya'da ortanca gerçek ilçeye 120 km uzaktı).
+- Temizlenen: 2.719 yer tutucu + güvenilir kaynaklara (okul sitesi, OSM, LocationIQ) göre ilçesinden 15 km'den uzak 25 eski koordinat + kaynak alanı boş 627 yer tutucu = **3.371**. Kalan kaynaksız 174 koordinat "eski_bilinmiyor / düşük" olarak etiketlendi. Yedek: `_koord_temizlik_20261030`.
+- Sonrası: koordinatsız 62.684 kurum; bunların 50.867'sinin MEB sitesi var (günlük tarama sırasına girdi).
