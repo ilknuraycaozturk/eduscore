@@ -27,7 +27,11 @@ import time
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 
+import html as _html
+
 import requests
+
+from check_websites import OG_RE, TITLE_RE, degerlendir
 
 USER_AGENT = "EduScor-Crawler/1.0 (+destek@eduscor.com; egitim karsilastirma platformu)"
 COORD_RE = re.compile(r"(?:[?&;]q|ll|center)=\s*([34]\d\.\d{3,})\s*,\s*([2-4]\d\.\d{3,})", re.I)
@@ -75,6 +79,16 @@ def main() -> int:
             loc = locs.get(loc.get("parent_id"))
         return None
 
+    def ilce_of(loc_id):
+        loc = locs.get(loc_id)
+        while loc:
+            if loc["level"] == "district":
+                return loc["name"]
+            if loc["level"] == "province":
+                return None
+            loc = locs.get(loc.get("parent_id"))
+        return None
+
     # Mevcut koordinatlar: ilçe ortancası ve şablon tekrarı kontrolü için
     var = fetch_all(base, h, "/rest/v1/institutions?select=location_id,lat,lng&lat=not.is.null")
     by_loc = defaultdict(list)
@@ -88,7 +102,7 @@ def main() -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=args.retry_days)).strftime("%Y-%m-%dT%H:%M:%SZ")
     son_deneme = {a["institution_id"] for a in fetch_all(
         base, h, f"/rest/v1/geocode_attempts?select=institution_id&provider=eq.{PROVIDER}&attempted_at=gte.{cutoff}")}
-    todo = [r for r in fetch_all(base, h, "/rest/v1/institutions?select=id,website,location_id"
+    todo = [r for r in fetch_all(base, h, "/rest/v1/institutions?select=id,name,website,location_id"
                                           "&lat=is.null&website=ilike.*meb.k12.tr*&order=id")
             if r["id"] not in son_deneme]
     print(f"Sırada bekleyen: {len(todo)} kurum; bu çalıştırmada en fazla {args.limit}.")
@@ -100,10 +114,20 @@ def main() -> int:
         site = re.sub(r"(https?://[^/]+).*", r"\1", r["website"].strip()).replace("http://", "https://")
         url = f"{site}/tema/iletisim.php"
         durum, lat, lng = "hata", None, None
+        site_durum, baslik, oran, kod = "erisilemedi", "", None, None
         try:
             resp = session.get(url, timeout=15)
+            kod = resp.status_code
+            if resp.status_code == 200:
+                # Aynı ziyarette site doğrulaması: sayfa başlığı ("İL / İLÇE - Okul Adı") okulla örtüşüyor mu?
+                t = resp.text[:200000]
+                parcalar = [_html.unescape(x.strip()) for x in TITLE_RE.findall(t)[:1] + OG_RE.findall(t)[:1]]
+                baslik = " | ".join(x for x in parcalar if x)[:500]
+                site_durum, oran = degerlendir(r["name"], il_of(r.get("location_id")), ilce_of(r.get("location_id")), baslik)
             if resp.status_code != 200:
                 durum = "bulunamadi"
+            elif site_durum == "eslesmiyor":
+                durum = "belirsiz"  # site başka bir okula ait: koordinatı da o okulun
             else:
                 m = COORD_RE.search(resp.text)
                 if not m:
@@ -130,7 +154,13 @@ def main() -> int:
         if durum == "ok":
             tekrar[(round(lat, 4), round(lng, 4))] += 1
 
+        stats["site_" + site_durum] += 1
         if not args.dry_run:
+            requests.post(f"{base}/rest/v1/website_dogrulama?on_conflict=institution_id",
+                          headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
+                          json={"institution_id": r["id"], "url": r["website"], "durum": site_durum,
+                                "sayfa_basligi": baslik or None, "ortusme": oran, "http_kodu": kod, "son_url": url,
+                                "kontrol_tarihi": datetime.now(timezone.utc).isoformat()}, timeout=20).raise_for_status()
             requests.post(f"{base}/rest/v1/geocode_attempts?on_conflict=institution_id",
                           headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                           json={"institution_id": r["id"], "attempted_at": datetime.now(timezone.utc).isoformat(),

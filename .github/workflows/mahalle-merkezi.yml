@@ -1,0 +1,38 @@
+name: Kalan kurumlara mahalle merkezi (güven düşük)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true ise yalnızca sayar, kurumlara yazmaz"
+        required: true
+        default: "true"
+
+concurrency:
+  group: mahalle-merkezi
+  cancel-in-progress: false
+
+jobs:
+  mahalle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests && sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Geofabrik Türkiye çıkarımından mahalleleri süz
+        run: |
+          curl -sSL --fail -o turkey.osm.pbf https://download.geofabrik.de/europe/turkey-latest.osm.pbf
+          osmium tags-filter turkey.osm.pbf nwr/place=neighbourhood,suburb,quarter,village r/admin_level=10 -o mahalleler.osm.pbf
+          osmium export mahalleler.osm.pbf -f geojsonseq --add-unique-id=type_id -o mahalleler.geojsonseq
+          wc -l mahalleler.geojsonseq
+      - name: Eşleştir ve yaz
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ARGS="mahalleler.geojsonseq"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python scripts/mahalle_merkezi.py $ARGS

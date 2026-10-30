@@ -5,7 +5,7 @@ on:
     # Her gün 11:00 TR saati (08:00 UTC) - website'li kurum sayısı henüz az
     # olduğu için günlük modda başlıyor. Diğer scraper'lardaki gibi, kurum
     # sayısı büyüdükçe aylık moda geçirilmesi değerlendirilmeli.
-    - cron: '0 8 * * *'
+    - cron: '0 8 * * 5'  # Haftada bir, cuma (Actions aylık dakika sınırı, 30.10.2026)
   workflow_dispatch:
     inputs:
       run_fetch:

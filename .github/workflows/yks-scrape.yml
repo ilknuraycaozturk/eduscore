@@ -16,7 +16,7 @@ on:
   # sayısı çok azalınca (script'in kendi 'kalan' çıktısına göre) otomatik
   # olarak AYLIĞA (her ayın 15'i) geçer.
   schedule:
-    - cron: "0 5 * * *"  # Her gün 05:00 UTC (08:00 TR saati)
+    - cron: "0 5 * * 4"  # Haftada bir, perşembe 05:00 UTC (Actions aylık dakika sınırı, 30.10.2026)
 
 concurrency:
   group: yks-scrape

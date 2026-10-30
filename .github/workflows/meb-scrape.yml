@@ -37,7 +37,7 @@ on:
   # otomatik olarak GÜNLÜKTEN AYLIĞA geçer (her ayın 1'i) - böylece
   # veri tabanı büyüdükçe gereksiz yere sürekli tam hızda çalışmaz.
   schedule:
-    - cron: "0 3 * * *"  # Her gün 03:00 UTC (06:00 TR saati) - mod kontrolü içeride yapılır
+    - cron: "0 3 1 * *"  # Ayın 1'i 03:00 UTC. Mod "aylik" olduğu için günlük tetikleme gereksizdi (30.10.2026); günlük partiye dönülecekse "0 3 * * *" yapılır
 
 # Aynı il listesi için iki çalıştırma aynı anda çalışmasın (eşzamanlı yüklemeler
 # aynı okulu iki kez ekleyebilir). Farklı il listeleri paralel çalışabilir.

@@ -16,7 +16,7 @@ on:
   # değişen verileri işlediği için güvenlidir. 30 gün boyunca günlük
   # çalıştıktan sonra otomatik olarak AYLIĞA (her ayın 8'i) geçer.
   schedule:
-    - cron: "0 4 * * *"  # Her gün 04:00 UTC (07:00 TR saati)
+    - cron: "0 4 * * 3"  # Haftada bir, çarşamba 04:00 UTC (Actions aylık dakika sınırı, 30.10.2026)
 
 jobs:
   check_mode:

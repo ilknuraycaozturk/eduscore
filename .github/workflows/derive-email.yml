@@ -15,7 +15,7 @@ on:
   # zaten olan kurumlar hızlıca atlanır, güvenlidir. 30 gün boyunca günlük
   # çalıştıktan sonra otomatik olarak AYLIĞA (her ayın 22'si) geçer.
   schedule:
-    - cron: "0 6 * * *"  # Her gün 06:00 UTC (09:00 TR saati)
+    - cron: "0 6 * * 2"  # Haftada bir, salı 06:00 UTC (Actions aylık dakika sınırı, 30.10.2026)
 
 jobs:
   check_mode:
