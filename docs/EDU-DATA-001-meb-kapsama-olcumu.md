@@ -100,3 +100,18 @@ Sonuç: **ortaöğretim 12.477 (%100,4)**. Kalan 96 "İL - Ad" biçimli lise kay
 - Bu noktalar hem haritada yanlış kesinlik gösteriyordu, hem de günlük okul sitesi taraması yalnızca koordinatsız okulları işlediği için bu okulların gerçek konumu hiç alınamıyordu; ayrıca ilçe ortancasını kaydırıp doğru koordinatların "ilçeden uzak" diye reddedilmesine yol açabiliyordu (Alanya'da ortanca gerçek ilçeye 120 km uzaktı).
 - Temizlenen: 2.719 yer tutucu + güvenilir kaynaklara (okul sitesi, OSM, LocationIQ) göre ilçesinden 15 km'den uzak 25 eski koordinat + kaynak alanı boş 627 yer tutucu = **3.371**. Kalan kaynaksız 174 koordinat "eski_bilinmiyor / düşük" olarak etiketlendi. Yedek: `_koord_temizlik_20261030`.
 - Sonrası: koordinatsız 62.684 kurum; bunların 50.867'sinin MEB sitesi var (günlük tarama sırasına girdi).
+
+## Tireli adlar: kaçan kopyalar (01.11.2026)
+
+- LGS eşleşme denetiminde 37 "eşleşmiyor ama puanlı" kayıt incelendi. Neden: 23.10 birleştirmesindeki ad deseni (`^[^-]+ - [^-]+$`) okul adında tire olan eski "İL - Ad" kayıtlarını yakalamamıştı ("Neziha-Kazım Atıcı AİHL", "İbn-i Sina MTAL").
+- 180 böyle kayıt bulundu; 157'sinin tek karşılığı var. Onaylı kuralla (aynı il, aynı tür, ad birebir ya da yalnızca alan sözcüğü farkı, tek aday, iki yönde de tekil) **156 çift birleştirildi** (1'i karşılığı başka eski kayıtla paylaştığı için dışarıda). Hepsi lise (MTAL 71, Anadolu 67, AİHL 15, Fen 2, Sosyal Bilimler 1).
+- Uygulama 23.10 ile aynı: eski kayıt korundu, MEB adı, ilçesi, kurum kodu, sitesi ve e-postası aktarıldı; koordinat yalnızca eski kayıtta yoksa ya da MEB'deki "yüksek" güvenliyse alındı. 12 kriter çakışmasında MEB kopyasındaki satır (güven yüksek / tarih yeni) tutuldu. 156 okulun genel skoru yeniden hesaplandı.
+- Doğrulama: 156 kaydın hepsi "İL - İLÇE - Ad" biçiminde ve kurum kodlu; silinmeyen kopya 0.
+- Bırakılan: 23 çok adaylı kayıt (elle karar gerekir).
+- Yedek: `_birlestirme_20261101`, `_yedek_20261101_birlestirme`, `_yedek_20261101_birlestirme_kriter`, `_birlestirme_20261101_kriter`.
+
+| Kademe (01.11.2026) | MEB | Bizde | Kapsama |
+|---|---|---|---|
+| İlkokul | 25.099 | 24.864 | %99,1 |
+| Ortaokul | 18.878 | 17.731 | %93,9 |
+| Ortaöğretim (lise türleri + milletlerarası) | 12.423 | 12.307 | %99,1 |

@@ -1,6 +1,6 @@
 # EduScor — Açık İş Listesi (Backlog)
 
-*Son güncelleme: 30.10.2026*
+*Son güncelleme: 01.11.2026*
 
 Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten iş `[x]` ile işaretlenir ve tarihi yazılır; liste silinmez.
 
@@ -25,6 +25,7 @@ Unutulmaması gereken, henüz başlanmamış ya da yarım kalmış işler. Biten
 - [ ] **Puanlama: konum güvenini kullanmak** *(eklendi: 23.10.2026; 30.10.2026: tasarım önerisi `docs/EDU-SCORE-005-konum-guveni-tasarim.md`, onay bekliyor; "Konum, Ulaşım ve Çevre" kriterinde henüz hiç puan yok)*: `institutions.konum_kaynagi` / `konum_guven` (yüksek = okul sitesi, orta = doğrulanmış arama, düşük = eski/bilinmiyor/yaklaşık) eklendi ve dolduruldu. "Konum, Ulaşım ve Çevre" kriterinin bu güveni nasıl kullanacağı scoring modülünde kararlaştırılacak.
 - [x] **Özel okullar** *(tamamlandı: 23.10.2026)*. ÖOKGM resmî kurum listesinden 81 il tarandı (her ilde ÖOKGM toplamı = çekilen). Yükleyicideki "tüm ilçeler Ankara'nın altına" hatası düzeltildi. Özel ilkokul %103 (2.181 / 2.119), özel ortaokul %100,5 (2.239 / 2.228); toplam ilkokul %99,1, ortaokul %94 (fark, MEB listesinde ayrı görünmeyen 898 İHL bünyesindeki İHO). Ölçüm: EDU-DATA-001 dördüncü ölçüm.
 - [x] **Ortaöğretim fazlalığı** *(tamamlandı: 23.10.2026)*. Neden 744 kopya lise kaydıydı (eski LGS kaynaklı kayıtlar, adında alan sözcüğü eksik). Sıkı kuralla birleştirildi; çakışan 291 kriter puanında güveni yüksek olan tutuldu (140'ında 2026 verisi). Ortaöğretim 12.477 (%100,4). Ayrıntı ve yedekler: EDU-DATA-001.
+- [x] **Tireli adlı kopya liseler** *(tamamlandı: 01.11.2026)*. 23.10 birleştirmesinin ad deseni okul adında tire olan eski "İL - Ad" kayıtlarını kaçırmıştı (LGS denetiminde 37 "eşleşmiyor ama puanlı" kayıttan bulundu). 180 kayıttan tek karşılığı olan 156 çift onaylı kuralla birleştirildi; 23 çok adaylı kayıt bırakıldı. Ortaöğretim 12.307 (%99,1). Ayrıntı ve yedekler: EDU-DATA-001.
 - [ ] **İlçesiz liseler ve ilçe kayıtları** *(güncellendi: 30.10.2026)*:
   - *30.10.2026 (ek):* "ANKARA - ÇANKAYA - …" adlı ama doğrudan Ankara il kaydına bağlı 119 okul Çankaya ilçesine taşındı (ilçe listelerinde görünmüyorlardı; yedek `_yedek_20261030_il_duzeyi_konum`). Aynı ilçe + tür + birebir adla kalan 2 kopya grup birleştirildi: Mersin'deki iki ilçesiz kayıt, kaynaktaki yazım farkıyla (Abdülkadir → Akdeniz, Abdulkadir → Anamur) kendi okullarına; Ankara "Ali-Hasan Coşkun MTAL" Çankaya kaydına. Tüm türlerde aynı ilçede birebir aynı adlı kopya kalmadı.
   - Yinelenen ilçe kayıtları düzeltildi: 24 ilde aynı ilçe iki yazımla kayıtlıydı ("Tasova/Taşova", "Kadiköy/Kadıköy", "Akcakale/Akçakale", "Marmaraereğlisi/Marmara Ereğlisi", "19 Mayıs/Ondokuzmayıs" vb.); 116 okul asıl ilçeye taşındı, 24 kopya ve Ankara'nın altına yanlış açılmış 3 boş ilçe (Aydıntepe, Demirözü, Merkez) silindi. Adres verisinde kullanılan resmî yazım korundu (19 Mayıs, Marmaraereğlisi, Nazımiye, Kiğı, Şarkikaraağaç). Yükleyiciler artık ilçeyi yazım farkı gözetmeden eşleştiriyor. Yedek: `_yedek_20261030_ilce_birlestirme*`.
