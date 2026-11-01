@@ -132,20 +132,27 @@ def adaylari_dogrula(base: str, h: dict, yer) -> int:
         k = kurum.get(a["institution_id"])
         if not k:
             continue
-        durum, baslik = "reddedildi", ""
+        durum, baslik, neden, kod = "reddedildi", "", "", None
         try:
             r = s.get(a["url"], timeout=20, allow_redirects=True)
+            kod = r.status_code
             if r.status_code == 200:
                 t = r.text[:200000]
                 baslik = " | ".join(html.unescape(m.strip()) for m in TITLE_RE.findall(t)[:1] + OG_RE.findall(t)[:1])
                 il, ilce = yer(k.get("location_id"))
-                if degerlendir(k["name"], il, ilce, baslik)[0] == "eslesiyor":
+                sonuc = degerlendir(k["name"], il, ilce, baslik)
+                neden = " ".join(str(x) for x in sonuc)[:300]
+                if sonuc[0] == "eslesiyor":
                     durum = "dogrulandi"
+            else:
+                neden = f"http {r.status_code}"
         except Exception as e:
+            neden = f"erisilemedi: {str(e)[:120]}"
             print(f"  erişilemedi {a['url']}: {str(e)[:80]}")
         stats[durum] += 1
-        requests.patch(f"{base}/rest/v1/website_aday?institution_id=eq.{k['id']}", headers=h,
-                       json={"durum": durum}, timeout=20).raise_for_status()
+        requests.patch(f"{base}/rest/v1/website_aday?institution_id=eq.{k['id']}&url=eq.{requests.utils.quote(a['url'], safe='')}",
+                       headers=h, json={"durum": durum, "baslik": baslik[:500], "neden": neden, "http_durum": kod},
+                       timeout=20).raise_for_status()
         if durum == "dogrulandi" and not k.get("website"):
             requests.patch(f"{base}/rest/v1/institutions?id=eq.{k['id']}&website=is.null", headers=h,
                            json={"website": a["url"]}, timeout=20).raise_for_status()
