@@ -1,0 +1,29 @@
+name: Resmî istatistik PDF'ini oku (salt okunur)
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "PDF adresi"
+        required: true
+      kaynak:
+        description: "Kaynak adı (ör. meb_2425)"
+        required: true
+      desen:
+        description: "Bu ifadeyi içeren sayfalar kaydedilir"
+        required: true
+
+jobs:
+  oku:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y poppler-utils >/dev/null && pip install requests
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          URL: ${{ inputs.url }}
+          KAYNAK: ${{ inputs.kaynak }}
+          DESEN: ${{ inputs.desen }}
+        run: python scripts/kaynak_pdf_oku.py --url "$URL" --kaynak "$KAYNAK" --desen "$DESEN"
