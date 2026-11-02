@@ -16,7 +16,7 @@ on:
         required: true
         default: "false"
   schedule:
-    - cron: "23 2 * * 2,6"  # Salı ve Cumartesi 02:23 UTC (05:23 TR); Actions kotası için haftada 2
+    - cron: "23 */6 * * *"  # 02.11.2026: repo geçici olarak açık (dakika sınırsız) → 6 saatte bir. Repo yeniden kapatılınca: "23 2 * * 2,6"
 
 concurrency:
   group: meb-site-coords
@@ -25,7 +25,7 @@ concurrency:
 jobs:
   coords:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,6 +37,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel ${{ inputs.paralel || '1' }} --max-dakika 100"
+          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel ${{ inputs.paralel || '1' }} --max-dakika 330"
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/meb_site_coords.py $ARGS
