@@ -32,6 +32,10 @@ ILLER = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "
          "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray",
          "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük",
          "Kilis", "Osmaniye", "Düzce"]
+SABIT_KALIPLAR = ["kuruluslarimiz/ozel-kresler/", "ozel-kuruluslar/ozel-kres-gunduz-bakimevleri/",
+                  "kuruluslarimiz/ozelkuruluslar/ozelkresvebakim/", "kresler/",
+                  "kuruluslarimiz/ozel-kuruluslarimiz/ozel-kres-gunduz-bakimevi-ve-cocuk-kulupleri/",
+                  "kuruluslarimiz/ozel-kuruluslar/", "kuruluslarimiz/ozel-kuruluslarimiz/"]
 ADAY_RE = re.compile(r"kres|gunduz|bakimev|ozel-?kurulus|ozelkres|cocuk-?kulub", re.I)
 KURUM_RE = re.compile(r"kreş|kres|gündüz|bakımev|bakimev|çocuk kulüb|cocuk kulub|kulübü", re.I)
 TEL_RE = re.compile(r"^[\d\s()+\-/.]{7,}$|^\+?9?0?\s*\(?\d{3}\)?[\s\d]{7,}")
@@ -109,7 +113,24 @@ def main() -> int:
                 if p.netloc.endswith("aile.gov.tr") and p.path.startswith(f"/{sl}/") and \
                         (ADAY_RE.search(p.path) or KURUM_RE.search(a.get_text(" ", strip=True))):
                     linkler.add(u)
-            sayfalar = sorted(linkler)[:8]
+            # Menü bağlantıları ana sayfada her zaman yok: "kuruluşlarımız" sayfalarını da gez ve
+            # il sitelerinde görülen sabit adres kalıplarını dene.
+            for alt in ("kuruluslarimiz/", "kuruluslarimiz/ozel-kuruluslar/", "kuruluslarimiz/ozel-kuruluslarimiz/",
+                        "kuruluslarimiz/ozelkuruluslar/", "ozel-kuruluslar/"):
+                h2, _ = al(f"{KOK}/{sl}/{alt}")
+                if not h2:
+                    continue
+                for a in BeautifulSoup(h2, "html.parser").find_all("a", href=True):
+                    u = urljoin(f"{KOK}/{sl}/{alt}", a["href"]).split("#")[0]
+                    p = urlparse(u)
+                    if p.netloc.endswith("aile.gov.tr") and p.path.startswith(f"/{sl}/") and \
+                            (ADAY_RE.search(p.path) or KURUM_RE.search(a.get_text(" ", strip=True))):
+                        linkler.add(u)
+            for kalip in SABIT_KALIPLAR:
+                linkler.add(f"{KOK}/{sl}/{kalip}")
+            linkler = {u.replace("http://", "https://").rstrip("/") + "/" for u in linkler
+                       if not re.search(r"/(haberler|duyurular|galeri|etkinlikler)/", u)}
+            sayfalar = sorted(linkler)[:15]
         else:
             requests.post(f"{base}/rest/v1/ashb_kres_sayfalari", headers=h, timeout=30,
                           json={"il": il, "url": f"{KOK}/{sl}/", "durum": f"ana_sayfa_{d}"}).raise_for_status()
@@ -121,6 +142,8 @@ def main() -> int:
         il_satir = 0
         for u in sayfalar:
             html, d = al(u)
+            if not html and d == "http_404":
+                continue
             if not html:
                 requests.post(f"{base}/rest/v1/ashb_kres_sayfalari", headers=h, timeout=30,
                               json={"il": il, "url": u, "durum": d}).raise_for_status()
