@@ -19,10 +19,11 @@ on:
   # script zaten "zaten var/aynı" kayıtları hızlıca atlayıp sadece yeni/
   # değişen verileri işlediği için güvenlidir. 30 gün boyunca günlük
   # çalıştıktan sonra otomatik olarak AYLIĞA (her ayın 8'i) geçer.
-  # 30.10.2026: Zamanlama, yeni eşleştirme kuralıyla denetim çalıştırması (denetim=true)
-  # yapılıp sonuç onaylanana kadar KAPALI. Açılınca haftalık: "0 4 * * 3".
-  # schedule:
-  #   - cron: "0 4 * * 3"
+  # 02.11.2026: Denetim onaylandı (4 yanlış eşleşme düzeltildi), zamanlama yeniden açık.
+  # Mod "aylik" olduğu için iş yalnızca ayın 8'inde çalışıyor; haftalık cron yalnızca
+  # 8'i çarşambaya denk gelince çalışırdı. Bu yüzden doğrudan ayın 8'i (Actions kotası: ~2 saat/çalıştırma).
+  schedule:
+    - cron: "0 4 8 * *"
 
 jobs:
   check_mode:
