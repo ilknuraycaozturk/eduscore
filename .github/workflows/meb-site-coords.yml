@@ -7,6 +7,10 @@ on:
         description: "Bu çalıştırmada en fazla kaç okul sitesi"
         required: true
         default: "20000"
+      paralel:
+        description: "Aynı anda kaç istek"
+        required: false
+        default: "4"
       dry_run:
         description: "true ise veritabanına yazmaz"
         required: true
@@ -33,6 +37,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel 4 --max-dakika 100"
+          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel ${{ inputs.paralel || '4' }} --max-dakika 100"
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/meb_site_coords.py $ARGS
