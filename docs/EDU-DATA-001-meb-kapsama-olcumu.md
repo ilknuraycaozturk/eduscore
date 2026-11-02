@@ -115,3 +115,20 @@ Sonuç: **ortaöğretim 12.477 (%100,4)**. Kalan 96 "İL - Ad" biçimli lise kay
 | İlkokul | 25.099 | 24.864 | %99,1 |
 | Ortaokul | 18.878 | 17.731 | %93,9 |
 | Ortaöğretim (lise türleri + milletlerarası) | 12.423 | 12.307 | %99,1 |
+
+## Okul öncesi (02.11.2026)
+
+Referans: MEB 2024/25 Tablo 2.1 (Haziran 2025; `data/reference/meb_2024_25_okul_oncesi_turlere_gore.csv`). 17.640 bağımsız okul öncesi kurumun yalnızca 8.690'ı MEB'e bağlı anaokulu; kalanı başka kurumlara bağlı. İl tablosu (2.2) ana sınıfı olan okulları da saydığı için il bazında karşılaştırma yapılamıyor; ölçüm ülke düzeyinde.
+
+| Tür | Bağlı olduğu kurum | MEB | Bizde | Kapsama |
+|---|---|---|---|---|
+| Resmî anaokulu | MEB | 3.910 | 3.862 | %98,8 |
+| Özel anaokulu | MEB | 4.780 | 5.396 | %112,9 |
+| Kreş ve gündüz bakımevi (özel) | Aile ve Sosyal Hizmetler Bakanlığı | 2.479 | 0 | %0 |
+| İşyeri kreşi (İş Kanunu) | işyerleri | 12 | 0 | %0 |
+| Toplum temelli (Diyanet 4–6 yaş kursları, belediye ve dernek kreşleri) | çeşitli | 6.267 | 0 | %0 |
+| 657 s. Kanun 191. madde kurumları (kamu kurum kreşleri) | kamu kurumları | 192 | 0 | %0 |
+
+- Özel anaokulundaki fazlalık (616): aynı ilçede aynı ya da yalnızca boşluk/genel sözcük farkıyla aynı adlı kopya yok; aynı ilde 18 aynı adlı çift var (farklı ilçe, büyük olasılıkla şube). Olası neden ÖOKGM listesinin güncel (Ekim 2026), istatistiğin Haziran 2025 tarihli olması; doğrulanmadı. MEB 2025/26 PDF'i (`istatistik_k/2526.pdf`) bu adreste bulunamadı.
+- Anaokullarının hiçbirinde kriter puanı yok. Koordinat: resmî 277, özel 1.326. Resmîlerin tamamının MEB sitesi var (okul sitesi taramasında).
+- Ana sınıfları (20.558 resmî, 1.372 özel okulda) ayrı kurum değil; ilkokul kaydının bilgisi olarak ele alınmalı.
