@@ -995,12 +995,17 @@
                 const location = document.querySelector('input[name="location"]').value.trim();
                 const query = document.querySelector('input[name="query"]').value.trim();
 
-                const dedicatedPage = SEGMENT_TO_DEDICATED_PAGE[segment];
+                // "Yakınımda Ara" seçiliyse lise de uzaklığa göre listelenebilsin diye
+                // keşfet sayfasına gider (lise-skoru.html konum kullanmıyor).
+                const dedicatedPage = (nearMeLat && nearMeLng) ? null : SEGMENT_TO_DEDICATED_PAGE[segment];
                 const targetPage = dedicatedPage || 'explorer.html';
 
                 const params = new URLSearchParams();
                 const category = SEGMENT_TO_CATEGORY[segment];
                 if (category && !dedicatedPage) params.set('category', category);
+                // Kademe: anaokulu ararken ilkokul/ortaokul/lise gelmesin
+                const SEGMENT_TO_KADEME = { 'seg-preschool': 'anaokulu', 'seg-primary': 'ilkokul', 'seg-middle': 'ortaokul', 'seg-high': 'lise' };
+                if (SEGMENT_TO_KADEME[segment] && !dedicatedPage) params.set('kademe', SEGMENT_TO_KADEME[segment]);
 
                 if (location) params.set('loc', location);
                 if (query) params.set('q', query);

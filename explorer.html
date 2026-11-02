@@ -163,6 +163,23 @@
         const locParam = urlParams.get('loc') || '';
         const qParam = [locParam, urlParams.get('q') || ''].filter(Boolean).join(' ');
         const categoryParam = urlParams.get('category') || '';
+        // Kademe filtresi (index'teki segmentten): kurum türü slug'larına çevrilir
+        const KADEME_TURLERI = {
+            anaokulu: ['anaokulu'],
+            ilkokul: ['ilkokul'],
+            ortaokul: ['ortaokul'],
+            lise: ['anadolu-lisesi', 'mesleki-teknik-anadolu-lisesi', 'anadolu-imam-hatip-lisesi', 'fen-lisesi',
+                   'anadolu-guzel-sanatlar-lisesi', 'spor-lisesi', 'sosyal-bilimler-lisesi', 'lise', 'fen-teknoloji-lisesi',
+                   'aksam-lisesi', 'yabanci-ozel-lise', 'laboratuvar-lisesi'],
+        };
+        const kademeTurleri = KADEME_TURLERI[urlParams.get('kademe') || ''] || null;
+        let kademeTurIdleri = null;
+        async function kademeTurIdleriniAl() {
+            if (!kademeTurleri || kademeTurIdleri) return kademeTurIdleri;
+            const { data } = await sb.from('institution_types').select('id').in('slug', kademeTurleri);
+            kademeTurIdleri = (data || []).map(r => r.id);
+            return kademeTurIdleri;
+        }
         const userLat = urlParams.get('lat') ? parseFloat(urlParams.get('lat')) : null;
         const userLng = urlParams.get('lng') ? parseFloat(urlParams.get('lng')) : null;
         const radiusParam = urlParams.get('radius') ? parseFloat(urlParams.get('radius')) : null;
@@ -393,6 +410,8 @@
 
         async function loadResults() {
             let query = sb.from('institutions').select(`*, institution_types(name_tr), categories(slug), locations(name)`);
+            const turIdleri = await kademeTurIdleriniAl();
+            if (turIdleri && turIdleri.length) query = query.in('institution_type_id', turIdleri);
 
             // Kategori filtresini SUNUCU tarafında uyguluyoruz (önce id'yi bul)
             if (categoryParam) {
@@ -419,7 +438,27 @@
             // render etmeye çalışıp yavaşlıyordu. Performans için makul bir üst sınır
             // koyuyoruz ve kullanıcıya bunu açıkça belirtiyoruz.
             const DISPLAY_LIMIT = 60;
-            query = query.order('name').limit(DISPLAY_LIMIT);
+            let yakinMesafe = null;
+            if (userLat && userLng) {
+                // Konum varsa en yakın kurumları veritabanında seç (önceden ada göre ilk 60
+                // alınıp uzaklık sonra hesaplanıyordu; hep aynı ilin okulları geliyordu).
+                const qn = qParam ? (function (s) {
+                    const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
+                    return s.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
+                })(qParam) : null;
+                const { data: yakin, error: yErr } = await sb.rpc('kurumlar_yakinda', {
+                    p_lat: userLat, p_lng: userLng, p_km: radiusParam || null,
+                    p_kategori: categoryParam || null, p_turler: kademeTurleri, p_q: qn, p_limit: DISPLAY_LIMIT,
+                });
+                if (yErr) { console.error(yErr); }
+                yakinMesafe = {};
+                (yakin || []).forEach(r => { yakinMesafe[r.id] = r.mesafe_km; });
+                const ids = Object.keys(yakinMesafe);
+                query = sb.from('institutions').select(`*, institution_types(name_tr), categories(slug), locations(name)`)
+                    .in('id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
+            } else {
+                query = query.order('name').limit(DISPLAY_LIMIT);
+            }
 
             const { data, error } = await query;
 
@@ -437,7 +476,7 @@
             // sadece "Etimesgut" (ilçe) diye kayıtlı olabilir.
             let finalData = data || [];
             let mahalleUyarisi = null;
-            if (qParam) {
+            if (qParam && !yakinMesafe) {
                 const qNorm2 = (function () {
                     const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
                     return qParam.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
@@ -451,6 +490,7 @@
                         .select('id, name, is_public, is_verified, fee_info, locations ( name ), institution_types ( name_tr, slug ), categories ( slug )')
                         .eq('location_id', mahalleEslesme[0].ilce_location_id)
                         .order('name').limit(DISPLAY_LIMIT);
+                    if (turIdleri && turIdleri.length) fallbackQuery = fallbackQuery.in('institution_type_id', turIdleri);
                     if (categoryParam) {
                         const { data: catRow2 } = await sb.from('categories').select('id').eq('slug', categoryParam).maybeSingle();
                         if (catRow2) fallbackQuery = fallbackQuery.eq('category_id', catRow2.id);
