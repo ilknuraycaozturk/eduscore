@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "Bu çalıştırmada en fazla kaç okul sitesi (saniyede 1 sayfa)"
+        description: "Bu çalıştırmada en fazla kaç okul sitesi"
         required: true
-        default: "4500"
+        default: "20000"
       dry_run:
         description: "true ise veritabanına yazmaz"
         required: true
         default: "false"
   schedule:
-    - cron: "23 2 * * *"  # Her gün 02:23 UTC (05:23 TR)
+    - cron: "23 2 * * 2,4,6"  # Salı, Perşembe, Cumartesi 02:23 UTC (05:23 TR)
 
 concurrency:
   group: meb-site-coords
@@ -21,7 +21,7 @@ concurrency:
 jobs:
   coords:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,6 +33,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--limit ${{ inputs.limit || '4500' }}"
+          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel 4 --max-dakika 100"
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/meb_site_coords.py $ARGS

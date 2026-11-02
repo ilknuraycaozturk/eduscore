@@ -5,8 +5,8 @@ okulun kendi girdiği harita konumunu barındırır. Bu betik o sayfayı indirir
 koordinatı ayıklar, doğrular ve yazar. Sayfanın HTML'i saklanmaz.
 
 Kurallar:
-- Saniyede en fazla 1 sayfa (sitelere yük bindirmemek için), çalıştırma
-  başına en fazla --limit kurum. Açıklayıcı User-Agent.
+- Aynı anda en fazla --paralel (varsayılan 4) istek; çalıştırma başına en fazla
+  --limit kurum ve --max-dakika süre. Açıklayıcı User-Agent.
 - Doğrulama: Türkiye sınırları içinde olmalı; Ankara dışı bir okul için
   Ankara şehir merkezine (25 km) düşen koordinat ve aynı ilçedeki diğer okulların ortancasından
   60 km'den uzak koordinat 'belirsiz' sayılır; 3'ten fazla kurumda aynen
@@ -23,7 +23,9 @@ import os
 import re
 import statistics
 import sys
+import threading
 import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 
@@ -61,6 +63,8 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=4500)
     ap.add_argument("--retry-days", type=int, default=30)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--paralel", type=int, default=4, help="Aynı anda en fazla kaç siteye istek")
+    ap.add_argument("--max-dakika", type=float, default=100, help="Bu süreden sonra yeni site alınmaz")
     args = ap.parse_args()
 
     base, skey = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -107,16 +111,23 @@ def main() -> int:
             if r["id"] not in son_deneme]
     print(f"Sırada bekleyen: {len(todo)} kurum; bu çalıştırmada en fazla {args.limit}.")
 
-    session = requests.Session()
-    session.headers["User-Agent"] = USER_AGENT
     stats = Counter()
-    for n, r in enumerate(todo[: args.limit], 1):
+    kilit = threading.Lock()
+    yerel = threading.local()
+
+    def oturum():
+        if not hasattr(yerel, "s"):
+            yerel.s = requests.Session()
+            yerel.s.headers["User-Agent"] = USER_AGENT
+        return yerel.s
+
+    def isle(r):
         site = re.sub(r"(https?://[^/]+).*", r"\1", r["website"].strip()).replace("http://", "https://")
         url = f"{site}/tema/iletisim.php"
         durum, lat, lng = "hata", None, None
         site_durum, baslik, oran, kod = "erisilemedi", "", None, None
         try:
-            resp = session.get(url, timeout=15)
+            resp = oturum().get(url, timeout=15)
             kod = resp.status_code
             if resp.status_code == 200:
                 # Aynı ziyarette site doğrulaması: sayfa başlığı ("İL / İLÇE - Okul Adı") okulla örtüşüyor mu?
@@ -142,19 +153,21 @@ def main() -> int:
                         durum = "belirsiz"  # Ankara dışı okul için Ankara şehir merkezi (olası varsayılan/yanlış giriş)
                     elif o and km((lat, lng), o) > 60:
                         durum = "belirsiz"
-                    elif tekrar[(round(lat, 4), round(lng, 4))] >= 3:
-                        durum = "belirsiz"
                     else:
                         durum = "ok"
         except Exception as e:
             print(f"  hata {url}: {str(e)[:100]}")
-        stats[durum] += 1
+        with kilit:
+            if durum == "ok":
+                anahtar = (round(lat, 4), round(lng, 4))
+                if tekrar[anahtar] >= 3:
+                    durum = "belirsiz"  # şablon varsayılanı
+                else:
+                    tekrar[anahtar] += 1
+            stats[durum] += 1
+            stats["site_" + site_durum] += 1
         # Aday koordinat 'belirsiz'/'il_uyusmuyor' olsa da deneme kaydında saklanır
         # (izlenebilir kanıt); kurum kaydına yalnızca 'ok' olan yazılır.
-        if durum == "ok":
-            tekrar[(round(lat, 4), round(lng, 4))] += 1
-
-        stats["site_" + site_durum] += 1
         if not args.dry_run:
             requests.post(f"{base}/rest/v1/website_dogrulama?on_conflict=institution_id",
                           headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
@@ -169,16 +182,40 @@ def main() -> int:
             if durum == "ok":
                 requests.patch(f"{base}/rest/v1/institutions?id=eq.{r['id']}&lat=is.null", headers=h,
                                json={"lat": lat, "lng": lng, "konum_kaynagi": "meb_okul_sitesi", "konum_guven": "yuksek"}, timeout=20).raise_for_status()
-        if n % 250 == 0:
-            print(f"  {n} işlendi: {dict(stats)}")
-        time.sleep(1.0)
 
+    # Süre bütçesi: iş akışının zaman sınırına takılmadan bitip özeti yazabilmek için
+    # bütçe dolunca yeni site alınmaz, sürmekte olanlar tamamlanır.
+    bitis = time.monotonic() + args.max_dakika * 60
+    islenen = 0
+    sira = iter(todo[: args.limit])
+    with ThreadPoolExecutor(max_workers=args.paralel) as havuz:
+        bekleyen = set()
+        while True:
+            while len(bekleyen) < args.paralel * 2 and time.monotonic() < bitis:
+                r = next(sira, None)
+                if r is None:
+                    break
+                bekleyen.add(havuz.submit(isle, r))
+            if not bekleyen:
+                break
+            bitti, bekleyen = wait(bekleyen, return_when=FIRST_COMPLETED)
+            for f in bitti:
+                try:
+                    f.result()
+                except Exception as e:
+                    print(f"  yazma hatası: {str(e)[:120]}")
+                    stats["yazma_hatasi"] += 1
+                islenen += 1
+                if islenen % 250 == 0:
+                    print(f"  {islenen} işlendi: {dict(stats)}")
+
+    stats["islenen"] = islenen
     print("SITE_KONUM_OZETI " + json.dumps(dict(stats), ensure_ascii=False))
     if not args.dry_run:
         requests.post(f"{base}/rest/v1/scrape_progress?on_conflict=key",
                       headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                       json={"key": "meb_site_koordinat_son_ozet",
-                            "value": json.dumps({**stats, "sirada_kalan": max(0, len(todo) - args.limit),
+                            "value": json.dumps({**stats, "sirada_kalan": max(0, len(todo) - islenen),
                                                  "tarih": datetime.now(timezone.utc).isoformat()})},
                       timeout=20)
     return 0
