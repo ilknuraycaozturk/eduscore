@@ -66,6 +66,7 @@ def main() -> int:
     ap.add_argument("--paralel", type=int, default=4, help="Aynı anda en fazla kaç siteye istek")
     ap.add_argument("--max-dakika", type=float, default=100, help="Bu süreden sonra yeni site alınmaz")
     args = ap.parse_args()
+    t0 = time.monotonic()
 
     base, skey = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     if not base or not skey:
@@ -127,7 +128,11 @@ def main() -> int:
         durum, lat, lng = "hata", None, None
         site_durum, baslik, oran, kod = "erisilemedi", "", None, None
         try:
-            resp = oturum().get(url, timeout=15)
+            t_ist = time.monotonic()
+            try:
+                resp = oturum().get(url, timeout=15)
+            finally:
+                sureler.append(time.monotonic() - t_ist)
             kod = resp.status_code
             if resp.status_code == 200:
                 # Aynı ziyarette site doğrulaması: sayfa başlığı ("İL / İLÇE - Okul Adı") okulla örtüşüyor mu?
@@ -183,6 +188,8 @@ def main() -> int:
                 requests.patch(f"{base}/rest/v1/institutions?id=eq.{r['id']}&lat=is.null", headers=h,
                                json={"lat": lat, "lng": lng, "konum_kaynagi": "meb_okul_sitesi", "konum_guven": "yuksek"}, timeout=20).raise_for_status()
 
+    hazirlik_sn = round(time.monotonic() - t0)
+    sureler = []
     # Süre bütçesi: iş akışının zaman sınırına takılmadan bitip özeti yazabilmek için
     # bütçe dolunca yeni site alınmaz, sürmekte olanlar tamamlanır.
     bitis = time.monotonic() + args.max_dakika * 60
@@ -210,11 +217,18 @@ def main() -> int:
                     print(f"  {islenen} işlendi: {dict(stats)}")
 
     stats["islenen"] = islenen
+    stats["hazirlik_sn"] = hazirlik_sn
+    stats["toplam_sn"] = round(time.monotonic() - t0)
+    if sureler:
+        sureler.sort()
+        stats["istek_ort_sn"] = round(sum(sureler) / len(sureler), 2)
+        stats["istek_medyan_sn"] = round(sureler[len(sureler) // 2], 2)
+        stats["istek_15sn_ustu"] = sum(1 for x in sureler if x >= 14.9)
     print("SITE_KONUM_OZETI " + json.dumps(dict(stats), ensure_ascii=False))
-    if not args.dry_run:
+    if True:  # deneme (dry-run) çalıştırmasında da özet yazılır; yalnızca anahtar farklı
         requests.post(f"{base}/rest/v1/scrape_progress?on_conflict=key",
                       headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
-                      json={"key": "meb_site_koordinat_son_ozet",
+                      json={"key": "meb_site_koordinat_deneme_ozet" if args.dry_run else "meb_site_koordinat_son_ozet",
                             "value": json.dumps({**stats, "sirada_kalan": max(0, len(todo) - islenen),
                                                  "tarih": datetime.now(timezone.utc).isoformat()})},
                       timeout=20)
