@@ -18,7 +18,7 @@ on:
   # Günlük zamanlama, okul sitelerinden (meb.k12.tr) koordinat okuma işi
   # tamamlanana kadar kapalı; LocationIQ yalnızca sitesi olmayan kurumlar için.
   schedule:
-    - cron: "17 1 * * *"  # 04:17 TR; yalnızca MEB sitesi olmayan kurumlar, adres yöntemi
+    - cron: "17 1 * * 0"  # Pazar 04:17 TR (02.11.2026: sokak adlı adres sırası bitti, haftalığa indirildi); yalnızca MEB sitesi olmayan kurumlar, adres yöntemi
 
 # Aynı anda yalnızca bir çalıştırma (ücretsiz plan sınırı aşılmasın).
 concurrency:

@@ -5,7 +5,7 @@ okulun kendi girdiği harita konumunu barındırır. Bu betik o sayfayı indirir
 koordinatı ayıklar, doğrular ve yazar. Sayfanın HTML'i saklanmaz.
 
 Kurallar:
-- Aynı anda en fazla --paralel (varsayılan 4) istek; çalıştırma başına en fazla
+- Varsayılan sıralı istek (--paralel 1; MEB eşzamanlı isteği kısıtlıyor); çalıştırma başına en fazla
   --limit kurum ve --max-dakika süre. Açıklayıcı User-Agent.
 - Doğrulama: Türkiye sınırları içinde olmalı; Ankara dışı bir okul için
   Ankara şehir merkezine (25 km) düşen koordinat ve aynı ilçedeki diğer okulların ortancasından
@@ -63,7 +63,7 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=4500)
     ap.add_argument("--retry-days", type=int, default=30)
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--paralel", type=int, default=4, help="Aynı anda en fazla kaç siteye istek")
+    ap.add_argument("--paralel", type=int, default=1, help="Aynı anda en fazla kaç siteye istek (MEB eşzamanlı isteği kısıtlıyor: 4 paralelde %73 zaman aşımı, 1 ile %15)")
     ap.add_argument("--max-dakika", type=float, default=100, help="Bu süreden sonra yeni site alınmaz")
     args = ap.parse_args()
     t0 = time.monotonic()
@@ -130,7 +130,7 @@ def main() -> int:
         try:
             t_ist = time.monotonic()
             try:
-                resp = oturum().get(url, timeout=15)
+                resp = oturum().get(url, timeout=10)
             finally:
                 sureler.append(time.monotonic() - t_ist)
             kod = resp.status_code
@@ -223,7 +223,7 @@ def main() -> int:
         sureler.sort()
         stats["istek_ort_sn"] = round(sum(sureler) / len(sureler), 2)
         stats["istek_medyan_sn"] = round(sureler[len(sureler) // 2], 2)
-        stats["istek_15sn_ustu"] = sum(1 for x in sureler if x >= 14.9)
+        stats["istek_zaman_asimi"] = sum(1 for x in sureler if x >= 9.9)
     print("SITE_KONUM_OZETI " + json.dumps(dict(stats), ensure_ascii=False))
     if True:  # deneme (dry-run) çalıştırmasında da özet yazılır; yalnızca anahtar farklı
         requests.post(f"{base}/rest/v1/scrape_progress?on_conflict=key",
