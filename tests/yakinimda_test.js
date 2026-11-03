@@ -2,6 +2,7 @@
 const { chromium } = require('playwright');
 const SENARYO = [
   { ad: 'lise_baglica', sayfa: 'lise-skoru.html', q: 'loc=Bağlıca', ara: 'İnalcık' },
+  { ad: 'lise_baglica_tumu', sayfa: 'lise-skoru.html', q: 'loc=Bağlıca&ilce_tumu=1', ara: 'İnalcık' },
   { ad: 'lise_baglica_izmit', sayfa: 'lise-skoru.html', q: 'loc=Bağlıca İzmit', ara: 'İnalcık' },
   { ad: 'explorer_baglica', q: 'category=okul-oncesi-k12&q=Bağlıca', ara: 'Bağlıca' },
   { ad: 'istanbul_ilkokul_5km', q: 'category=okul-oncesi-k12&kademe=ilkokul&lat=41.0082&lng=28.9784&radius=5' },
@@ -17,7 +18,7 @@ const SENARYO = [
     await page.waitForTimeout(4000);
     sonuc[s.ad] = await page.evaluate((ara) => ({
       bulundu: ara ? document.body.innerText.includes(ara) : null,
-      not: Array.from(document.querySelectorAll('p')).map(e => e.innerText).filter(t => t.includes('mahallesinin')).slice(0, 1),
+      not: Array.from(document.querySelectorAll('p')).map(e => e.innerText).filter(t => t.startsWith('💡')).slice(0, 1),
       baslik: (document.getElementById('resultsTitle') || {}).innerText || null,
       kartlar: Array.from(document.querySelectorAll('h3, h2')).map(e => e.innerText.trim()).filter(t => / - |ÖZEL|Özel|Lisesi/.test(t)).slice(0, 8),
     }), s.ara || null);

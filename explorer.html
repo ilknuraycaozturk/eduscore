@@ -485,22 +485,39 @@
                 const { data: mbul } = await sb.rpc('mahalle_ilce_bul', { p_q: qParam });
                 const mahalleEslesme = (mbul || []).map(m => ({ mahalle_adi: m.mahalle_adi, ilce_location_id: m.ilce_location_id, locations: { name: m.ilce_adi } }));
                 if (mahalleEslesme && mahalleEslesme.length) {
-                    let fallbackQuery = sb.from('institutions')
-                        .select('id, name, is_public, is_verified, fee_info, locations ( name ), institution_types ( name_tr, slug ), categories ( slug )')
-                        .eq('location_id', mahalleEslesme[0].ilce_location_id)
-                        .order('name').limit(DISPLAY_LIMIT);
-                    if (turIdleri && turIdleri.length) fallbackQuery = fallbackQuery.in('institution_type_id', turIdleri);
-                    if (categoryParam) {
-                        const { data: catRow2 } = await sb.from('categories').select('id').eq('slug', categoryParam).maybeSingle();
-                        if (catRow2) fallbackQuery = fallbackQuery.eq('category_id', catRow2.id);
-                    }
-                    const { data: fallbackData } = await fallbackQuery;
-                    if (fallbackData && fallbackData.length) {
-                        const varOlanIdler = new Set(finalData.map(r => r.id));
-                        const yeniler = fallbackData.filter(r => !varOlanIdler.has(r.id));
-                        finalData = [...finalData, ...yeniler];
-                        mahalleUyarisi = tf('ex_mahalle_note', { q: qParam, ilce: mahalleEslesme[0].locations.name });
-                    }
+                    const ilk = mbul[0];
+                    const ilceTumu = urlParams.get('ilce_tumu') === '1';
+                    // İlçedeki kurumlar: mahallede olduğu bilinenler (ad/adres/konum) her zaman,
+                    // mahallesi bilinmeyenler yalnızca kullanıcı isterse eklenir.
+                    const { data: mo } = await sb.rpc('mahalle_okullari', { p_ilce: ilk.ilce_location_id, p_mahalle: ilk.mahalle_adi });
+                    const bilinen = (mo || []).filter(r => r.durum !== 'bilinmiyor').map(r => r.institution_id);
+                    const bilinmeyen = (mo || []).filter(r => r.durum === 'bilinmiyor').map(r => r.institution_id);
+                    const sec = async (ids) => {
+                        if (!ids.length) return [];
+                        let fq = sb.from('institutions')
+                            .select('id, name, is_public, is_verified, fee_info, lat, lng, location_id, locations ( name ), institution_types ( name_tr, slug ), categories ( slug )')
+                            .in('id', ids.slice(0, 300)).order('name').limit(DISPLAY_LIMIT);
+                        if (turIdleri && turIdleri.length) fq = fq.in('institution_type_id', turIdleri);
+                        if (categoryParam) {
+                            const { data: catRow2 } = await sb.from('categories').select('id').eq('slug', categoryParam).maybeSingle();
+                            if (catRow2) fq = fq.eq('category_id', catRow2.id);
+                        }
+                        const { data } = await fq;
+                        return data || [];
+                    };
+                    const bilinenRows = await sec(bilinen);
+                    const bilinmeyenRows = await sec(bilinmeyen);
+                    const ekle = ilceTumu ? [...bilinenRows, ...bilinmeyenRows] : bilinenRows;
+                    const varOlanIdler = new Set(finalData.map(r => r.id));
+                    finalData = [...finalData, ...ekle.filter(r => !varOlanIdler.has(r.id))];
+                    mahalleUyarisi = {
+                        metin: (ilceTumu
+                            ? `${ilk.mahalle_adi} (${ilk.ilce_adi}, ${ilk.il_adi}): ${ilk.ilce_adi}'te mahallesi henüz bilinmeyen ${bilinmeyenRows.length} kurum da listede (bunlar ${ilk.mahalle_adi}'da olmayabilir).`
+                            : `${ilk.mahalle_adi} (${ilk.ilce_adi}, ${ilk.il_adi}): yalnızca adı, adresi ya da konumu ${ilk.mahalle_adi}'yı gösteren kurumlar listelendi.` + (bilinmeyenRows.length ? ` ${ilk.ilce_adi}'te mahallesi henüz bilinmeyen ${bilinmeyenRows.length}${bilinmeyenRows.length === DISPLAY_LIMIT ? '+' : ''} kurum daha var.` : ''))
+                            + ((mbul.length > 1 && !ilk.yer_adi_eslesti) ? ` Bu adla başka ilçelerde de mahalle var: ${mbul.slice(1, 6).map(m => `${m.ilce_adi} (${m.il_adi})`).join(', ')}. Başka bir ilçeyi kastediyorsanız ilçe adını da yazın.` : ''),
+                        link: bilinmeyenRows.length ? (ilceTumu ? 'Yalnızca bilinenleri göster' : 'Onları da göster') : null,
+                        ilceTumu,
+                    };
                 }
             }
             let results = finalData || [];
@@ -571,7 +588,14 @@
                 const box = document.createElement('p');
                 box.id = 'mahalleUyariBox';
                 box.className = 'text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mb-3';
-                box.textContent = '💡 ' + mahalleUyarisi;
+                box.textContent = '💡 ' + mahalleUyarisi.metin + ' ';
+                if (mahalleUyarisi.link) {
+                    const a = document.createElement('a');
+                    const u = new URL(window.location.href);
+                    if (mahalleUyarisi.ilceTumu) u.searchParams.delete('ilce_tumu'); else u.searchParams.set('ilce_tumu', '1');
+                    a.href = u.toString(); a.className = 'underline font-semibold'; a.textContent = mahalleUyarisi.link;
+                    box.appendChild(a);
+                }
                 document.getElementById('resultsTitle').insertAdjacentElement('afterend', box);
             }
 
