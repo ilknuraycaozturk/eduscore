@@ -379,8 +379,8 @@
                 const { ilk, digerleri } = mahalleBilgi;
                 const bilinmeyenSayi = (instRows || []).filter(i => mahalleBilinmeyen.has(i.id)).length;
                 mahalleUyarisi = { metin: ilceTumu
-                    ? `${ilk.mahalle_adi} (${ilk.ilce_adi}, ${ilk.il_adi}) araması: ${ilk.ilce_adi}'te mahallesi henüz bilinmeyen ${bilinmeyenSayi} lise de listede (bunlar ${ilk.mahalle_adi}'da olmayabilir).`
-                    : `${ilk.mahalle_adi} (${ilk.ilce_adi}, ${ilk.il_adi}): yalnızca adı, adresi ya da konumu ${ilk.mahalle_adi}'yı gösteren liseler listelendi.` + (bilinmeyenSayi ? ` ${ilk.ilce_adi}'te mahallesi henüz bilinmeyen ${bilinmeyenSayi} lise daha var.` : ''),
+                    ? `${ilk.mahalle_adi} mahallesi (${ilk.ilce_adi}, ${ilk.il_adi}): ${ilk.ilce_adi} ilçesinde mahallesi henüz bilinmeyen ${bilinmeyenSayi} lise de listede (bunlar bu mahallede olmayabilir).`
+                    : `${ilk.mahalle_adi} mahallesi (${ilk.ilce_adi}, ${ilk.il_adi}): yalnızca adı, adresi ya da konumu bu mahallede olan liseler listelendi.` + (bilinmeyenSayi ? ` ${ilk.ilce_adi} ilçesinde mahallesi henüz bilinmeyen ${bilinmeyenSayi} lise daha var.` : ''),
                     link: bilinmeyenSayi ? (ilceTumu ? 'Yalnızca bilinenleri göster' : 'Onları da göster') : null };
                 if (digerleri.length && !ilk.yer_adi_eslesti) {
                     mahalleUyarisi.metin += ` Bu adla başka ilçelerde de mahalle var: ${digerleri.map(m => `${m.ilce_adi} (${m.il_adi})`).join(', ')}. Başka bir ilçeyi kastediyorsanız ilçe adını da yazın (ör. "${ilk.mahalle_adi} ${digerleri[0].ilce_adi}").`;

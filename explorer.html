@@ -512,8 +512,8 @@
                     finalData = [...finalData, ...ekle.filter(r => !varOlanIdler.has(r.id))];
                     mahalleUyarisi = {
                         metin: (ilceTumu
-                            ? `${ilk.mahalle_adi} (${ilk.ilce_adi}, ${ilk.il_adi}): ${ilk.ilce_adi}'te mahallesi henüz bilinmeyen ${bilinmeyenRows.length} kurum da listede (bunlar ${ilk.mahalle_adi}'da olmayabilir).`
-                            : `${ilk.mahalle_adi} (${ilk.ilce_adi}, ${ilk.il_adi}): yalnızca adı, adresi ya da konumu ${ilk.mahalle_adi}'yı gösteren kurumlar listelendi.` + (bilinmeyenRows.length ? ` ${ilk.ilce_adi}'te mahallesi henüz bilinmeyen ${bilinmeyenRows.length}${bilinmeyenRows.length === DISPLAY_LIMIT ? '+' : ''} kurum daha var.` : ''))
+                            ? `${ilk.mahalle_adi} mahallesi (${ilk.ilce_adi}, ${ilk.il_adi}): ${ilk.ilce_adi} ilçesinde mahallesi henüz bilinmeyen ${bilinmeyenRows.length} kurum da listede (bunlar bu mahallede olmayabilir).`
+                            : `${ilk.mahalle_adi} mahallesi (${ilk.ilce_adi}, ${ilk.il_adi}): yalnızca adı, adresi ya da konumu bu mahallede olan kurumlar listelendi.` + (bilinmeyenRows.length ? ` ${ilk.ilce_adi} ilçesinde mahallesi henüz bilinmeyen ${bilinmeyenRows.length}${bilinmeyenRows.length === DISPLAY_LIMIT ? '+' : ''} kurum daha var.` : ''))
                             + ((mbul.length > 1 && !ilk.yer_adi_eslesti) ? ` Bu adla başka ilçelerde de mahalle var: ${mbul.slice(1, 6).map(m => `${m.ilce_adi} (${m.il_adi})`).join(', ')}. Başka bir ilçeyi kastediyorsanız ilçe adını da yazın.` : ''),
                         link: bilinmeyenRows.length ? (ilceTumu ? 'Yalnızca bilinenleri göster' : 'Onları da göster') : null,
                         ilceTumu,
