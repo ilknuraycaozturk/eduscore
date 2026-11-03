@@ -220,6 +220,7 @@
             // yapıldığında sayfanın önemli ölçüde daha hızlı yüklenmesini sağlar.
             let matchingLocationIds = null;
             let mahalleUyarisi = null;
+            let mahalleIlceIdleri = new Set();
             if (locParam) {
                 const { data: matchingLocations } = await sb.from('locations')
                     .select('id')
@@ -239,6 +240,7 @@
                 if (mahalleEslesme && mahalleEslesme.length) {
                     const ilk = mahalleEslesme[0];
                     matchingLocationIds = [...new Set([...matchingLocationIds, ilk.ilce_location_id])];
+                    mahalleIlceIdleri.add(ilk.ilce_location_id);
                     mahalleUyarisi = `"${ilk.mahalle_adi}" mahallesinin tam sınırları elimizde olmadığı için, bağlı olduğu ${ilk.ilce_adi} (${ilk.il_adi}) ilçesindeki TÜM okullar da gösteriliyor (aralarında ${ilk.mahalle_adi}'da olmayanlar da olabilir).`;
                     const digerleri = mahalleEslesme.slice(1, 6).map(m => `${m.ilce_adi} (${m.il_adi})`);
                     if (digerleri.length && !ilk.yer_adi_eslesti) {
@@ -348,6 +350,9 @@
             if (locParam) {
                 const needle = locParam.toLocaleLowerCase('tr');
                 institutions = institutions.filter(inst => {
+                    // Mahalle araması bağlı ilçeyi eklediyse o ilçenin okulları kalır
+                    // (çoğu okulun adresinde mahalle yazmıyor; önceden burada eleniyorlardı).
+                    if (mahalleIlceIdleri.has(inst.location_id)) return true;
                     const haystack = [inst.address, inst.locations && inst.locations.name, inst._ilAdi]
                         .filter(Boolean).join(' ').toLocaleLowerCase('tr');
                     return haystack.includes(needle);
