@@ -7,6 +7,10 @@ on:
         description: "true ise yalnızca sayar, kurumlara yazmaz"
         required: true
         default: "true"
+      sadece_mahalle:
+        description: "true ise yalnızca OSM mahalle merkezlerini osm_mahalleler tablosuna yazar (kurumlara dokunmaz)"
+        required: false
+        default: "false"
 
 concurrency:
   group: mahalle-merkezi
@@ -35,4 +39,5 @@ jobs:
         run: |
           ARGS="mahalleler.geojsonseq"
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ inputs.sadece_mahalle }}" = "true" ]; then ARGS="$ARGS --sadece-mahalle"; fi
           python scripts/mahalle_merkezi.py $ARGS

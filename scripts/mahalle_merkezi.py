@@ -66,6 +66,7 @@ def main() -> int:
         print("Kullanım: mahalle_merkezi.py <geojsonseq> [--dry-run]")
         return 1
     girdi, dry = sys.argv[1], "--dry-run" in sys.argv
+    sadece_mahalle = "--sadece-mahalle" in sys.argv  # yalnızca osm_mahalleler tablosunu doldur, kurumlara dokunma
     base, skey = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     if not base or not skey:
         print("HATA: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY gerekli.")
@@ -99,11 +100,14 @@ def main() -> int:
                                "lat": sum(p[1] for p in pts) / len(pts), "lng": sum(p[0] for p in pts) / len(pts)})
     mahalleler = list({m["osm_id"]: m for m in mahalleler}.values())
     print(f"OSM mahalle/yerleşim nesnesi: {len(mahalleler)}")
-    if not dry:
+    if not dry or sadece_mahalle:
         for i in range(0, len(mahalleler), 1000):
             requests.post(f"{base}/rest/v1/osm_mahalleler?on_conflict=osm_id",
                           headers={**h, "Prefer": "resolution=merge-duplicates,return=minimal"},
                           json=mahalleler[i:i + 1000], timeout=120).raise_for_status()
+    if sadece_mahalle:
+        print("Yalnızca osm_mahalleler yazıldı.")
+        return 0
     dizin = defaultdict(list)
     for m in mahalleler:
         dizin[mah_anahtar(m["ad"])].append(m)
