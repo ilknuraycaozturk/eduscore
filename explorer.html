@@ -481,10 +481,9 @@
                     const map = { 'İ': 'i', 'I': 'i', 'ı': 'i', 'Ç': 'c', 'ç': 'c', 'Ğ': 'g', 'ğ': 'g', 'Ö': 'o', 'ö': 'o', 'Ş': 's', 'ş': 's', 'Ü': 'u', 'ü': 'u' };
                     return qParam.replace(/[İIıÇçĞğÖöŞşÜü]/g, c => map[c]).toLowerCase();
                 })();
-                const { data: mahalleEslesme } = await sb.from('mahalle_ilce_eslesme')
-                    .select('mahalle_adi, ilce_location_id, locations!mahalle_ilce_eslesme_ilce_location_id_fkey ( name )')
-                    .ilike('mahalle_normalized', `%${qNorm2}%`)
-                    .limit(1);
+                // Aynı adlı mahalle birden çok ilçede olabilir; mahalle_ilce_bul en uygun ilçeyi öne koyar.
+                const { data: mbul } = await sb.rpc('mahalle_ilce_bul', { p_q: qParam });
+                const mahalleEslesme = (mbul || []).map(m => ({ mahalle_adi: m.mahalle_adi, ilce_location_id: m.ilce_location_id, locations: { name: m.ilce_adi } }));
                 if (mahalleEslesme && mahalleEslesme.length) {
                     let fallbackQuery = sb.from('institutions')
                         .select('id, name, is_public, is_verified, fee_info, locations ( name ), institution_types ( name_tr, slug ), categories ( slug )')

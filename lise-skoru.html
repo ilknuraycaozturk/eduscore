@@ -233,13 +233,17 @@
                 // ama diğer Bağlıca okulları hâlâ sadece "Etimesgut" (ilçe)
                 // diye kayıtlı olabilir. Bu yüzden DOĞRUDAN EŞLEŞME OLSA BİLE
                 // mahalle->ilçe tablosuna bakıp o ilçeyi de listeye ekliyoruz.
-                const { data: mahalleEslesme } = await sb.from('mahalle_ilce_eslesme')
-                    .select('mahalle_adi, ilce_location_id, locations!mahalle_ilce_eslesme_ilce_location_id_fkey ( name )')
-                    .ilike('mahalle_normalized', `%${locNorm}%`)
-                    .limit(1);
+                // Aynı adlı mahalle birden çok ilçede olabilir (ör. Bağlıca: 12 ilçe). mahalle_ilce_bul
+                // aramada ilçe/il adı geçiyorsa onu, yoksa en büyük ilçeyi öne koyar.
+                const { data: mahalleEslesme } = await sb.rpc('mahalle_ilce_bul', { p_q: locParam });
                 if (mahalleEslesme && mahalleEslesme.length) {
-                    matchingLocationIds = [...new Set([...matchingLocationIds, mahalleEslesme[0].ilce_location_id])];
-                    mahalleUyarisi = `"${locParam}" mahallesinin tam sınırları elimizde olmadığı için, bağlı olduğu "${mahalleEslesme[0].locations.name}" ilçesindeki TÜM okullar da gösteriliyor (aralarında Bağlıca'da olmayanlar da olabilir).`;
+                    const ilk = mahalleEslesme[0];
+                    matchingLocationIds = [...new Set([...matchingLocationIds, ilk.ilce_location_id])];
+                    mahalleUyarisi = `"${ilk.mahalle_adi}" mahallesinin tam sınırları elimizde olmadığı için, bağlı olduğu ${ilk.ilce_adi} (${ilk.il_adi}) ilçesindeki TÜM okullar da gösteriliyor (aralarında ${ilk.mahalle_adi}'da olmayanlar da olabilir).`;
+                    const digerleri = mahalleEslesme.slice(1, 6).map(m => `${m.ilce_adi} (${m.il_adi})`);
+                    if (digerleri.length && !ilk.yer_adi_eslesti) {
+                        mahalleUyarisi += ` Bu adla başka ilçelerde de mahalle var: ${digerleri.join(', ')}. Başka bir ilçeyi kastediyorsanız ilçe adını da yazın (ör. "${ilk.mahalle_adi} ${mahalleEslesme[1].ilce_adi}").`;
+                    }
                 }
 
                 // İlin kendisi eşleşiyorsa, o ilin TÜM ilçelerini de dahil etmemiz gerekir
