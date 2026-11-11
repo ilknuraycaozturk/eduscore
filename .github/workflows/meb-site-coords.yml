@@ -11,6 +11,10 @@ on:
         description: "Aynı anda kaç istek"
         required: false
         default: "1"
+      retry_days:
+        description: "Başarısız denemeler kaç gün sonra yeniden denensin (varsayılan 30)"
+        required: false
+        default: "30"
       dry_run:
         description: "true ise veritabanına yazmaz"
         required: true
@@ -37,6 +41,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel ${{ inputs.paralel || '1' }} --max-dakika 330"
+          ARGS="--limit ${{ inputs.limit || '20000' }} --paralel ${{ inputs.paralel || '1' }} --max-dakika 330 --retry-days ${{ inputs.retry_days || '30' }}"
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python scripts/meb_site_coords.py $ARGS
